@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Solar System Animation (Auto-fit + Correct Moons + Mobile Controls)</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      width:100vw;height:100vh;background:#000;display:flex;justify-content:center;align-items:center;
+      overflow:hidden;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #canvas{display:block;background:radial-gradient(ellipse at center,#050718 0%,#000 100%)}
+    #info,#controls{
+      position:fixed;top:10px;color:#fff;font-size:14px;background:rgba(0,0,0,.7);
+      padding:10px 15px;border-radius:5px;z-index:10;pointer-events:none
+    }
+    #info{left:10px}
+    #controls{top:50px;left:10px;font-size:12px}
+    /* Floating toggle button for mobile/desktop */
+    #toggle-btn{
+      position:fixed;right:15px;bottom:15px;z-index:10;
+      padding:10px 14px;border:none;border-radius:10px;cursor:pointer;
+      background:#1976D2;color:#fff;font-weight:700;font-size:14px;
+      box-shadow:0 4px 10px rgba(0,0,0,.4);
+      pointer-events:auto;
+    }
+    #toggle-btn:hover{background:#0D47A1}
+    /* Larger tap target on small screens */
+    @media (max-width: 640px){
+      #toggle-btn{font-size:16px;padding:12px 16px;border-radius:12px}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="info">🔭 Advanced Solar System — Auto-fit + Correct Moon Counts</div>
+  <div id="controls">Press SPACE or tap ⏯️ to pause/resume</div>
+  <button id="toggle-btn" aria-pressed="false" title="Pause/Play">⏸️ Pause</button>
+
+  <script>
+    // ==== Canvas setup ====
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let isPaused = false;
+
+    // Center point (set in resize)
+    let center = { x: 0, y: 0 };
+
+    // ---- Authoritative moon counts (as of 2025) ----
+    // Mercury 0, Venus 0, Earth 1, Mars 2, Jupiter 95, Saturn 274, Uranus 28, Neptune 16
+    const MOON_COUNTS = {
+      Mercury: 0, Venus: 0, Earth: 1, Mars: 2, Jupiter: 95, Saturn: 274, Uranus: 28, Neptune: 16
+    };
+
+    // ---- Visual config ----
+    const sunConfig = { radius: 20, color: '#FDB813', name: 'Sun' };
+
+    // Base (unscaled) orbit radii (in px). We'll scale them to fit any screen.
+    const BASE_ORBITS = {
+      Mercury: 80, Venus: 120, Earth: 170, Mars: 220, Jupiter: 320, Saturn: 420, Uranus: 500, Neptune: 580
+    };
+    const MAX_BASE_ORBIT = 580;
+    const MARGIN = 30; // px margin from edge after scaling
+
+    // Planet visual sizes (px)
+    const PLANET_SIZES = {
+      Mercury: 4, Venus: 7, Earth: 7, Mars: 5, Jupiter: 18, Saturn: 16, Uranus: 12, Neptune: 12
+    };
+
+    // Named showcase moons; generics will be added to reach the correct total.
+    const SHOWCASE_MOONS = {
+      Earth: [{ name:'Moon', orbitRadius: 25, radius: 2, color:'#bbb', speed: 0.10 }],
+      Mars: [
+        { name:'Phobos', orbitRadius: 18, radius: 1.2, color:'#777', speed: 0.15 },
+        { name:'Deimos', orbitRadius: 28, radius: 0.9, color:'#888', speed: 0.08 }
+      ],
+      Jupiter: [
+        { name:'Io', orbitRadius: 50, radius: 2.2, color:'#FFD700', speed:0.080 },
+        { name:'Europa', orbitRadius: 70, radius: 2.0, color:'#B0B0B0', speed:0.050 },
+        { name:'Ganymede', orbitRadius: 90, radius: 2.6, color:'#A0A0A0', speed:0.035 },
+        { name:'Callisto', orbitRadius: 110, radius: 2.0, color:'#696969', speed:0.025 }
+      ],
+      Saturn: [
+        { name:'Titan', orbitRadius: 60, radius: 2.6, color:'#FF8C00', speed:0.040 }
+      ],
+      Uranus: [
+        { name:'Miranda', orbitRadius: 36, radius: 1.2, color:'#aaa', speed:0.060 },
+        { name:'Ariel', orbitRadius: 46, radius: 1.3, color:'#cfcfcf', speed:0.045 },
+        { name:'Umbriel', orbitRadius: 58, radius: 1.3, color:'#777', speed:0.038 },
+        { name:'Titania', orbitRadius: 72, radius: 1.5, color:'#bcbcbc', speed:0.030 },
+        { name:'Oberon', orbitRadius: 86, radius: 1.5, color:'#8a8a8a', speed:0.026 }
+      ],
+      Neptune: [
+        { name:'Triton', orbitRadius: 55, radius: 1.8, color:'#B0B0B0', speed:0.045 }
+      ]
+    };
+
+    // Build planet list
+    const planets = Object.keys(BASE_ORBITS).map(name => ({
+      name,
+      orbitBase: BASE_ORBITS[name],
+      radius: PLANET_SIZES[name],
+      color: ({
+        Mercury:'#8C7853', Venus:'#FFC649', Earth:'#4A90E2', Mars:'#E27B58',
+        Jupiter:'#C88B3A', Saturn:'#F4D47F', Uranus:'#4FD0E7', Neptune:'#4166F5'
+      })[name],
+      // Stylized speed proxy (inverse of distance)
+      speed: 0.6 / Math.sqrt(BASE_ORBITS[name]) * 0.3,
+      angle: 0,
+      moons: [] // will populate below
+    }));
+
+    // Fill moons to match exact counts
+    function generateMoonsFor(planet) {
+      const target = MOON_COUNTS[planet.name] || 0;
+      const showcase = (SHOWCASE_MOONS[planet.name] || []).map(m => ({
+        ...m, angle: Math.random()*Math.PI*2
+      }));
+      const remaining = Math.max(0, target - showcase.length);
+      for(let i=0;i<remaining;i++){
+        const baseStart = showcase.length ? Math.max(...showcase.map(s=>s.orbitRadius)) + 12 : 16;
+        const orbitRadius = baseStart + i * 4 + (Math.random()*2-1);
+        const radius = Math.random()*0.8 + 0.3;
+        const speed = (Math.random()*0.06 + 0.015) * (Math.random()>0.5?1:-1);
+        showcase.push({
+          name: 'moon'+(i+1),
+          orbitRadius, radius, color: '#9aa0a6',
+          speed, angle: Math.random()*Math.PI*2
+        });
+      }
+      planet.moons = showcase;
+    }
+    planets.forEach(generateMoonsFor);
+
+    // Asteroid belt (base units)
+    const AST_MIN_BASE = BASE_ORBITS.Mars + 20;   // 240
+    const AST_MAX_BASE = BASE_ORBITS.Jupiter - 20; // 300
+    const AST_COUNT = 500;
+    const asteroids = [];
+
+    class Asteroid{
+      constructor(minOrbit, maxOrbit){
+        this.orbitBase = minOrbit + Math.random()*(maxOrbit-minOrbit);
+        this.radius = Math.random()*0.8 + 0.2;
+        this.color = `rgba(${Math.floor(Math.random()*50)+150},${Math.floor(Math.random()*50)+150},${Math.floor(Math.random()*50)+150},${Math.random()*0.5+0.3})`;
+        this.speed = (Math.random()*0.005 + 0.0005) * (Math.random()>0.5?1:-1);
+        this.angle = Math.random()*Math.PI*2;
+        this.x=0; this.y=0;
+      }
+      update(scale){
+        if(!isPaused) this.angle += this.speed;
+        const r = this.orbitBase * scale;
+        this.x = center.x + Math.cos(this.angle) * r;
+        this.y = center.y + Math.sin(this.angle) * r;
+      }
+      draw(){
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    // ==== Helpers ====
+    function drawOrbit(r){
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, r, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    function drawSun(cfg){
+      const glowR = cfg.radius * 2.5;
+      const g = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, glowR);
+      g.addColorStop(0,'rgba(253,184,19,0.6)');
+      g.addColorStop(1,'rgba(253,184,19,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(center.x - glowR, center.y - glowR, glowR*2, glowR*2);
+
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, cfg.radius, 0, Math.PI*2);
+      ctx.fillStyle = cfg.color;
+      ctx.fill();
+    }
+
+    function drawSaturnRing(x,y,planetRadius){
+      ctx.beginPath();
+      ctx.ellipse(x,y, planetRadius*2.5, planetRadius*0.5, -20*Math.PI/180, 0, Math.PI*2);
+      ctx.lineWidth = planetRadius*0.4;
+      ctx.strokeStyle = 'rgba(244,212,127,0.6)';
+      ctx.stroke();
+    }
+
+    // Compute scale factor so that Neptune's orbit fits in the viewport
+    let SCALE = 1;
+    function computeScale(){
+      const minHalf = Math.min(canvas.width, canvas.height)/2 - MARGIN;
+      SCALE = Math.max(0.2, minHalf / MAX_BASE_ORBIT);
+    }
+
+    function resizeCanvas(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      center.x = canvas.width/2;
+      center.y = canvas.height/2;
+      computeScale();
+    }
+
+    function init(){
+      resizeCanvas();
+      asteroids.length = 0;
+      for(let i=0;i<AST_COUNT;i++){
+        asteroids.push(new Asteroid(AST_MIN_BASE, AST_MAX_BASE));
+      }
+      // If touch-capable, simplify the controls text
+      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const ctrl = document.getElementById('controls');
+      if (touch) ctrl.textContent = 'Tap ⏯️ to pause/resume';
+      updateToggleButton();
+    }
+
+    function animate(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      drawSun(sunConfig);
+
+      // Orbits
+      planets.forEach(p => drawOrbit(p.orbitBase * SCALE));
+
+      // Update & draw planets + moons
+      planets.forEach(p => {
+        if(!isPaused) p.angle += p.speed;
+        const r = p.orbitBase * SCALE;
+        const px = center.x + Math.cos(p.angle)*r;
+        const py = center.y + Math.sin(p.angle)*r;
+
+        // planet
+        ctx.beginPath();
+        ctx.arc(px, py, p.radius, 0, Math.PI*2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        if(p.name === 'Saturn'){ drawSaturnRing(px, py, p.radius); }
+
+        // moons
+        p.moons.forEach(m => {
+          if(!isPaused) m.angle += m.speed;
+          const mr = (m.orbitRadius || 20) * SCALE * 0.6; // compact moon orbits
+          const mx = px + Math.cos(m.angle)*mr;
+          const my = py + Math.sin(m.angle)*mr;
+          ctx.beginPath();
+          ctx.arc(mx, my, m.radius, 0, Math.PI*2);
+          ctx.fillStyle = m.color || '#9aa0a6';
+          ctx.fill();
+        });
+      });
+
+      // Asteroids
+      asteroids.forEach(a => { a.update(SCALE); a.draw(); });
+
+      requestAnimationFrame(animate);
+    }
+
+    // Controls: keyboard + button
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ togglePause(); }});
+    const toggleBtn = document.getElementById('toggle-btn');
+    toggleBtn.addEventListener('click', togglePause);
+
+    function togglePause(){
+      isPaused = !isPaused;
+      updateToggleButton();
+    }
+    function updateToggleButton(){
+      toggleBtn.textContent = isPaused ? '▶️ Play' : '⏸️ Pause';
+      toggleBtn.setAttribute('aria-pressed', String(isPaused));
+    }
+
+    init();
+    animate();
+  </script>
+</body>
+</html>
