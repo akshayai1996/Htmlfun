@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Akshay's Ultimate Memory Pro</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --card-back: #1e272e;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --wrong: #e74c3c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* Confetti Canvas - Must be behind modals but above game */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        .dashboard {
+            background: white;
+            width: 100%;
+            max-width: 550px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .controls { display: flex; gap: 8px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
+        select, button { padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-weight: bold; cursor: pointer; }
+        button { background: var(--accent); color: white; border: none; transition: 0.2s; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #eee; padding-top: 15px; }
+        .stat-label { font-size: 0.75rem; color: #7f8c8d; text-transform: uppercase; }
+        .stat-val { display: block; font-size: 1.3rem; color: var(--card-back); font-weight: 800; }
+
+        .game-grid { display: grid; gap: 10px; width: 100%; max-width: 500px; perspective: 1000px; }
+
+        .card {
+            aspect-ratio: 1;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(1.1rem, 5vw, 2.5rem);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            background: white;
+        }
+
+        .card-back { background: var(--card-back); color: white; border: 2px solid white; }
+        .card-back::after { content: "?"; opacity: 0.2; font-size: 1.2rem; }
+        .card-front { transform: rotateY(180deg); border: 3px solid var(--card-back); }
+
+        #status-msg { font-weight: 800; color: var(--accent); margin-bottom: 10px; height: 24px; }
+
+        /* Victory Modal */
+        #victory-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            max-width: 350px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="dashboard">
+        <div id="status-msg">Ready?</div>
+        <div class="controls">
+            <select id="theme">
+                <option value="food">🍔 Food</option>
+                <option value="nature">🌸 Flowers</option>
+                <option value="cars">🏎️ Cars</option>
+                <option value="animals">🐼 Animals</option>
+            </select>
+            <select id="cardCount">
+                <option value="16">4x4 Grid</option>
+                <option value="36">6x6 Grid</option>
+                <option value="64">8x8 Grid</option>
+            </select>
+            <button onclick="initGame()">Start New Game</button>
+        </div>
+        <div class="stats-grid">
+            <div><span class="stat-label">Time</span><span class="stat-val" id="timer">00:00</span></div>
+            <div><span class="stat-label">Wrong</span><span class="stat-val" id="wrongs">0</span></div>
+            <div><span class="stat-label">Matches</span><span class="stat-val" id="matches">0</span></div>
+        </div>
+    </div>
+
+    <div id="grid" class="game-grid"></div>
+
+    <div id="victory-modal">
+        <div class="modal-content">
+            <h1 style="font-size: 4rem; margin-bottom: 10px;">🏆</h1>
+            <h2 style="color: #2d3436;">Perfect, Akshay!</h2>
+            <p style="color: #636e72; margin: 15px 0;">The grid is cleared.</p>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 20px; font-weight: bold;">
+                <p>Time: <span id="final-time"></span></p>
+                <p>Mistakes: <span id="final-wrongs"></span></p>
+            </div>
+            <button onclick="closeVictory()" style="width: 100%; font-size: 1.1rem;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        const library = {
+            cars: ['🚗','🚕','🚙','🚌','🏎️','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🚔','🚘','🚖','🚠','🚟','🚃','🚆','🚇','🚄','🚅','🚢','✈️','🚀','🚁','🚲','🛵','🏍️','⛵','🛸','🛰️'],
+            animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🐝','🦋','🐞','🐢','🐍','🐙'],
+            food: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🍆','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🥚','🍿','🍩','🍪','🎂','🍰','🍫'],
+            nature: ['🌵','🌲','🌳','🌴','🌱','🌿','☘️','🍀','🎋','🍃','🍂','🍁','🍄','🐚','🌾','💐','🌷','🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','🌈','☁️','⛈️','🔥','💧','🌊','🌍']
+        };
+
+        let cardsFlipped = [], matches = 0, wrongs = 0, seconds = 0;
+        let timerInterval, isLocked = true, timerRunning = false;
+
+        function initGame() {
+            const grid = document.getElementById('grid');
+            const total = parseInt(document.getElementById('cardCount').value);
+            const theme = document.getElementById('theme').value;
+            const statusLabel = document.getElementById('status-msg');
+            
+            clearInterval(timerInterval);
+            stopConfetti();
+            grid.innerHTML = '';
+            cardsFlipped = []; matches = 0; wrongs = 0; seconds = 0;
+            timerRunning = false; isLocked = true; 
+            updateStats();
+
+            const cols = Math.sqrt(total);
+            grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            const selectedItems = library[theme].slice(0, total / 2).sort(() => Math.random() - 0.5);
+            const deck = [...selectedItems, ...selectedItems].sort(() => Math.random() - 0.5);
+
+            deck.forEach(symbol => {
+                const card = document.createElement('div');
+                card.className = 'card flipped'; 
+                card.dataset.symbol = symbol.normalize("NFC");
+                card.innerHTML = `<div class="card-face card-back"></div><div class="card-face card-front">${symbol}</div>`;
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+            });
+
+            let peekSeconds = total === 16 ? 3 : (total === 36 ? 6 : 10);
+            const countdown = setInterval(() => {
+                statusLabel.innerText = `MEMORIZE: ${peekSeconds}s`;
+                peekSeconds--;
+                if (peekSeconds < 0) {
+                    clearInterval(countdown);
+                    document.querySelectorAll('.card').forEach(c => c.classList.remove('flipped'));
+                    statusLabel.innerText = "GO!";
+                    isLocked = false; 
+                }
+            }, 1000);
+        }
+
+        function flipCard(card) {
+            if (isLocked || card.classList.contains('flipped') || cardsFlipped.includes(card)) return;
+            
+            if (!timerRunning) {
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                    const s = (seconds % 60).toString().padStart(2, '0');
+                    document.getElementById('timer').innerText = `${m}:${s}`;
+                }, 1000);
+            }
+
+            card.classList.add('flipped');
+            cardsFlipped.push(card);
+
+            if (cardsFlipped.length === 2) {
+                isLocked = true;
+                const [c1, c2] = cardsFlipped;
+                if (c1.dataset.symbol === c2.dataset.symbol) {
+                    matches++;
+                    cardsFlipped = [];
+                    isLocked = false;
+                    updateStats();
+                    if (matches === parseInt(document.getElementById('cardCount').value) / 2) triggerVictory();
+                } else {
+                    wrongs++;
+                    updateStats();
+                    setTimeout(() => {
+                        c1.classList.remove('flipped');
+                        c2.classList.remove('flipped');
+                        cardsFlipped = [];
+                        isLocked = false;
+                    }, 1000);
+                }
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('matches').innerText = matches;
+            document.getElementById('wrongs').innerText = wrongs;
+            if (seconds === 0) document.getElementById('timer').innerText = "00:00";
+        }
+
+        function triggerVictory() {
+            clearInterval(timerInterval);
+            document.getElementById('final-time').innerText = document.getElementById('timer').innerText;
+            document.getElementById('final-wrongs').innerText = wrongs;
+            setTimeout(() => {
+                document.getElementById('victory-modal').style.display = 'flex';
+                startConfetti();
+            }, 600);
+        }
+
+        function closeVictory() {
+            document.getElementById('victory-modal').style.display = 'none';
+            stopConfetti();
+            initGame();
+        }
+
+        /* --- 🎊 Confetti Particle System 🎊 --- */
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [], animationId;
+
+        function startConfetti() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                    size: Math.random() * 8 + 5,
+                    speed: Math.random() * 3 + 2,
+                    angle: Math.random() * 6
+                });
+            }
+            drawConfetti();
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.y += p.speed;
+                p.x += Math.sin(p.angle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                if (p.y > canvas.height) p.y = -20;
+            });
+            animationId = requestAnimationFrame(drawConfetti);
+        }
+
+        function stopConfetti() {
+            cancelAnimationFrame(animationId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = [];
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
