@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sudoku Zen Pro - Enhanced Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        :root { --grid-size: 90vw; }
+        @media (min-width: 768px) { :root { --grid-size: 500px; } }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 95vw;
+            max-width: 580px;
+            background: white;
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .grid-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            background: white;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            width: var(--grid-size);
+            height: var(--grid-size);
+            background-color: #0f172a; 
+            border: 3px solid #0f172a;
+            gap: 1px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .cell {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 100%;
+            aspect-ratio: 1 / 1; 
+            font-size: calc(var(--grid-size) / 16);
+            font-weight: 500;
+            color: #334155;
+            user-select: none;
+            transition: background-color 0.15s ease;
+            overflow: hidden;
+        }
+
+        /* 3x3 Section Borders */
+        .cell:nth-child(3n) { border-right: 2px solid #0f172a; }
+        .cell:nth-child(9n) { border-right: none; }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #0f172a; }
+
+        /* Highlights */
+        .cell.selected { background-color: #3b82f6 !important; color: white !important; z-index: 10; }
+        .cell.highlight-axis { background-color: #f0f7ff; }
+        .cell.highlight-box { background-color: #f0f7ff; }
+        .cell.same-number { background-color: #dbeafe; font-weight: 700; }
+        .cell.conflict { background-color: #fee2e2 !important; color: #ef4444 !important; }
+        .cell.readonly { font-weight: 900; color: #1e293b; background-color: #f8fafc; }
+        .cell.is-edit-mode { color: #2563eb; background-color: #eff6ff; }
+
+        .notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; padding: 8%; }
+        .note { font-size: 0.5rem; color: #64748b; text-align: center; line-height: 1; }
+
+        .keypad-btn {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            border-radius: 1rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.1s ease;
+        }
+        .keypad-btn:active, .keypad-btn.keyboard-active { 
+            transform: scale(0.9); 
+            background: #3b82f6; 
+            color: white; 
+            border-color: #3b82f6;
+        }
+        
+        .active-mode { border-color: #3b82f6 !important; color: #3b82f6 !important; background: #eff6ff !important; }
+        
+        #edit-mode-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-blue-400 font-bold tracking-widest uppercase">Akshay Solanki's</span>
+                <h1 class="text-2xl font-black italic tracking-tighter">ZEN SUDOKU PRO</h1>
+            </div>
+            <div class="text-right">
+                <div id="timer" class="text-2xl font-mono font-bold text-blue-100">00:00</div>
+                <div class="flex items-center justify-end gap-3 mt-1">
+                    <div id="mistakes-display" class="text-[10px] text-red-400 font-black tracking-widest">❌ 0/3</div>
+                    <div id="status-text" class="text-[9px] text-slate-400 uppercase font-black tracking-widest">Play Mode</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="px-5 py-4 bg-slate-50 border-b flex justify-between items-center gap-2">
+            <div class="flex gap-2 items-center">
+                <!-- Transition Button: Only shows during Edit Mode to exit it -->
+                <button id="exit-edit-btn" onclick="toggleEditMode()" class="hidden text-[10px] bg-green-600 text-white px-3 py-2 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+                    Start Playing
+                </button>
+                
+                <div id="standard-controls" class="flex gap-2">
+                    <select id="difficulty-select" class="text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl font-bold shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                    <button onclick="newGame()" class="text-xs bg-blue-600 text-white px-5 py-2 rounded-xl font-black uppercase hover:bg-blue-700 shadow-lg active:scale-95 transition">New</button>
+                    <button onclick="showSaveLoadMenu()" title="Save/Load Game" class="text-xs bg-emerald-600 text-white px-4 py-2 rounded-xl font-black uppercase hover:bg-emerald-700 shadow-lg active:scale-95 transition">💾</button>
+                </div>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="togglePause()" id="pause-btn" title="Pause Game" class="p-2.5 text-slate-500 hover:text-orange-600 border border-transparent rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+                <button onclick="getHint()" id="hint-btn" title="Smart Hint" class="p-2.5 text-slate-500 hover:text-yellow-600 border border-transparent rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                </button>
+                <button onclick="toggleEditMode()" id="edit-mode-btn" title="Edit Mode" disabled class="p-2.5 text-slate-500 hover:text-blue-600 border border-transparent rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+                <button onclick="confirmClearBoard()" title="Clear Board" class="p-2.5 text-slate-500 hover:text-red-500 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.34 7m-4.74 0l-.34-7m-4.74-3.5L5 19a2 2 0 002 2h10a2 2 0 002-2l1.08-13.5m-16.08 0H19m-4.5-3.5h-5a.5.5 0 00-.5.5V5h6v-.5a.5.5 0 00-.5-.5z" />
+                    </svg>
+                </button>
+                <button onclick="undo()" title="Undo" class="p-2.5 text-slate-500 hover:text-blue-600 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="grid-wrapper">
+            <div id="grid" class="sudoku-grid shadow-2xl"></div>
+        </div>
+
+        <!-- Keypad -->
+        <div class="p-6 bg-slate-50 border-t">
+            <div class="flex justify-between items-center mb-5 px-1">
+                <button id="notes-toggle" onclick="toggleNotes()" class="flex items-center gap-3 px-5 py-3 bg-white border rounded-2xl text-[11px] font-black uppercase text-slate-500 shadow-sm transition">
+                    <span id="notes-indicator" class="w-3 h-3 rounded-full bg-slate-300 ring-4 ring-slate-100"></span> Notes (N)
+                </button>
+                <button onclick="eraseCell()" class="flex items-center gap-2 px-4 py-2 text-red-500 text-[11px] font-black uppercase tracking-widest hover:bg-red-50 rounded-xl transition">
+                    ERASE
+                </button>
+            </div>
+            <div class="grid grid-cols-5 gap-3" id="onscreen-keypad">
+                <button onclick="handleInput(1)" class="keypad-btn" data-key="1">1</button>
+                <button onclick="handleInput(2)" class="keypad-btn" data-key="2">2</button>
+                <button onclick="handleInput(3)" class="keypad-btn" data-key="3">3</button>
+                <button onclick="handleInput(4)" class="keypad-btn" data-key="4">4</button>
+                <button onclick="handleInput(5)" class="keypad-btn" data-key="5">5</button>
+                <button onclick="handleInput(6)" class="keypad-btn" data-key="6">6</button>
+                <button onclick="handleInput(7)" class="keypad-btn" data-key="7">7</button>
+                <button onclick="handleInput(8)" class="keypad-btn" data-key="8">8</button>
+                <button onclick="handleInput(9)" class="keypad-btn" data-key="9">9</button>
+                <button onclick="handleSolveNow()" class="keypad-btn bg-slate-900 text-blue-400 border-none flex flex-col items-center justify-center leading-none">
+                    <span class="text-[8px] opacity-60 mb-1">AUTO</span>
+                    <span class="text-xs">SOLVE</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Overlay -->
+    <div id="victory-overlay" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center p-6">
+        <div class="bg-white p-12 rounded-[3.5rem] shadow-2xl animate-pop max-w-sm w-full">
+            <div class="text-7xl mb-6">🎊</div>
+            <h2 class="text-4xl font-black text-slate-900 mb-2 italic">SOLVED!</h2>
+            <p id="victory-stats" class="text-slate-500 font-bold mb-10"></p>
+            <button onclick="newGame()" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition">Next Level</button>
+        </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg z-50 flex flex-col items-center justify-center text-center p-6">
+        <div class="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-sm w-full">
+            <div class="text-6xl mb-6">⏸️</div>
+            <h2 class="text-3xl font-black text-slate-900 mb-4">PAUSED</h2>
+            <p class="text-slate-500 mb-8">Take a break, the timer is stopped</p>
+            <button onclick="togglePause()" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 active:scale-95 transition">Resume Game</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirm-dialog" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-pop">
+            <div class="text-5xl mb-4 text-center">⚠️</div>
+            <h3 class="text-2xl font-black text-slate-900 mb-2 text-center">Clear Board?</h3>
+            <p class="text-slate-600 mb-6 text-center">This will erase all your progress and cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="hideConfirmDialog()" class="flex-1 py-3 bg-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-300 active:scale-95 transition">Cancel</button>
+                <button onclick="confirmClear()" class="flex-1 py-3 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 active:scale-95 transition">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save/Load Menu -->
+    <div id="saveload-menu" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full animate-pop max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-black text-slate-900 mb-6 text-center">💾 Save & Load</h3>
+            
+            <button onclick="saveCurrentGame()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold mb-6 hover:bg-blue-700 active:scale-95 transition">
+                💾 Save Current Game
+            </button>
+
+            <div class="mb-4">
+                <h4 class="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Saved Games (Max 5)</h4>
+                <div id="saved-games-list" class="space-y-2">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <button onclick="hideSaveLoadMenu()" class="w-full py-3 bg-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-300 active:scale-95 transition mt-4">Close</button>
+        </div>
+    </div>
+
+<script>
+/**
+ * SUDOKU ZEN PRO - ENHANCED EDITION WITH ALL IMPROVEMENTS
+ */
+
+let grid = [];
+let initialGrid = [];
+let solutionGrid = null;
+let notes = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+let history = [];
+let selectedCell = { r: 4, c: 4 };
+let notesMode = false;
+let editMode = false;
+let moves = 0;
+let timeSeconds = 0;
+let timerInterval = null;
+let mistakes = 0;
+let maxMistakes = 3;
+let isPaused = false;
+
+function celebrate() {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+}
+
+// --- ENGINE (MRV) ---
+function getCandidates(board, r, c) {
+    const used = new Set();
+    for (let i = 0; i < 9; i++) { used.add(board[r][i]); used.add(board[i][c]); }
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for (let i=0; i<3; i++) for (let j=0; j<3; j++) used.add(board[br+i][bc+j]);
+    const res = [];
+    for (let n=1; n<=9; n++) if (!used.has(n)) res.push(n);
+    return res;
+}
+
+function findBestCell(board) {
+    let best = null, minCount = 10;
+    for (let r=0; r<9; r++) {
+        for (let c=0; c<9; c++) {
+            if (board[r][c] === 0) {
+                const candidates = getCandidates(board, r, c);
+                if (candidates.length === 0) return { r, c, candidates: [], fail: true };
+                if (candidates.length < minCount) {
+                    minCount = candidates.length;
+                    best = { r, c, candidates };
+                    if (minCount === 1) return best;
+                }
+            }
+        }
+    }
+    return best;
+}
+
+function solve(board) {
+    const cell = findBestCell(board);
+    if (!cell) return true;
+    if (cell.fail) return false;
+    for (let n of cell.candidates) {
+        board[cell.r][cell.c] = n;
+        if (solve(board)) return true;
+        board[cell.r][cell.c] = 0;
+    }
+    return false;
+}
+
+// --- INPUTS ---
+function setupInputs() {
+    window.addEventListener('keydown', (e) => {
+        if (e.key >= '1' && e.key <= '9') {
+            triggerVisualFeedback(e.key);
+            handleInput(parseInt(e.key));
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+            eraseCell();
+        }
+    });
+}
+
+function triggerVisualFeedback(key) {
+    const btn = document.querySelector(`.keypad-btn[data-key="${key}"]`);
+    if (btn) {
+        btn.classList.add('keyboard-active');
+        setTimeout(() => btn.classList.remove('keyboard-active'), 150);
+    }
+}
+
+function selectCell(r, c) {
+    selectedCell = { r, c };
+    render();
+}
+
+function updateEditButtonState() {
+    const btn = document.getElementById('edit-mode-btn');
+    const isEmpty = grid.every(row => row.every(cell => cell === 0));
+    btn.disabled = !isEmpty;
+    
+    if (!isEmpty && !editMode) {
+        btn.title = "Clear board first to enter Edit Mode";
+    }
+}
+
+// --- GAME LOGIC ---
+function toggleEditMode() {
+    const isEmpty = grid.every(row => row.every(cell => cell === 0));
+    
+    editMode = !editMode;
+    
+    const btn = document.getElementById('edit-mode-btn');
+    const exitBtn = document.getElementById('exit-edit-btn');
+    const standardControls = document.getElementById('standard-controls');
+    const status = document.getElementById('status-text');
+    
+    if (editMode) {
+        btn.classList.add('active-mode');
+        exitBtn.classList.remove('hidden');
+        standardControls.classList.add('hidden');
+        status.innerText = "Edit/Input Mode";
+        status.classList.replace('text-slate-400', 'text-blue-500');
+        stopTimer();
+    } else {
+        // Exiting Edit Mode - Start Playing
+        btn.classList.remove('active-mode');
+        exitBtn.classList.add('hidden');
+        standardControls.classList.remove('hidden');
+        status.innerText = "Play Mode";
+        status.classList.replace('text-blue-500', 'text-slate-400');
+        
+        // Set current grid as initial state and generate solution
+        initialGrid = JSON.parse(JSON.stringify(grid));
+        
+        // Generate solution for the puzzle
+        const tempGrid = JSON.parse(JSON.stringify(grid));
+        if (solve(tempGrid)) {
+            solutionGrid = tempGrid;
+        } else {
+            showMsg("⚠️ No valid solution exists for this puzzle!");
+            solutionGrid = null;
+        }
+        
+        // Reset game state
+        mistakes = 0;
+        moves = 0;
+        timeSeconds = 0;
+        updateMistakesDisplay();
+        
+        startTimer();
+    }
+    render();
+}
+
+function handleSolveNow() {
+    for (let r=0; r<9; r++) {
+        for (let c=0; c<9; c++) {
+            if (grid[r][c] !== 0 && isConflicting(r, c, grid[r][c])) {
+                showMsg("Fix Conflicts First!"); return;
+            }
+        }
+    }
+    const board = JSON.parse(JSON.stringify(grid));
+    if (solve(board)) {
+        stopTimer();
+        grid = board;
+        render();
+        celebrate();
+        showMsg("Solved! 🎊");
+    } else {
+        showMsg("No Solution Exists!");
+    }
+}
+
+function newGame() {
+    editMode = false;
+    isPaused = false;
+    mistakes = 0;
+    document.getElementById('pause-overlay').classList.add('hidden');
+    document.getElementById('edit-mode-btn').classList.remove('active-mode');
+    document.getElementById('exit-edit-btn').classList.add('hidden');
+    document.getElementById('standard-controls').classList.remove('hidden');
+    document.getElementById('status-text').innerText = "Play Mode";
+    updateMistakesDisplay();
+
+    const holes = { 'Easy': 34, 'Medium': 46, 'Hard': 56 }[document.getElementById('difficulty-select').value];
+    const full = Array(9).fill().map(() => Array(9).fill(0));
+    const solveRand = (b) => {
+        const cell = findBestCell(b);
+        if (!cell) return true;
+        const nums = cell.candidates.sort(() => Math.random() - 0.5);
+        for (let n of nums) { b[cell.r][cell.c] = n; if (solveRand(b)) return true; b[cell.r][cell.c] = 0; }
+        return false;
+    };
+    solveRand(full);
+    solutionGrid = JSON.parse(JSON.stringify(full));
+
+    const puzzle = JSON.parse(JSON.stringify(full));
+    const cells = [];
+    for (let r=0; r<9; r++) for (let c=0; c<9; c++) cells.push({r,c});
+    cells.sort(() => Math.random() - 0.5);
+    for (let i=0; i < holes; i++) { puzzle[cells[i].r][cells[i].c] = 0; }
+
+    grid = JSON.parse(JSON.stringify(puzzle));
+    initialGrid = JSON.parse(JSON.stringify(puzzle));
+    notes = Array(9).fill().map(() => Array(9).fill().map(() => new Set()));
+    history = []; moves = 0; timeSeconds = 0;
+    document.getElementById('victory-overlay').classList.add('hidden');
+    
+    updateEditButtonState();
+    render();
+    startTimer();
+}
+
+function render() {
+    const cells = document.querySelectorAll('.cell');
+    const selVal = grid[selectedCell.r][selectedCell.c];
+    
+    cells.forEach(el => {
+        const r = +el.dataset.r, c = +el.dataset.c, val = grid[r][c];
+        el.className = 'cell';
+        el.innerHTML = '';
+        
+        if (editMode) el.classList.add('is-edit-mode');
+        if (r === selectedCell.r && c === selectedCell.c) el.classList.add('selected');
+        else if (r === selectedCell.r || c === selectedCell.c || (Math.floor(r/3) === Math.floor(selectedCell.r/3) && Math.floor(c/3) === Math.floor(selectedCell.c/3))) {
+            el.classList.add('highlight-axis');
+        }
+        if (val !== 0 && val === selVal && (r !== selectedCell.r || c !== selectedCell.c)) el.classList.add('same-number');
+
+        if (val !== 0) {
+            el.innerText = val;
+            if (initialGrid[r][c] !== 0) el.classList.add('readonly');
+            if (isConflicting(r,c,val)) el.classList.add('conflict');
+        } else {
+            const s = notes[r][c];
+            if (s.size > 0) {
+                const ng = document.createElement('div'); ng.className = 'notes-grid';
+                for (let n=1; n<=9; n++) {
+                    const nd = document.createElement('div'); nd.className = 'note';
+                    nd.innerText = s.has(n) ? n : ''; ng.appendChild(nd);
+                }
+                el.appendChild(ng);
+            }
+        }
+    });
+}
+
+function handleInput(num) {
+    if (!editMode && initialGrid[selectedCell.r][selectedCell.c] !== 0) return;
+    if (isPaused) return;
+    
+    if (notesMode && !editMode) {
+        const s = notes[selectedCell.r][selectedCell.c];
+        s.has(num) ? s.delete(num) : s.add(num);
+    } else {
+        saveHistory();
+        const oldVal = grid[selectedCell.r][selectedCell.c];
+        grid[selectedCell.r][selectedCell.c] = (grid[selectedCell.r][selectedCell.c] === num) ? 0 : num;
+        
+        if (editMode) {
+            // Edit mode - just place numbers, no mistake checking
+            initialGrid[selectedCell.r][selectedCell.c] = grid[selectedCell.r][selectedCell.c];
+            updateEditButtonState();
+        } else {
+            // Play mode - check for mistakes
+            moves++;
+            if (grid[selectedCell.r][selectedCell.c] !== 0 && solutionGrid) {
+                if (solutionGrid[selectedCell.r][selectedCell.c] !== grid[selectedCell.r][selectedCell.c]) {
+                    mistakes++;
+                    updateMistakesDisplay();
+                    showMsg("❌ Wrong number! Mistake counted.");
+                    // Don't end game, just count the mistake
+                }
+            }
+            checkWin();
+        }
+    }
+    render();
+}
+
+function isConflicting(r, c, val) {
+    for (let i=0; i<9; i++) {
+        if (i!==c && grid[r][i] === val) return true;
+        if (i!==r && grid[i][c] === val) return true;
+    }
+    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    for (let i=0; i<3; i++) for (let j=0; j<3; j++) if ((br+i !== r || bc+j !== c) && grid[br+i][bc+j] === val) return true;
+    return false;
+}
+
+function checkWin() {
+    for (let r=0; r<9; r++) for (let c=0; c<9; c++) if (grid[r][c] === 0 || isConflicting(r,c,grid[r][c])) return;
+    stopTimer();
+    document.getElementById('victory-stats').innerText = `Time: ${formatTime(timeSeconds)} | Moves: ${moves}`;
+    document.getElementById('victory-overlay').classList.remove('hidden');
+    celebrate();
+}
+
+function showMsg(msg) {
+    const s = document.getElementById('status-text');
+    const old = s.innerText; s.innerText = msg; s.classList.add('text-blue-600');
+    setTimeout(() => { s.innerText = old; s.classList.remove('text-blue-600'); }, 3000);
+}
+
+function startTimer() { 
+    if (timerInterval) clearInterval(timerInterval); 
+    timerInterval = setInterval(() => { 
+        timeSeconds++; 
+        document.getElementById('timer').innerText = formatTime(timeSeconds); 
+    }, 1000); 
+}
+
+function stopTimer() { clearInterval(timerInterval); }
+
+function formatTime(s) { 
+    return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; 
+}
+
+function toggleNotes() { 
+    notesMode = !notesMode; 
+    document.getElementById('notes-indicator').classList.toggle('bg-blue-500'); 
+}
+
+function eraseCell() { 
+    if (editMode || initialGrid[selectedCell.r][selectedCell.c] === 0) { 
+        saveHistory(); 
+        grid[selectedCell.r][selectedCell.c] = 0; 
+        if (editMode) initialGrid[selectedCell.r][selectedCell.c] = 0; 
+        notes[selectedCell.r][selectedCell.c].clear(); 
+        updateEditButtonState();
+        render(); 
+    } 
+}
+
+function undo() { 
+    if (history.length > 0) { 
+        const s = history.pop(); 
+        grid = JSON.parse(s.grid); 
+        initialGrid = JSON.parse(s.init); 
+        notes = s.notes.map(r => r.map(v => new Set(v)));
+        updateEditButtonState();
+        render(); 
+    } 
+}
+
+function saveHistory() { 
+    history.push({ 
+        grid: JSON.stringify(grid), 
+        init: JSON.stringify(initialGrid),
+        notes: notes.map(row => row.map(s => Array.from(s)))
+    }); 
+    if (history.length > 50) history.shift(); 
+}
+
+function clearBoard() { 
+    stopTimer(); 
+    grid = Array(9).fill().map(() => Array(9).fill(0)); 
+    initialGrid = Array(9).fill().map(() => Array(9).fill(0)); 
+    notes = Array(9).fill().map(() => Array(9).fill().map(() => new Set())); 
+    history = []; moves = 0; timeSeconds = 0; mistakes = 0; isPaused = false;
+    document.getElementById('timer').innerText = "00:00";
+    document.getElementById('pause-overlay').classList.add('hidden');
+    updateMistakesDisplay();
+    
+    editMode = false;
+    document.getElementById('exit-edit-btn').classList.add('hidden');
+    document.getElementById('standard-controls').classList.remove('hidden');
+    
+    updateEditButtonState();
+    render(); 
+}
+
+// NEW IMPROVEMENT FUNCTIONS
+
+function updateMistakesDisplay() {
+    const display = document.getElementById('mistakes-display');
+    display.innerText = `❌ ${mistakes}/${maxMistakes}`;
+    if (mistakes >= 2) {
+        display.classList.add('text-red-600');
+    } else {
+        display.classList.remove('text-red-600');
+    }
+}
+
+function gameOver() {
+    stopTimer();
+    showMsg("Game Over! Too Many Mistakes 😢");
+    setTimeout(() => {
+        if (confirm("Game Over! You made 3 mistakes. Start a new game?")) {
+            newGame();
+        }
+    }, 500);
+}
+
+function togglePause() {
+    if (editMode) return;
+    isPaused = !isPaused;
+    const overlay = document.getElementById('pause-overlay');
+    const pauseBtn = document.getElementById('pause-btn');
+    
+    if (isPaused) {
+        stopTimer();
+        overlay.classList.remove('hidden');
+        pauseBtn.classList.add('text-orange-600');
+    } else {
+        startTimer();
+        overlay.classList.add('hidden');
+        pauseBtn.classList.remove('text-orange-600');
+    }
+}
+
+function confirmClearBoard() {
+    document.getElementById('confirm-dialog').classList.remove('hidden');
+}
+
+function hideConfirmDialog() {
+    document.getElementById('confirm-dialog').classList.add('hidden');
+}
+
+function confirmClear() {
+    hideConfirmDialog();
+    clearBoard();
+}
+
+function getHint() {
+    if (isPaused || editMode) return;
+    if (!solutionGrid) {
+        showMsg("No solution available!");
+        return;
+    }
+
+    const emptyCells = [];
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            if (grid[r][c] === 0) {
+                emptyCells.push({ r, c });
+            }
+        }
+    }
+
+    if (emptyCells.length === 0) {
+        showMsg("No empty cells!");
+        return;
+    }
+
+    const singleCandidateCells = [];
+    for (let cell of emptyCells) {
+        const candidates = getCandidates(grid, cell.r, cell.c);
+        if (candidates.length === 1) {
+            singleCandidateCells.push(cell);
+        }
+    }
+
+    let targetCell;
+    if (singleCandidateCells.length > 0) {
+        targetCell = singleCandidateCells[Math.floor(Math.random() * singleCandidateCells.length)];
+    } else {
+        showMsg("No logical hints available!");
+        return;
+    }
+
+    saveHistory();
+    grid[targetCell.r][targetCell.c] = solutionGrid[targetCell.r][targetCell.c];
+    selectedCell = { r: targetCell.r, c: targetCell.c };
+    moves++;
+    
+    showMsg("💡 Hint: Placed a logical number!");
+    render();
+    checkWin();
+}
+
+function showSaveLoadMenu() {
+    updateSavedGamesList();
+    document.getElementById('saveload-menu').classList.remove('hidden');
+}
+
+function hideSaveLoadMenu() {
+    document.getElementById('saveload-menu').classList.add('hidden');
+}
+
+function saveCurrentGame() {
+    const gameState = {
+        grid: grid,
+        initialGrid: initialGrid,
+        solutionGrid: solutionGrid,
+        notes: notes.map(row => row.map(s => Array.from(s))),
+        moves: moves,
+        timeSeconds: timeSeconds,
+        mistakes: mistakes,
+        difficulty: document.getElementById('difficulty-select').value,
+        timestamp: Date.now()
+    };
+
+    let savedGames = JSON.parse(localStorage.getItem('sudokuSaves') || '[]');
+    savedGames.unshift(gameState);
+    
+    if (savedGames.length > 5) {
+        savedGames = savedGames.slice(0, 5);
+    }
+    
+    localStorage.setItem('sudokuSaves', JSON.stringify(savedGames));
+    showMsg("💾 Game Saved!");
+    updateSavedGamesList();
+}
+
+function loadGame(index) {
+    const savedGames = JSON.parse(localStorage.getItem('sudokuSaves') || '[]');
+    if (index >= savedGames.length) return;
+    
+    const gameState = savedGames[index];
+    grid = gameState.grid;
+    initialGrid = gameState.initialGrid;
+    solutionGrid = gameState.solutionGrid;
+    notes = gameState.notes.map(row => row.map(arr => new Set(arr)));
+    moves = gameState.moves;
+    timeSeconds = gameState.timeSeconds;
+    mistakes = gameState.mistakes;
+    document.getElementById('difficulty-select').value = gameState.difficulty;
+    
+    isPaused = false;
+    editMode = false;
+    document.getElementById('pause-overlay').classList.add('hidden');
+    document.getElementById('timer').innerText = formatTime(timeSeconds);
+    updateMistakesDisplay();
+    updateEditButtonState();
+    
+    hideSaveLoadMenu();
+    render();
+    startTimer();
+    showMsg("📂 Game Loaded!");
+}
+
+function deleteSave(index) {
+    let savedGames = JSON.parse(localStorage.getItem('sudokuSaves') || '[]');
+    savedGames.splice(index, 1);
+    localStorage.setItem('sudokuSaves', JSON.stringify(savedGames));
+    updateSavedGamesList();
+    showMsg("🗑️ Save Deleted!");
+}
+
+function updateSavedGamesList() {
+    const savedGames = JSON.parse(localStorage.getItem('sudokuSaves') || '[]');
+    const container = document.getElementById('saved-games-list');
+    
+    if (savedGames.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No saved games</p>';
+        return;
+    }
+    
+    container.innerHTML = savedGames.map((save, index) => {
+        const date = new Date(save.timestamp);
+        const timeStr = formatTime(save.timeSeconds);
+        return `
+            <div class="bg-slate-50 p-3 rounded-xl flex justify-between items-center">
+                <div class="flex-1">
+                    <div class="font-bold text-slate-700">${save.difficulty} - ${timeStr}</div>
+                    <div class="text-xs text-slate-500">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
+                    <div class="text-xs text-slate-500">Moves: ${save.moves} | Mistakes: ${save.mistakes}</div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="loadGame(${index})" class="px-3 py-2 bg-blue-600 text-white text-xs rounded-lg font-bold hover:bg-blue-700 active:scale-95 transition">Load</button>
+                    <button onclick="deleteSave(${index})" class="px-3 py-2 bg-red-500 text-white text-xs rounded-lg font-bold hover:bg-red-600 active:scale-95 transition">Del</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// INITIALIZATION
+window.onload = () => {
+    const g = document.getElementById('grid');
+    for (let r=0; r<9; r++) for (let c=0; c<9; c++) {
+        const d = document.createElement('div'); 
+        d.className = 'cell'; 
+        d.dataset.r = r; 
+        d.dataset.c = c;
+        d.onclick = () => selectCell(r, c); 
+        g.appendChild(d);
+    }
+    setupInputs();
+    newGame();
+};
+</script>
+</body>
+</html>
