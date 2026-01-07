@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sudoku Zen Pro - Enhanced Edition</title>
+    <title>Sudoku Zen Pro - Infinite Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -111,12 +111,10 @@
         
         .active-mode { border-color: #3b82f6 !important; color: #3b82f6 !important; background: #eff6ff !important; }
         
-        #edit-mode-btn:disabled {
-            opacity: 0.25;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
+        #edit-mode-btn:disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
 
+        /* Utilities */
+        .hidden { display: none !important; }
         .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
@@ -124,40 +122,38 @@
 <body>
 
     <div class="app-container">
-        <!-- Header -->
-        <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+        <div class="p-5 bg-slate-900 text-white flex justify-between items-center h-24">
             <div class="flex flex-col">
                 <span class="text-[10px] text-blue-400 font-bold tracking-widest uppercase">Akshay Solanki's</span>
                 <h1 class="text-2xl font-black italic tracking-tighter">ZEN SUDOKU PRO</h1>
             </div>
-            <div class="text-right">
+            
+            <div id="game-stats" class="text-right">
                 <div id="timer" class="text-2xl font-mono font-bold text-blue-100">00:00</div>
                 <div class="flex items-center justify-end gap-3 mt-1">
-                    <div id="mistakes-display" class="text-[10px] text-red-400 font-black tracking-widest">❌ 0/3</div>
+                    <div id="mistakes-display" class="text-[10px] text-red-400 font-black tracking-widest">❌ 0</div>
                     <div id="status-text" class="text-[9px] text-slate-400 uppercase font-black tracking-widest">Play Mode</div>
                 </div>
             </div>
+
+            <div id="start-playing-container" class="hidden">
+                 <button onclick="toggleEditMode()" class="bg-green-500 hover:bg-green-600 text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg active:scale-95 transition flex items-center gap-2 animate-pop">
+                    <span>▶️</span> Start Playing
+                </button>
+            </div>
         </div>
 
-        <!-- Controls -->
         <div class="px-5 py-4 bg-slate-50 border-b flex justify-between items-center gap-2">
-            <div class="flex gap-2 items-center">
-                <!-- Transition Button: Only shows during Edit Mode to exit it -->
-                <button id="exit-edit-btn" onclick="toggleEditMode()" class="hidden text-[10px] bg-green-600 text-white px-3 py-2 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
-                    Start Playing
-                </button>
-                
-                <div id="standard-controls" class="flex gap-2">
-                    <select id="difficulty-select" class="text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl font-bold shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Easy">Easy</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
-                    <button onclick="newGame()" class="text-xs bg-blue-600 text-white px-5 py-2 rounded-xl font-black uppercase hover:bg-blue-700 shadow-lg active:scale-95 transition">New</button>
-                    <button onclick="showSaveLoadMenu()" title="Save/Load Game" class="text-xs bg-emerald-600 text-white px-4 py-2 rounded-xl font-black uppercase hover:bg-emerald-700 shadow-lg active:scale-95 transition">💾</button>
-                </div>
+            <div id="left-controls" class="flex gap-2 items-center">
+                <select id="difficulty-select" class="text-xs bg-white border border-slate-200 px-3 py-2 rounded-xl font-bold shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+                <button onclick="newGame()" class="text-xs bg-blue-600 text-white px-5 py-2 rounded-xl font-black uppercase hover:bg-blue-700 shadow-lg active:scale-95 transition">New</button>
+                <button onclick="showSaveLoadMenu()" title="Save/Load Game" class="text-xs bg-emerald-600 text-white px-4 py-2 rounded-xl font-black uppercase hover:bg-emerald-700 shadow-lg active:scale-95 transition">💾</button>
             </div>
+
             <div class="flex gap-1">
                 <button onclick="togglePause()" id="pause-btn" title="Pause Game" class="p-2.5 text-slate-500 hover:text-orange-600 border border-transparent rounded-xl transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -187,12 +183,10 @@
             </div>
         </div>
 
-        <!-- Grid Container -->
         <div class="grid-wrapper">
             <div id="grid" class="sudoku-grid shadow-2xl"></div>
         </div>
 
-        <!-- Keypad -->
         <div class="p-6 bg-slate-50 border-t">
             <div class="flex justify-between items-center mb-5 px-1">
                 <button id="notes-toggle" onclick="toggleNotes()" class="flex items-center gap-3 px-5 py-3 bg-white border rounded-2xl text-[11px] font-black uppercase text-slate-500 shadow-sm transition">
@@ -212,7 +206,7 @@
                 <button onclick="handleInput(7)" class="keypad-btn" data-key="7">7</button>
                 <button onclick="handleInput(8)" class="keypad-btn" data-key="8">8</button>
                 <button onclick="handleInput(9)" class="keypad-btn" data-key="9">9</button>
-                <button onclick="handleSolveNow()" class="keypad-btn bg-slate-900 text-blue-400 border-none flex flex-col items-center justify-center leading-none">
+                <button id="auto-solve-btn" onclick="handleSolveNow()" class="keypad-btn bg-slate-900 text-blue-400 border-none flex flex-col items-center justify-center leading-none">
                     <span class="text-[8px] opacity-60 mb-1">AUTO</span>
                     <span class="text-xs">SOLVE</span>
                 </button>
@@ -220,7 +214,6 @@
         </div>
     </div>
 
-    <!-- Victory Overlay -->
     <div id="victory-overlay" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex flex-col items-center justify-center text-center p-6">
         <div class="bg-white p-12 rounded-[3.5rem] shadow-2xl animate-pop max-w-sm w-full">
             <div class="text-7xl mb-6">🎊</div>
@@ -230,7 +223,6 @@
         </div>
     </div>
 
-    <!-- Pause Overlay -->
     <div id="pause-overlay" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg z-50 flex flex-col items-center justify-center text-center p-6">
         <div class="bg-white p-12 rounded-[3.5rem] shadow-2xl max-w-sm w-full">
             <div class="text-6xl mb-6">⏸️</div>
@@ -240,7 +232,6 @@
         </div>
     </div>
 
-    <!-- Confirmation Dialog -->
     <div id="confirm-dialog" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
         <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-pop">
             <div class="text-5xl mb-4 text-center">⚠️</div>
@@ -253,7 +244,6 @@
         </div>
     </div>
 
-    <!-- Save/Load Menu -->
     <div id="saveload-menu" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
         <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full animate-pop max-h-[80vh] overflow-y-auto">
             <h3 class="text-2xl font-black text-slate-900 mb-6 text-center">💾 Save & Load</h3>
@@ -265,8 +255,7 @@
             <div class="mb-4">
                 <h4 class="text-sm font-bold text-slate-600 mb-3 uppercase tracking-wide">Saved Games (Max 5)</h4>
                 <div id="saved-games-list" class="space-y-2">
-                    <!-- Dynamically populated -->
-                </div>
+                    </div>
             </div>
 
             <button onclick="hideSaveLoadMenu()" class="w-full py-3 bg-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-300 active:scale-95 transition mt-4">Close</button>
@@ -275,7 +264,7 @@
 
 <script>
 /**
- * SUDOKU ZEN PRO - ENHANCED EDITION WITH ALL IMPROVEMENTS
+ * SUDOKU ZEN PRO - INFINITE EDITION - STRICT
  */
 
 let grid = [];
@@ -290,7 +279,6 @@ let moves = 0;
 let timeSeconds = 0;
 let timerInterval = null;
 let mistakes = 0;
-let maxMistakes = 3;
 let isPaused = false;
 
 function celebrate() {
@@ -389,44 +377,73 @@ function toggleEditMode() {
     
     editMode = !editMode;
     
+    // UI Elements
     const btn = document.getElementById('edit-mode-btn');
-    const exitBtn = document.getElementById('exit-edit-btn');
-    const standardControls = document.getElementById('standard-controls');
-    const status = document.getElementById('status-text');
+    const startPlayingContainer = document.getElementById('start-playing-container');
+    const gameStats = document.getElementById('game-stats');
+    const leftControls = document.getElementById('left-controls');
+    
+    // Elements to hide in Edit Mode
+    const notesBtn = document.getElementById('notes-toggle');
+    const solveBtn = document.getElementById('auto-solve-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const hintBtn = document.getElementById('hint-btn');
     
     if (editMode) {
+        // Entering Edit Mode
         btn.classList.add('active-mode');
-        exitBtn.classList.remove('hidden');
-        standardControls.classList.add('hidden');
-        status.innerText = "Edit/Input Mode";
-        status.classList.replace('text-slate-400', 'text-blue-500');
+        
+        // Hide Stats (including mistake counter)
+        gameStats.classList.add('hidden'); 
+        // Show Start Playing Button
+        startPlayingContainer.classList.remove('hidden');
+        
+        // Hide standard controls to reduce clutter
+        leftControls.classList.add('hidden');
+        
+        // Hide Play Mode Tools
+        notesBtn.classList.add('hidden');
+        solveBtn.classList.add('hidden');
+        pauseBtn.classList.add('hidden');
+        hintBtn.classList.add('hidden');
+        
         stopTimer();
     } else {
-        // Exiting Edit Mode - Start Playing
+        // Exiting Edit Mode -> Start Playing
         btn.classList.remove('active-mode');
-        exitBtn.classList.add('hidden');
-        standardControls.classList.remove('hidden');
-        status.innerText = "Play Mode";
-        status.classList.replace('text-blue-500', 'text-slate-400');
         
-        // Set current grid as initial state and generate solution
+        // Show Stats
+        gameStats.classList.remove('hidden');
+        // Hide Start Playing Button
+        startPlayingContainer.classList.add('hidden');
+        
+        // Show standard controls
+        leftControls.classList.remove('hidden');
+        
+        // Show Play Mode Tools
+        notesBtn.classList.remove('hidden');
+        solveBtn.classList.remove('hidden');
+        pauseBtn.classList.remove('hidden');
+        hintBtn.classList.remove('hidden');
+        
+        // Set current grid as initial state
         initialGrid = JSON.parse(JSON.stringify(grid));
         
-        // Generate solution for the puzzle
+        // Generate solution
         const tempGrid = JSON.parse(JSON.stringify(grid));
         if (solve(tempGrid)) {
             solutionGrid = tempGrid;
+            showMsg("Game Started! 🎮");
         } else {
-            showMsg("⚠️ No valid solution exists for this puzzle!");
+            showMsg("⚠️ No valid solution!");
             solutionGrid = null;
         }
         
-        // Reset game state
+        // Reset Game Data
         mistakes = 0;
         moves = 0;
         timeSeconds = 0;
-        updateMistakesDisplay();
-        
+        updateMistakesDisplay(); // Reset counter to 0
         startTimer();
     }
     render();
@@ -456,11 +473,21 @@ function newGame() {
     editMode = false;
     isPaused = false;
     mistakes = 0;
+    
+    // Reset UI to Play Mode
     document.getElementById('pause-overlay').classList.add('hidden');
     document.getElementById('edit-mode-btn').classList.remove('active-mode');
-    document.getElementById('exit-edit-btn').classList.add('hidden');
-    document.getElementById('standard-controls').classList.remove('hidden');
+    document.getElementById('start-playing-container').classList.add('hidden');
+    document.getElementById('game-stats').classList.remove('hidden');
+    document.getElementById('left-controls').classList.remove('hidden');
     document.getElementById('status-text').innerText = "Play Mode";
+    
+    // Ensure Play Mode buttons are visible
+    document.getElementById('notes-toggle').classList.remove('hidden');
+    document.getElementById('auto-solve-btn').classList.remove('hidden');
+    document.getElementById('pause-btn').classList.remove('hidden');
+    document.getElementById('hint-btn').classList.remove('hidden');
+    
     updateMistakesDisplay();
 
     const holes = { 'Easy': 34, 'Medium': 46, 'Hard': 56 }[document.getElementById('difficulty-select').value];
@@ -539,18 +566,17 @@ function handleInput(num) {
         grid[selectedCell.r][selectedCell.c] = (grid[selectedCell.r][selectedCell.c] === num) ? 0 : num;
         
         if (editMode) {
-            // Edit mode - just place numbers, no mistake checking
+            // Edit mode - just place numbers
             initialGrid[selectedCell.r][selectedCell.c] = grid[selectedCell.r][selectedCell.c];
             updateEditButtonState();
         } else {
-            // Play mode - check for mistakes
+            // Play mode - check for mistakes WITHOUT Game Over
             moves++;
             if (grid[selectedCell.r][selectedCell.c] !== 0 && solutionGrid) {
                 if (solutionGrid[selectedCell.r][selectedCell.c] !== grid[selectedCell.r][selectedCell.c]) {
                     mistakes++;
                     updateMistakesDisplay();
-                    showMsg("❌ Wrong number! Mistake counted.");
-                    // Don't end game, just count the mistake
+                    showMsg("❌ Wrong number!");
                 }
             }
             checkWin();
@@ -572,7 +598,7 @@ function isConflicting(r, c, val) {
 function checkWin() {
     for (let r=0; r<9; r++) for (let c=0; c<9; c++) if (grid[r][c] === 0 || isConflicting(r,c,grid[r][c])) return;
     stopTimer();
-    document.getElementById('victory-stats').innerText = `Time: ${formatTime(timeSeconds)} | Moves: ${moves}`;
+    document.getElementById('victory-stats').innerText = `Time: ${formatTime(timeSeconds)} | Moves: ${moves} | Mistakes: ${mistakes}`;
     document.getElementById('victory-overlay').classList.remove('hidden');
     celebrate();
 }
@@ -643,34 +669,34 @@ function clearBoard() {
     document.getElementById('pause-overlay').classList.add('hidden');
     updateMistakesDisplay();
     
-    editMode = false;
-    document.getElementById('exit-edit-btn').classList.add('hidden');
-    document.getElementById('standard-controls').classList.remove('hidden');
+    // FORCE EDIT MODE ON CLEAR
+    editMode = true; // Auto-enter edit mode
+    
+    // Manually trigger UI state for Edit Mode
+    document.getElementById('edit-mode-btn').classList.add('active-mode');
+    document.getElementById('game-stats').classList.add('hidden'); // Hide mistakes/timer
+    document.getElementById('start-playing-container').classList.remove('hidden'); // Show Green Button
+    document.getElementById('left-controls').classList.add('hidden'); // Hide New/Save buttons
+    document.getElementById('status-text').innerText = "Edit/Input Mode";
+    
+    // Hide Notes/Solve/Pause/Hint buttons manually here too
+    document.getElementById('notes-toggle').classList.add('hidden');
+    document.getElementById('auto-solve-btn').classList.add('hidden');
+    document.getElementById('pause-btn').classList.add('hidden');
+    document.getElementById('hint-btn').classList.add('hidden');
     
     updateEditButtonState();
     render(); 
 }
 
-// NEW IMPROVEMENT FUNCTIONS
-
 function updateMistakesDisplay() {
     const display = document.getElementById('mistakes-display');
-    display.innerText = `❌ ${mistakes}/${maxMistakes}`;
-    if (mistakes >= 2) {
+    display.innerText = `❌ ${mistakes}`;
+    if (mistakes > 0) {
         display.classList.add('text-red-600');
     } else {
         display.classList.remove('text-red-600');
     }
-}
-
-function gameOver() {
-    stopTimer();
-    showMsg("Game Over! Too Many Mistakes 😢");
-    setTimeout(() => {
-        if (confirm("Game Over! You made 3 mistakes. Start a new game?")) {
-            newGame();
-        }
-    }, 500);
 }
 
 function togglePause() {
