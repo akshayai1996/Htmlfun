@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Platinum</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --container-bg: #16213e;
+            --accent-color: #0f3460;
+            --highlight: #e94560;
+            --text-color: #ffffff;
+            --x-color: #4facfe;
+            --o-color: #f093fb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--highlight);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        .form-group.hidden { display: none; }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #bdc3c7;
+            font-size: 0.95rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid var(--accent-color);
+            background: var(--bg-color);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        select:focus { border-color: var(--highlight); }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: var(--highlight);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, opacity 0.2s;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: #ff5e78;
+        }
+        button:active { transform: scale(0.98); }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            box-shadow: none;
+            margin-top: 1rem;
+            color: #bdc3c7;
+        }
+        button.secondary:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-color: #bdc3c7;
+        }
+
+        /* Status & Board */
+        .status-bar {
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            min-height: 2rem;
+            color: #bdc3c7;
+            transition: color 0.3s;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 2rem;
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 15px;
+            transition: opacity 0.3s;
+        }
+
+        /* Interaction Blocker */
+        .board.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .cell {
+            background-color: var(--accent-color);
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        @media (hover: hover) {
+            .board:not(.disabled) .cell:hover:not(.taken) {
+                background-color: #163d6e;
+                transform: scale(1.02);
+            }
+        }
+
+        .cell.taken {
+            cursor: default;
+            background-color: #0d2b4f;
+        }
+
+        .cell.X { color: var(--x-color); text-shadow: 0 0 10px rgba(79, 172, 254, 0.4); }
+        .cell.O { color: var(--o-color); text-shadow: 0 0 10px rgba(240, 147, 251, 0.4); }
+
+        /* Modal */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(22, 33, 62, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none; 
+            transition: opacity 0.3s;
+            z-index: 100;
+            border-radius: 20px;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content h2 { font-size: 3rem; margin: 0 0 0.5rem 0; }
+        .modal-content p { font-size: 1.3rem; color: #bdc3c7; margin-bottom: 2.5rem; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Tic-Tac-Toe</h1>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen active">
+        <div class="form-group">
+            <label>Game Mode</label>
+            <select id="mode-select" onchange="updateSetupUI()">
+                <option value="pvc">1 Player (vs Computer)</option>
+                <option value="pvp">2 Players (Local)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Choose Marker (Player 1)</label>
+            <select id="marker-select">
+                <option value="X">Play as X (Blue)</option>
+                <option value="O">Play as O (Pink)</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="difficulty-group">
+            <label>Difficulty</label>
+            <select id="difficulty-select">
+                <option value="easy">Easy (You will win)</option>
+                <option value="medium">Medium (Balanced)</option>
+                <option value="hard">Hard (Unbeatable)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="starter-label">First Move</label>
+            <select id="starter-select">
+                <option value="P1">Player 1 Starts</option>
+                <option value="P2">Computer Starts</option>
+            </select>
+        </div>
+
+        <button id="start-btn" onclick="startGame(this)">Start Game</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <div class="status-bar" id="status-display">Player X's Turn</div>
+        <div class="board" id="board">
+            <!-- Cells generated by JS -->
+        </div>
+        <button class="secondary" onclick="backToMenu()">Back to Menu</button>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">Winner!</h2>
+            <p id="modal-msg">Game Over</p>
+            <button onclick="resetBoard()">Play Again</button>
+            <button class="secondary" onclick="backToMenu()">Main Menu</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Constants ---
+    const WIN_COMBOS = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+        [0, 4, 8], [2, 4, 6]             
+    ];
+    const SCORES = { win: 10, lose: -10, draw: 0 };
+
+    // --- State ---
+    let gameState = {
+        board: Array(9).fill(""),
+        isActive: false,
+        mode: 'pvc', 
+        p1Marker: 'X',
+        p2Marker: 'O',
+        currentPlayer: 'X',
+        difficulty: 'easy',
+        starter: 'P1'
+    };
+
+    // Bug Fix 2: Variable to hold the timer ID
+    let computerTimeoutID = null;
+
+    // --- DOM Elements ---
+    const screens = { setup: document.getElementById('setup-screen'), game: document.getElementById('game-screen') };
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status-display');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMsg = document.getElementById('modal-msg');
+
+    // --- Setup Logic ---
+
+    function updateSetupUI() {
+        const mode = document.getElementById('mode-select').value;
+        const diffGroup = document.getElementById('difficulty-group');
+        const starterSelect = document.getElementById('starter-select');
+        
+        if (mode === 'pvp') {
+            diffGroup.classList.add('hidden');
+            starterSelect.options[1].text = "Player 2 Starts";
+        } else {
+            diffGroup.classList.remove('hidden');
+            starterSelect.options[1].text = "Computer Starts";
+        }
+    }
+
+    function startGame(btnElement) {
+        // Bug Fix 3: Debounce - Disable button to prevent double clicks
+        btnElement.disabled = true;
+        setTimeout(() => btnElement.disabled = false, 1000);
+
+        gameState.mode = document.getElementById('mode-select').value;
+        gameState.p1Marker = document.getElementById('marker-select').value;
+        gameState.p2Marker = (gameState.p1Marker === 'X') ? 'O' : 'X';
+        gameState.starter = document.getElementById('starter-select').value;
+        gameState.difficulty = document.getElementById('difficulty-select').value;
+
+        switchScreen('game');
+        resetBoard();
+    }
+
+    function switchScreen(name) {
+        Object.values(screens).forEach(s => s.classList.remove('active'));
+        screens[name].classList.add('active');
+        modal.classList.remove('show');
+    }
+
+    function backToMenu() {
+        gameState.isActive = false;
+        // Bug Fix 2: Clear any pending AI move when leaving
+        if (computerTimeoutID) clearTimeout(computerTimeoutID);
+        switchScreen('setup');
+    }
+
+    function resetBoard() {
+        gameState.board.fill("");
+        gameState.isActive = true;
+        
+        if (gameState.starter === 'P1') {
+            gameState.currentPlayer = gameState.p1Marker;
+        } else {
+            gameState.currentPlayer = gameState.p2Marker;
+        }
+
+        modal.classList.remove('show');
+        renderBoard();
+        
+        updateStatus(); 
+        setBoardInteraction(true);
+
+        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) {
+            setBoardInteraction(false); 
+            // Bug Fix 2: Store the ID
+            computerTimeoutID = setTimeout(computerMove, 600);
+        }
+    }
+
+    // --- Game Logic ---
+
+    function setBoardInteraction(allowed) {
+        if (allowed) {
+            boardEl.classList.remove('disabled');
+        } else {
+            boardEl.classList.add('disabled');
+        }
+    }
+
+    function renderBoard() {
+        boardEl.innerHTML = '';
+        gameState.board.forEach((cell, index) => {
+            const btn = document.createElement('div');
+            btn.classList.add('cell');
+            if (cell) {
+                btn.classList.add('taken', cell);
+                btn.innerText = cell;
+            }
+            btn.onclick = () => handleCellClick(index);
+            boardEl.appendChild(btn);
+        });
+    }
+
+    function updateStatus() {
+        if (!gameState.isActive) return;
+
+        if (gameState.mode === 'pvp') {
+            const pNum = (gameState.currentPlayer === gameState.p1Marker) ? "1" : "2";
+            statusEl.innerText = `Player ${pNum}'s Turn (${gameState.currentPlayer})`;
+            // Bug Fix 4: Ensure color matches the CURRENT marker, not just Player Number
+            statusEl.style.color = (gameState.currentPlayer === 'X') ? "var(--x-color)" : "var(--o-color)";
+        } else {
+            if (gameState.currentPlayer === gameState.p1Marker) {
+                statusEl.innerText = "Your Turn";
+                statusEl.style.color = "#ffffff";
+                setBoardInteraction(true);
+            } else {
+                statusEl.innerText = "Computer Thinking...";
+                statusEl.style.color = "#bdc3c7";
+                setBoardInteraction(false);
+            }
+        }
+    }
+
+    function handleCellClick(index) {
+        if (!gameState.isActive || gameState.board[index] !== "") return;
+        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) return;
+
+        executeMove(index, gameState.currentPlayer);
+
+        if (checkGameEnd()) return;
+
+        gameState.currentPlayer = (gameState.currentPlayer === 'X') ? 'O' : 'X';
+        updateStatus();
+
+        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) {
+            computerTimeoutID = setTimeout(computerMove, 600);
+        }
+    }
+
+    function executeMove(index, marker) {
+        gameState.board[index] = marker;
+        renderBoard();
+    }
+
+    function checkGameEnd() {
+        const current = gameState.currentPlayer;
+        if (checkWinner(gameState.board, current)) {
+            endGame('win', current);
+            return true;
+        }
+        if (!gameState.board.includes("")) {
+            endGame('draw');
+            return true;
+        }
+        return false;
+    }
+
+    function endGame(result, winnerMarker) {
+        gameState.isActive = false;
+        
+        setTimeout(() => {
+            modalTitle.style.color = "#ffffff"; 
+            
+            if (result === 'draw') {
+                modalTitle.innerText = "It's a Draw";
+                modalMsg.innerText = "No one wins this time.";
+            } else {
+                modalTitle.style.color = (winnerMarker === 'X') ? "var(--x-color)" : "var(--o-color)";
+                
+                if (gameState.mode === 'pvp') {
+                    const pNum = (winnerMarker === gameState.p1Marker) ? "1" : "2";
+                    modalTitle.innerText = `Player ${pNum} Wins!`;
+                    modalMsg.innerText = `Victory for ${winnerMarker}`;
+                } else {
+                    if (winnerMarker === gameState.p1Marker) {
+                        modalTitle.innerText = "You Won!";
+                        modalMsg.innerText = "Great job beating the AI.";
+                    } else {
+                        modalTitle.innerText = "You Lost";
+                        modalMsg.innerText = "Better luck next time.";
+                    }
+                }
+            }
+            modal.classList.add('show');
+        }, 500);
+    }
+
+    // --- AI System ---
+
+    function computerMove() {
+        if (!gameState.isActive) return;
+
+        let moveIndex;
+
+        if (gameState.difficulty === 'easy') {
+            moveIndex = findLosingMove();
+        } else if (gameState.difficulty === 'medium') {
+            moveIndex = (Math.random() < 0.4) ? findRandomMove() : findOptimalMove();
+        } else {
+            moveIndex = findOptimalMove();
+        }
+
+        if (moveIndex === -1 || gameState.board[moveIndex] !== "") {
+            moveIndex = findRandomMove();
+        }
+
+        executeMove(moveIndex, gameState.p2Marker);
+
+        if (checkGameEnd()) return;
+
+        gameState.currentPlayer = gameState.p1Marker;
+        updateStatus();
+    }
+
+    function checkWinner(board, player) {
+        return WIN_COMBOS.some(combo => combo.every(idx => board[idx] === player));
+    }
+
+    function findRandomMove() {
+        let available = gameState.board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+        if (available.length === 0) return -1;
+        return available[Math.floor(Math.random() * available.length)];
+    }
+
+    // Bug Fix 1: "Active Loser" Logic
+    function findLosingMove() {
+        let available = gameState.board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+        
+        // 1. Identify moves that create a win for AI (Avoid these if possible)
+        let nonWinningMoves = available.filter(index => {
+            gameState.board[index] = gameState.p2Marker;
+            let wins = checkWinner(gameState.board, gameState.p2Marker);
+            gameState.board[index] = "";
+            return !wins;
+        });
+
+        // If all moves win, we are forced to win (rare)
+        if (nonWinningMoves.length === 0) return findRandomMove();
+
+        // 2. From non-winning moves, try to avoid blocking the player's win
+        // Logic: If Player has a winning spot, DO NOT take it (unless AI has to).
+        let friendlyMoves = nonWinningMoves.filter(index => {
+            gameState.board[index] = gameState.p1Marker; // Pretend it's player
+            let playerWins = checkWinner(gameState.board, gameState.p1Marker);
+            gameState.board[index] = "";
+            // If playerWins is true, taking this spot BLOCKS them. We return false (filter it out).
+            return !playerWins;
+        });
+
+        // If we have moves that don't block the player, use them. 
+        // Note: If ALL moves block the player, we fall back to nonWinningMoves.
+        if (friendlyMoves.length > 0) {
+            return friendlyMoves[Math.floor(Math.random() * friendlyMoves.length)];
+        }
+
+        return nonWinningMoves[Math.floor(Math.random() * nonWinningMoves.length)];
+    }
+
+    // Minimax with Pruning (unchanged, as it was already optimal)
+    function findOptimalMove() {
+        let bestScore = -Infinity;
+        let move = -1;
+        
+        for (let i = 0; i < 9; i++) {
+            if (gameState.board[i] === "") {
+                gameState.board[i] = gameState.p2Marker;
+                let score = minimax(gameState.board, 0, false, -Infinity, Infinity);
+                gameState.board[i] = "";
+                if (score > bestScore) {
+                    bestScore = score;
+                    move = i;
+                }
+            }
+        }
+        return move;
+    }
+
+    function minimax(board, depth, isMaximizing, alpha, beta) {
+        if (checkWinner(board, gameState.p2Marker)) return SCORES.win - depth;
+        if (checkWinner(board, gameState.p1Marker)) return SCORES.lose + depth;
+        if (!board.includes("")) return SCORES.draw;
+
+        if (isMaximizing) {
+            let bestScore = -Infinity;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === "") {
+                    board[i] = gameState.p2Marker;
+                    let score = minimax(board, depth + 1, false, alpha, beta);
+                    board[i] = "";
+                    bestScore = Math.max(score, bestScore);
+                    alpha = Math.max(alpha, score);
+                    if (beta <= alpha) break; 
+                }
+            }
+            return bestScore;
+        } else {
+            let bestScore = Infinity;
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === "") {
+                    board[i] = gameState.p1Marker;
+                    let score = minimax(board, depth + 1, true, alpha, beta);
+                    board[i] = "";
+                    bestScore = Math.min(score, bestScore);
+                    beta = Math.min(beta, score);
+                    if (beta <= alpha) break; 
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    updateSetupUI();
+</script>
+
+</body>
+</html>
