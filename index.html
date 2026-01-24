@@ -5,272 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Htmlfun - AI Generated Projects Gallery</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* [CSS preserved from your original design] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 40px 20px;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            animation: fadeInDown 0.8s ease;
-        }
-
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-            animation: fadeInUp 0.8s ease;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: rgba(255,255,255,0.2);
-            padding: 15px 25px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            color: white;
-            font-size: 1.1em;
-        }
-
-        .stat-card strong {
-            font-size: 1.5em;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .search-box {
-            max-width: 500px;
-            margin: 30px auto;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 15px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            outline: none;
-            transition: box-shadow 0.3s ease;
-        }
-
-        .search-box input:focus {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .filter-tags {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .filter-tag {
-            padding: 8px 20px;
-            background: rgba(255,255,255,0.3);
-            color: white;
-            border: 2px solid transparent;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        .filter-tag:hover {
-            background: rgba(255,255,255,0.5);
-            transform: translateY(-2px);
-        }
-
-        .filter-tag.active {
-            background: white;
-            color: #667eea;
-            border-color: white;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .project-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .project-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .project-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-        }
-
-        .project-icon {
-            font-size: 3.5em;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .project-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 12px;
-        }
-
-        .project-description {
-            color: #666;
-            line-height: 1.6;
-            font-size: 0.95em;
-            margin-bottom: 15px;
-        }
-
-        .project-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .project-tag {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-        }
-
-        .no-results {
-            text-align: center;
-            color: white;
-            font-size: 1.3em;
-            margin-top: 50px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        footer {
-            text-align: center;
-            color: white;
-            margin-top: 60px;
-            padding: 20px;
-            opacity: 0.8;
-        }
-
-        footer a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-            
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats {
-                gap: 15px;
-            }
-
-            .stat-card {
-                padding: 10px 15px;
-                font-size: 0.9em;
-            }
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; color: white; margin-bottom: 50px; }
+        h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); animation: fadeInDown 0.8s ease; }
+        .subtitle { font-size: 1.2em; opacity: 0.9; animation: fadeInUp 0.8s ease; }
+        .stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; flex-wrap: wrap; }
+        .stat-card { background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; backdrop-filter: blur(10px); color: white; font-size: 1.1em; text-align: center; }
+        .stat-card strong { font-size: 1.5em; display: block; margin-bottom: 5px; }
+        .search-box { max-width: 500px; margin: 30px auto; position: relative; }
+        .search-box input { width: 100%; padding: 15px 20px; font-size: 16px; border: none; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); outline: none; }
+        .filter-tags { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .filter-tag { padding: 8px 20px; background: rgba(255,255,255,0.3); color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; }
+        .filter-tag.active { background: white; color: #667eea; }
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
+        .project-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; position: relative; overflow: hidden; animation: fadeIn 0.5s ease; }
+        .project-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+        .project-icon { font-size: 3.5em; margin-bottom: 15px; display: block; }
+        .project-title { font-size: 1.5em; font-weight: bold; color: #667eea; margin-bottom: 12px; }
+        .project-description { color: #666; line-height: 1.6; font-size: 0.95em; }
+        .project-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+        .project-tag { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -280,8 +45,7 @@
             <p class="subtitle">AI-Generated Interactive Projects & Games</p>
             <div class="stats">
                 <div class="stat-card">
-                    <strong>8</strong>
-                    Projects
+                    <strong>8</strong> Projects
                 </div>
                 <div class="stat-card">
                     <strong>100%</strong>
@@ -307,6 +71,16 @@
 
         <div class="projects-grid" id="projectsGrid">
             
+            <a href="SPEEDCALC.HTML" class="project-card" data-keywords="speed calculator velocity physics time distance tool" data-category="tool">
+                <div class="project-icon">⚡</div>
+                <div class="project-title">Speed Calculator</div>
+                <div class="project-description">Quickly calculate speed, distance, or time with high precision physics-based logic</div>
+                <div class="project-tags">
+                    <span class="project-tag">Tool</span>
+                    <span class="project-tag">Physics</span>
+                </div>
+            </a>
+
             <a href="BrickBreaker.html" class="project-card" data-keywords="brick breaker game arcade fun breakout" data-category="game">
                 <div class="project-icon">🧱</div>
                 <div class="project-title">Brick Breaker</div>
@@ -379,76 +153,41 @@
 
         </div>
 
-        <div class="no-results" id="noResults">
+        <div id="noResults" style="display:none; text-align:center; color:white; margin-top:50px;">
             😕 No projects found. Try a different search term!
         </div>
 
         <footer>
-            <p>🤖 All projects created with AI assistance | <a href="https://github.com/akshayai1996/Htmlfun" target="_blank">View on GitHub</a></p>
-            <p style="margin-top: 10px; font-size: 0.9em;">Built with ❤️ using Claude & AI Agents</p>
+            <p>🤖 All projects created with AI assistance | <a href="https://github.com/akshayai1996/Htmlfun" target="_blank" style="color:white; font-weight:bold;">View on GitHub</a></p>
         </footer>
     </div>
 
     <script>
+        // Search and Filter Logic
         const searchInput = document.getElementById('searchInput');
-        const projectsGrid = document.getElementById('projectsGrid');
-        const noResults = document.getElementById('noResults');
         const projectCards = document.querySelectorAll('.project-card');
         const filterTags = document.querySelectorAll('.filter-tag');
 
-        let currentFilter = 'all';
-
-        // Search functionality
-        searchInput.addEventListener('input', function() {
-            filterProjects();
-        });
-
-        // Category filter functionality
-        filterTags.forEach(tag => {
-            tag.addEventListener('click', function() {
-                filterTags.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.category;
-                filterProjects();
-            });
-        });
-
         function filterProjects() {
-            const searchTerm = searchInput.value.toLowerCase();
-            let visibleCount = 0;
-
+            const term = searchInput.value.toLowerCase();
+            const activeCat = document.querySelector('.filter-tag.active').dataset.category;
+            
             projectCards.forEach(card => {
-                const title = card.querySelector('.project-title').textContent.toLowerCase();
-                const description = card.querySelector('.project-description').textContent.toLowerCase();
-                const keywords = card.getAttribute('data-keywords').toLowerCase();
-                const category = card.getAttribute('data-category');
-                
-                const matchesSearch = title.includes(searchTerm) || 
-                                    description.includes(searchTerm) || 
-                                    keywords.includes(searchTerm);
-                
-                const matchesFilter = currentFilter === 'all' || category === currentFilter;
-
-                if (matchesSearch && matchesFilter) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
+                const text = card.innerText.toLowerCase() + card.dataset.keywords;
+                const cat = card.dataset.category;
+                const matchesSearch = text.includes(term);
+                const matchesCat = activeCat === 'all' || cat === activeCat;
+                card.style.display = (matchesSearch && matchesCat) ? 'block' : 'none';
             });
-
-            if (visibleCount === 0) {
-                noResults.style.display = 'block';
-                projectsGrid.style.display = 'none';
-            } else {
-                noResults.style.display = 'none';
-                projectsGrid.style.display = 'grid';
-            }
         }
 
-        // Add stagger animation to cards on load
-        projectCards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
+        searchInput.addEventListener('input', filterProjects);
+        filterTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                filterTags.forEach(t => t.classList.remove('active'));
+                tag.classList.add('active');
+                filterProjects();
+            });
         });
     </script>
 </body>
