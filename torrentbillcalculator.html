@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent Bill Calculator</title>
+    <style>
+        :root {
+            --primary: #f58220; /* Torrent Power Orange */
+            --dark: #333;
+            --light: #f4f4f4;
+            --border: #ddd;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .calculator-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+        h2 {
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1.1rem;
+            box-sizing: border-box; 
+        }
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .btn-main {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        .btn-main:hover {
+            background-color: #e06d10;
+        }
+        .btn-settings {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            display: block;
+            margin: 10px auto 0;
+        }
+        
+        /* Results Section */
+        .result-box {
+            margin-top: 20px;
+            background: #fff8f0;
+            border: 1px solid #ffdcb0;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 0.95rem;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid var(--dark);
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        /* Settings Panel */
+        #settings-panel {
+            display: none;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .settings-group h4 {
+            margin: 0 0 5px 0;
+            color: var(--dark);
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 2px;
+        }
+        .settings-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .settings-input-row input {
+            width: 70px;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h2>TORRENT BILL CALCULATOR</h2>
+    
+    <div class="input-group">
+        <label for="units">Enter Units Consumed:</label>
+        <input type="number" id="units" placeholder="e.g. 160" min="0">
+    </div>
+
+    <button class="btn-main" onclick="calculateBill()">Calculate Bill</button>
+    <button class="btn-settings" onclick="toggleSettings()">⚙️ Update Rates / Inflation</button>
+
+    <div id="settings-panel">
+        <div class="settings-grid">
+            <div class="settings-group">
+                <h4>Unit Rates (₹)</h4>
+                <div class="settings-input-row">
+                    <span>0-100:</span>
+                    <input type="number" id="rate-s1" value="3.84" step="0.01">
+                </div>
+                <div class="settings-input-row">
+                    <span>101-300:</span>
+                    <input type="number" id="rate-s2" value="7.43" step="0.01">
+                </div>
+                <div class="settings-input-row">
+                    <span>301-500:</span>
+                    <input type="number" id="rate-s3" value="11.91" step="0.01">
+                </div>
+                <div class="settings-input-row">
+                    <span>> 500:</span>
+                    <input type="number" id="rate-s4" value="14.11" step="0.01">
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h4>Fixed Charges (₹)</h4>
+                <div class="settings-input-row">
+                    <span>Low (0-100):</span>
+                    <input type="number" id="fixed-low" value="90">
+                </div>
+                <div class="settings-input-row">
+                    <span>Mid (101-500):</span>
+                    <input type="number" id="fixed-mid" value="135">
+                </div>
+                <div class="settings-input-row">
+                    <span>High (>500):</span>
+                    <input type="number" id="fixed-high" value="160">
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h4>Taxes</h4>
+            <div class="settings-input-row" style="justify-content: flex-start; gap: 15px;">
+                <span>Duty (%):</span>
+                <input type="number" id="tax-duty" value="16" style="width: 50px;">
+                <span>TOS Rate:</span>
+                <input type="number" id="tax-tos" value="0.2604" step="0.0001" style="width: 70px;">
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 10px; color: green; font-size: 0.8rem;">
+            Changes apply immediately on "Calculate"
+        </div>
+    </div>
+
+    <div id="result" class="result-box">
+        <div class="breakdown-row">
+            <span>Fixed Charges</span>
+            <span id="display-fixed">₹0.00</span>
+        </div>
+        <div class="breakdown-row">
+            <span>Energy Charges</span>
+            <span id="display-energy">₹0.00</span>
+        </div>
+        
+        <div id="slab-details" style="margin: 10px 0; background: #eee; padding: 10px; border-radius: 5px; font-size: 0.85rem;">
+            </div>
+
+        <div class="breakdown-row">
+            <span>Electricity Duty</span>
+            <span id="display-duty">₹0.00</span>
+        </div>
+        <div class="breakdown-row">
+            <span>Tax on Sale (TOS)</span>
+            <span id="display-tos">₹0.00</span>
+        </div>
+        
+        <div class="total-row">
+            <span>Total Bill:</span>
+            <span id="display-total">₹0.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSettings() {
+        var panel = document.getElementById("settings-panel");
+        if (panel.style.display === "block") {
+            panel.style.display = "none";
+        } else {
+            panel.style.display = "block";
+        }
+    }
+
+    function calculateBill() {
+        const units = parseFloat(document.getElementById('units').value);
+        if (isNaN(units) || units < 0) {
+            alert("Please enter a valid number of units.");
+            return;
+        }
+
+        // --- FETCH RATES FROM SETTINGS ---
+        // We use parseFloat to ensure math works correctly
+        const rateS1 = parseFloat(document.getElementById('rate-s1').value);
+        const rateS2 = parseFloat(document.getElementById('rate-s2').value);
+        const rateS3 = parseFloat(document.getElementById('rate-s3').value);
+        const rateS4 = parseFloat(document.getElementById('rate-s4').value);
+        
+        const fixedLow = parseFloat(document.getElementById('fixed-low').value);
+        const fixedMid = parseFloat(document.getElementById('fixed-mid').value);
+        const fixedHigh = parseFloat(document.getElementById('fixed-high').value);
+
+        const taxDutyPercent = parseFloat(document.getElementById('tax-duty').value) / 100;
+        const taxTOSRate = parseFloat(document.getElementById('tax-tos').value);
+
+        // --- CALCULATION LOGIC ---
+
+        // 1. Fixed Charges
+        let fixedCharge = 0;
+        if (units <= 100) fixedCharge = fixedLow;
+        else if (units <= 500) fixedCharge = fixedMid;
+        else fixedCharge = fixedHigh;
+
+        // 2. Energy Charges
+        let energyCharge = 0;
+        let slabDetailsHtml = "";
+        
+        // Slab 1 (0-100)
+        let s1 = Math.min(units, 100);
+        let c1 = s1 * rateS1;
+        energyCharge += c1;
+        if(s1 > 0) slabDetailsHtml += `<div>0-100: ${s1} units x ₹${rateS1} = ₹${c1.toFixed(2)}</div>`;
+
+        // Slab 2 (101-300)
+        let s2 = 0;
+        if (units > 100) {
+            s2 = Math.min(units - 100, 200); 
+            let c2 = s2 * rateS2;
+            energyCharge += c2;
+            slabDetailsHtml += `<div>101-300: ${s2} units x ₹${rateS2} = ₹${c2.toFixed(2)}</div>`;
+        }
+
+        // Slab 3 (301-500)
+        let s3 = 0;
+        if (units > 300) {
+            s3 = Math.min(units - 300, 200); 
+            let c3 = s3 * rateS3;
+            energyCharge += c3;
+            slabDetailsHtml += `<div>301-500: ${s3} units x ₹${rateS3} = ₹${c3.toFixed(2)}</div>`;
+        }
+
+        // Slab 4 (>500)
+        let s4 = 0;
+        if (units > 500) {
+            s4 = units - 500;
+            let c4 = s4 * rateS4;
+            energyCharge += c4;
+            slabDetailsHtml += `<div>>500: ${s4} units x ₹${rateS4} = ₹${c4.toFixed(2)}</div>`;
+        }
+
+        // 3. Taxes
+        let duty = (fixedCharge + energyCharge) * taxDutyPercent; 
+        let tos = units * taxTOSRate; 
+
+        // 4. Total
+        let total = fixedCharge + energyCharge + duty + tos;
+
+        // --- DISPLAY ---
+        document.getElementById('display-fixed').innerText = "₹" + fixedCharge.toFixed(2);
+        document.getElementById('display-energy').innerText = "₹" + energyCharge.toFixed(2);
+        document.getElementById('slab-details').innerHTML = slabDetailsHtml;
+        document.getElementById('display-duty').innerText = "₹" + duty.toFixed(2);
+        document.getElementById('display-tos').innerText = "₹" + tos.toFixed(2);
+        document.getElementById('display-total').innerText = "₹" + total.toFixed(2);
+
+        document.getElementById('result').style.display = "block";
+    }
+</script>
+
+</body>
+</html>
