@@ -26,7 +26,7 @@
         .filter-tag { padding: 8px 20px; background: rgba(255,255,255,0.3); color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; }
         .filter-tag.active { background: white; color: #667eea; }
         .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
-        .project-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; position: relative; overflow: hidden; animation: fadeIn 0.5s ease; }
+        .project-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; overflow: hidden; animation: fadeIn 0.5s ease; }
         .project-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
         .project-icon { font-size: 3.5em; margin-bottom: 15px; display: block; }
         .project-title { font-size: 1.5em; font-weight: bold; color: #667eea; margin-bottom: 12px; }
@@ -45,15 +45,13 @@
             <p class="subtitle">AI-Generated Interactive Projects & Games</p>
             <div class="stats">
                 <div class="stat-card">
-                    <strong>8</strong> Projects
+                    <strong>9</strong> Projects
                 </div>
                 <div class="stat-card">
-                    <strong>100%</strong>
-                    AI Created
+                    <strong>100%</strong> AI Created
                 </div>
                 <div class="stat-card">
-                    <strong>0</strong>
-                    Dependencies
+                    <strong>0</strong> Dependencies
                 </div>
             </div>
         </header>
@@ -70,125 +68,133 @@
         </div>
 
         <div class="projects-grid" id="projectsGrid">
-            
-            <a href="SPEEDCALC.HTML" class="project-card" data-keywords="speed calculator velocity physics time distance tool" data-category="tool">
+
+            <a href="SPEEDCALC.HTML" class="project-card" data-keywords="speed calculator velocity tool physics distance time" data-category="tool">
                 <div class="project-icon">⚡</div>
                 <div class="project-title">Speed Calculator</div>
-                <div class="project-description">Quickly calculate speed, distance, or time with high precision physics-based logic</div>
-                <div class="project-tags">
-                    <span class="project-tag">Tool</span>
-                    <span class="project-tag">Physics</span>
-                </div>
+                <div class="project-description">Quickly calculate speed, distance, or time with physics-based logic</div>
+                <div class="project-tags"><span class="project-tag">Tool</span></div>
             </a>
 
-            <a href="BrickBreaker.html" class="project-card" data-keywords="brick breaker game arcade fun breakout" data-category="game">
+            <a href="BrickBreaker.html" class="project-card" data-keywords="brick breaker arcade breakout paddle ball" data-category="game">
                 <div class="project-icon">🧱</div>
                 <div class="project-title">Brick Breaker</div>
-                <div class="project-description">Classic arcade-style brick breaker game with paddle controls and bouncing ball physics</div>
-                <div class="project-tags">
-                    <span class="project-tag">Game</span>
-                    <span class="project-tag">Arcade</span>
-                </div>
+                <div class="project-description">Classic arcade brick breaker game with bouncing physics</div>
+                <div class="project-tags"><span class="project-tag">Game</span></div>
             </a>
 
-            <a href="MEMORYGRIDGAME.html" class="project-card" data-keywords="memory grid game puzzle brain cognitive" data-category="game">
+            <a href="MEMORYGRIDGAME.html" class="project-card" data-keywords="memory grid puzzle cognitive challenge" data-category="game">
                 <div class="project-icon">🧠</div>
                 <div class="project-title">Memory Grid Game</div>
-                <div class="project-description">Test your memory with this challenging grid-based pattern recognition game</div>
-                <div class="project-tags">
-                    <span class="project-tag">Game</span>
-                    <span class="project-tag">Puzzle</span>
-                </div>
+                <div class="project-description">Test your memory with pattern recognition challenges</div>
+                <div class="project-tags"><span class="project-tag">Game</span></div>
             </a>
 
             <a href="TIc-Tac-Toe.html" class="project-card" data-keywords="tic tac toe game strategy classic" data-category="game">
                 <div class="project-icon">❌⭕</div>
                 <div class="project-title">Tic-Tac-Toe</div>
-                <div class="project-description">Classic two-player tic-tac-toe game with clean interface and win detection</div>
-                <div class="project-tags">
-                    <span class="project-tag">Game</span>
-                    <span class="project-tag">Strategy</span>
-                </div>
+                <div class="project-description">Classic strategic Tic-Tac-Toe game</div>
+                <div class="project-tags"><span class="project-tag">Game</span></div>
             </a>
 
-            <a href="SUDOKUZENPRO.HTML" class="project-card" data-keywords="sudoku zen puzzle logic numbers" data-category="game">
+            <a href="SUDOKUZENPRO.HTML" class="project-card" data-keywords="sudoku puzzle logic grid numbers" data-category="game">
                 <div class="project-icon">🔢</div>
                 <div class="project-title">Sudoku Zen Pro</div>
-                <div class="project-description">Professional sudoku puzzle game with multiple difficulty levels and zen mode</div>
-                <div class="project-tags">
-                    <span class="project-tag">Game</span>
-                    <span class="project-tag">Logic</span>
-                </div>
+                <div class="project-description">Professional sudoku with multiple difficulty levels</div>
+                <div class="project-tags"><span class="project-tag">Game</span></div>
             </a>
 
-            <a href="PDFOVERLAY.HTML" class="project-card" data-keywords="pdf overlay annotation document tool" data-category="tool">
+            <a href="PDFOVERLAY.HTML" class="project-card" data-keywords="pdf overlay annotate document tool" data-category="tool">
                 <div class="project-icon">📄</div>
                 <div class="project-title">PDF Overlay Tool</div>
-                <div class="project-description">Annotate and overlay content on PDF documents directly in your browser</div>
-                <div class="project-tags">
-                    <span class="project-tag">Tool</span>
-                    <span class="project-tag">Productivity</span>
-                </div>
+                <div class="project-description">Overlay and annotate PDFs directly in browser</div>
+                <div class="project-tags"><span class="project-tag">Tool</span></div>
             </a>
 
-            <a href="torrentbillcalculator.html" class="project-card" data-keywords="torrent bill calculator utility finance" data-category="tool">
+            <a href="torrentbillcalculator.html" class="project-card" data-keywords="torrent bill calculator utility electricity" data-category="tool">
                 <div class="project-icon">💰</div>
                 <div class="project-title">Torrent Bill Calculator</div>
-                <div class="project-description">Calculate and manage your torrent power bills with this handy utility</div>
-                <div class="project-tags">
-                    <span class="project-tag">Tool</span>
-                    <span class="project-tag">Calculator</span>
-                </div>
+                <div class="project-description">Calculate monthly billing with TORRENT power usage</div>
+                <div class="project-tags"><span class="project-tag">Tool</span></div>
             </a>
 
-            <a href="advanced_solar_system_autofit_mobile_controls.html" class="project-card" data-keywords="solar system space planets visualization 3d astronomy" data-category="visualization">
+            <a href="advanced_solar_system_autofit_mobile_controls.html" class="project-card" data-keywords="solar system planets visualization astronomy 3d" data-category="visualization">
                 <div class="project-icon">🌌</div>
                 <div class="project-title">Solar System 3D</div>
-                <div class="project-description">Interactive 3D solar system visualization with mobile controls and auto-fit display</div>
-                <div class="project-tags">
-                    <span class="project-tag">3D</span>
-                    <span class="project-tag">Visualization</span>
-                </div>
+                <div class="project-description">Interactive 3D solar system with auto-fit camera & mobile controls</div>
+                <div class="project-tags"><span class="project-tag">Visualization</span></div>
+            </a>
+
+            <!-- NEW LUDO ENTRY -->
+            <a href="ludo.html" class="project-card" data-keywords="ludo board game multiplayer dice strategy" data-category="game">
+                <div class="project-icon">🎲</div>
+                <div class="project-title">Ludo Pro</div>
+                <div class="project-description">Interactive modern Ludo game with AI bots, animations and rankings</div>
+                <div class="project-tags"><span class="project-tag">Game</span></div>
             </a>
 
         </div>
 
         <div id="noResults" style="display:none; text-align:center; color:white; margin-top:50px;">
-            😕 No projects found. Try a different search term!
+            😕 No projects found. Try different keywords!
         </div>
-
+        
         <footer>
-            <p>🤖 All projects created with AI assistance | <a href="https://github.com/akshayai1996/Htmlfun" target="_blank" style="color:white; font-weight:bold;">View on GitHub</a></p>
+            <p>🤖 All projects created with AI assistance |
+            <a href="https://github.com/akshayai1996/Htmlfun" target="_blank" style="color:white; font-weight:bold;">
+                View on GitHub
+            </a></p>
         </footer>
     </div>
 
     <script>
-        // Search and Filter Logic
         const searchInput = document.getElementById('searchInput');
-        const projectCards = document.querySelectorAll('.project-card');
         const filterTags = document.querySelectorAll('.filter-tag');
+        const grid = document.getElementById('projectsGrid');
 
-        function filterProjects() {
+        function getCards() {
+            return Array.from(grid.querySelectorAll('.project-card'));
+        }
+
+        function applySearchAndFilter() {
             const term = searchInput.value.toLowerCase();
             const activeCat = document.querySelector('.filter-tag.active').dataset.category;
-            
-            projectCards.forEach(card => {
+            let visibleCount = 0;
+
+            getCards().forEach(card => {
                 const text = card.innerText.toLowerCase() + card.dataset.keywords;
                 const cat = card.dataset.category;
                 const matchesSearch = text.includes(term);
                 const matchesCat = activeCat === 'all' || cat === activeCat;
-                card.style.display = (matchesSearch && matchesCat) ? 'block' : 'none';
+                const visible = matchesSearch && matchesCat;
+                card.style.display = visible ? 'block' : 'none';
+                if (visible) visibleCount++;
             });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
         }
 
-        searchInput.addEventListener('input', filterProjects);
+        function sortAlphabetically() {
+            const cards = getCards();
+            cards.sort((a, b) =>
+                a.querySelector('.project-title').innerText.localeCompare(
+                    b.querySelector('.project-title').innerText
+                )
+            );
+            cards.forEach(c => grid.appendChild(c));
+        }
+
+        searchInput.addEventListener('input', applySearchAndFilter);
+
         filterTags.forEach(tag => {
             tag.addEventListener('click', () => {
                 filterTags.forEach(t => t.classList.remove('active'));
                 tag.classList.add('active');
-                filterProjects();
+                applySearchAndFilter();
             });
         });
+
+        sortAlphabetically();
     </script>
 </body>
 </html>
