@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Ludo Pro - Final Release</title>
+<style>
+    :root { --bg-color: #050505; --panel-bg: #1a1a1a; --text-color: #eee; }
+    body { 
+        margin: 0; padding: 0; 
+        background: var(--bg-color); 
+        color: var(--text-color); 
+        font-family: 'Segoe UI', sans-serif; 
+        height: 100vh; width: 100vw;
+        display: flex; flex-direction: column; 
+        overflow: hidden;
+    }
+
+    /* --- OVERLAYS --- */
+    .overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); z-index: 5000;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .overlay h1 { font-size: 36px; color: #fff; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+
+    /* CUSTOM LOBBY UI */
+    .lobby-container {
+        background: #222; padding: 30px; border-radius: 20px;
+        border: 1px solid #444; box-shadow: 0 10px 40px black;
+        width: 90%; max-width: 450px;
+    }
+    
+    .player-row {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 15px; padding: 10px; border-radius: 10px;
+        background: rgba(255,255,255,0.05); border: 1px solid #333;
+    }
+    
+    .p-info { display: flex; align-items: center; gap: 10px; width: 100px; }
+    .p-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); }
+    .p-name { font-weight: bold; font-size: 16px; text-transform: uppercase; }
+    
+    /* Toggle Switch */
+    .toggle-group { display: flex; background: #111; border-radius: 20px; padding: 2px; border: 1px solid #444; }
+    .toggle-btn {
+        padding: 6px 12px; font-size: 12px; font-weight: bold;
+        border: none; background: transparent; color: #666;
+        cursor: pointer; border-radius: 18px; transition: 0.2s;
+    }
+    .toggle-btn.active { color: white; background: #444; box-shadow: 0 2px 5px black; }
+    .toggle-btn.active-human { background: #3498db; }
+    .toggle-btn.active-bot { background: #e74c3c; }
+
+    .error-msg { color: #ff4d4d; font-size: 13px; margin-top: 15px; min-height: 20px; text-align: center; }
+
+    .btn-start {
+        width: 100%; padding: 15px; font-size: 18px; 
+        background: #2ecc71; border: none; color: white; 
+        border-radius: 10px; font-weight: 900; cursor: pointer;
+        margin-top: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none;
+    }
+    .btn-start.ready { opacity: 1; pointer-events: all; box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4); }
+    .btn-start.ready:hover { transform: scale(1.02); }
+
+    /* --- GAME UI --- */
+    .rank-table { margin-bottom: 30px; width: 300px; text-align: left; }
+    .rank-row { display: flex; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid #333; font-size: 20px; }
+    .rank-label { color: white; font-weight: 900; } 
+
+    .settings-btn { position: absolute; top: 15px; right: 15px; background: #333; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 2000; border: 1px solid #555; }
+    .settings-panel { position: absolute; top: 60px; right: 15px; background: rgba(30,30,30,0.95); padding: 15px; border-radius: 10px; border: 1px solid #555; display: none; flex-direction: column; gap: 10px; z-index: 2000; box-shadow: 0 5px 20px black; min-width: 150px; }
+
+    .board-section { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .scaler-container { transition: transform 0.2s ease-out; transform-origin: center center; padding: 20px; }
+    .board-frame { background: #fff; padding: 12px; border-radius: 4px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+    svg { width: 85vmin; height: 85vmin; max-width: 600px; max-height: 600px; display: block; shape-rendering: geometricPrecision; }
+
+    .rank-txt-svg { font-family: 'Arial Black', sans-serif; font-weight: 900; font-size: 2.5px; text-anchor: middle; dominant-baseline: middle; stroke: #000; stroke-width: 0.05px; opacity: 0; animation: popIn 0.5s forwards; }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .cell { stroke: #000; stroke-width: 0.04; }
+    .red { fill: #ff4d4d; } .green { fill: #2ecc71; } 
+    .yellow { fill: #f1c40f; } .blue { fill: #3498db; } 
+    .white { fill: #ffffff; }
+    .safe-star { fill: #666; font-size: 0.8px; text-anchor: middle; font-weight: 900; pointer-events: none; opacity: 0.4; }
+    .token { stroke: #fff; stroke-width: 0.05; cursor: pointer; transition: filter 0.2s; }
+    .token:hover { filter: brightness(1.2); }
+    .token-smooth { transition: cx 0.2s, cy 0.2s; }
+
+    .controls-section { height: 140px; background: var(--panel-bg); display: flex; justify-content: center; align-items: center; border-top: 1px solid #333; z-index: 100; }
+    .ui-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-left: 30px; }
+
+    .scene { width: 60px; height: 60px; perspective: 600px; }
+    .dice { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .dice-face { position: absolute; width: 60px; height: 60px; background: white; border-radius: 8px; border: 1px solid #ccc; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 4px; box-sizing: border-box; }
+    .dot { background: #111; border-radius: 50%; width: 10px; height: 10px; justify-self: center; align-self: center; }
+    .f1 { transform: rotateY(0deg) translateZ(30px); } .f2 { transform: rotateY(90deg) translateZ(30px); }
+    .f3 { transform: rotateY(180deg) translateZ(30px); } .f4 { transform: rotateY(-90deg) translateZ(30px); }
+    .f5 { transform: rotateX(90deg) translateZ(30px); } .f6 { transform: rotateX(-90deg) translateZ(30px); }
+
+    #rollBtn { padding: 10px 40px; font-size: 16px; font-weight: bold; border: none; border-radius: 25px; color: white; cursor: pointer; background: #333; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    #rollBtn:active { transform: scale(0.95); }
+    #rollBtn:disabled { opacity: 0.5; cursor: default; transform: none; background: #555 !important; }
+
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 3000; }
+    .popup-content { background: #222; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #555; }
+    .mini-token { width: 40px; height: 40px; border-radius: 50%; display: inline-block; margin: 5px; cursor: pointer; border: 2px solid #555; }
+</style>
+</head>
+<body>
+
+<div id="lobbyScreen" class="overlay">
+    <h1>Game Setup</h1>
+    
+    <div class="lobby-container">
+        <div style="display:flex; justify-content:space-between; color:#888; font-size:12px; margin-bottom:10px; padding:0 10px;">
+            <span>COLOR</span>
+            <span>TYPE</span>
+        </div>
+
+        <div class="player-row" id="row-red">
+            <div class="p-info">
+                <div class="p-dot" style="background:#ff4d4d;"></div>
+                <div class="p-name" style="color:#ff4d4d;">RED</div>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle-btn" onclick="lobby.set('red','off')">OFF</button>
+                <button class="toggle-btn active active-human" onclick="lobby.set('red','human')">HUMAN</button>
+                <button class="toggle-btn" onclick="lobby.set('red','bot')">BOT</button>
+            </div>
+        </div>
+
+        <div class="player-row" id="row-green">
+            <div class="p-info">
+                <div class="p-dot" style="background:#2ecc71;"></div>
+                <div class="p-name" style="color:#2ecc71;">GREEN</div>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle-btn" onclick="lobby.set('green','off')">OFF</button>
+                <button class="toggle-btn" onclick="lobby.set('green','human')">HUMAN</button>
+                <button class="toggle-btn active active-bot" onclick="lobby.set('green','bot')">BOT</button>
+            </div>
+        </div>
+
+        <div class="player-row" id="row-yellow">
+            <div class="p-info">
+                <div class="p-dot" style="background:#f1c40f;"></div>
+                <div class="p-name" style="color:#f1c40f;">YEL</div>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle-btn" onclick="lobby.set('yellow','off')">OFF</button>
+                <button class="toggle-btn" onclick="lobby.set('yellow','human')">HUMAN</button>
+                <button class="toggle-btn active active-bot" onclick="lobby.set('yellow','bot')">BOT</button>
+            </div>
+        </div>
+
+        <div class="player-row" id="row-blue">
+            <div class="p-info">
+                <div class="p-dot" style="background:#3498db;"></div>
+                <div class="p-name" style="color:#3498db;">BLUE</div>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle-btn" onclick="lobby.set('blue','off')">OFF</button>
+                <button class="toggle-btn" onclick="lobby.set('blue','human')">HUMAN</button>
+                <button class="toggle-btn active active-bot" onclick="lobby.set('blue','bot')">BOT</button>
+            </div>
+        </div>
+
+        <div class="error-msg" id="lobbyError"></div>
+        <button class="btn-start ready" id="btnStart" onclick="lobby.launch()">START GAME</button>
+    </div>
+</div>
+
+<div id="gameOverScreen" class="overlay" style="display:none;">
+    <h1 style="color:#FFD700">Tournament Finished</h1>
+    <div class="rank-table" id="finalStandings"></div>
+    <button class="btn-main" style="background:#fff; color:#000; padding:15px 40px; border-radius:50px; border:none; font-weight:900; cursor:pointer;" onclick="location.reload()">Start New Game</button>
+</div>
+
+<div class="settings-btn" onclick="toggleSettings()">⚙️</div>
+<div class="settings-panel" id="settingsPanel">
+    <label style="color:#aaa; font-weight:bold; font-size:12px;">ZOOM</label>
+    <input type="range" min="0.6" max="1.4" step="0.1" value="1" oninput="applyZoom(this.value)">
+    <button onclick="toggleSettings()" style="padding: 5px; cursor: pointer; margin-top:15px; width:100%;">CLOSE</button>
+</div>
+
+<div class="board-section">
+    <div class="scaler-container" id="scaler">
+        <div class="board-frame">
+            <svg viewBox="0 0 15 15" id="ludoBoard"></svg>
+        </div>
+    </div>
+</div>
+
+<div class="controls-section">
+    <div class="scene">
+        <div id="dice" class="dice">
+            <div class="dice-face f1"><div class="dot" style="grid-area: 2/2"></div></div>
+            <div class="dice-face f2"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+            <div class="dice-face f3"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 2/2"></div><div class="dot" style="grid-area: 3/3"></div></div>
+            <div class="dice-face f4"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+            <div class="dice-face f5"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 2/2"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+            <div class="dice-face f6"><div class="dot" style="grid-area: 1/1"></div><div class="dot" style="grid-area: 1/3"></div><div class="dot" style="grid-area: 2/1"></div><div class="dot" style="grid-area: 2/3"></div><div class="dot" style="grid-area: 3/1"></div><div class="dot" style="grid-area: 3/3"></div></div>
+        </div>
+    </div>
+    <div class="ui-panel">
+        <div id="statusMsg" style="color:#ff4d4d; font-weight:bold;">WAITING...</div>
+        <button id="rollBtn" onclick="game.rollDice()" disabled>ROLL</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="stackPopup" onclick="if(event.target.id==='stackPopup') this.style.display='none'">
+    <div class="popup-content">
+        <h3 style="margin-top:0; color:white;">SELECT TOKEN</h3>
+        <div id="popupList"></div>
+    </div>
+</div>
+
+<script>
+// --- UI ---
+function toggleSettings() { const p=document.getElementById('settingsPanel'); p.style.display=(p.style.display==='flex')?'none':'flex'; }
+function applyZoom(val) { document.getElementById('scaler').style.transform=`scale(${val})`; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// --- AUDIO ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    if (type === 'step') {
+        o.type = 'sine'; o.frequency.setValueAtTime(600, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+        o.start(); o.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'roll') {
+        o.type = 'square'; o.frequency.setValueAtTime(150, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        o.start(); o.stop(audioCtx.currentTime + 0.05);
+    } else if (type === 'win') {
+        o.type = 'triangle'; o.frequency.setValueAtTime(400, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        o.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+        g.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 1.0);
+        o.start(); o.stop(audioCtx.currentTime + 1.0);
+    }
+}
+
+// --- LOBBY MANAGER ---
+const lobby = {
+    // Current State
+    config: {
+        red: 'human',
+        green: 'bot',
+        yellow: 'bot',
+        blue: 'bot'
+    },
+    
+    set(color, type) {
+        this.config[color] = type;
+        this.updateUI();
+    },
+
+    updateUI() {
+        const colors = ['red', 'green', 'yellow', 'blue'];
+        let humans = 0, bots = 0;
+        
+        colors.forEach(c => {
+            const type = this.config[c];
+            if(type === 'human') humans++;
+            if(type === 'bot') bots++;
+            
+            // Visual Update
+            const row = document.getElementById(`row-${c}`);
+            const btns = row.querySelectorAll('.toggle-btn');
+            btns[0].classList.toggle('active', type==='off');
+            
+            btns[1].className = `toggle-btn ${type==='human'?'active active-human':''}`;
+            btns[2].className = `toggle-btn ${type==='bot'?'active active-bot':''}`;
+        });
+
+        // Validation
+        const btn = document.getElementById('btnStart');
+        const err = document.getElementById('lobbyError');
+        
+        if (humans < 1) {
+            btn.classList.remove('ready');
+            err.innerText = "Need at least 1 Human player!";
+        } else if ((humans + bots) < 2) {
+            btn.classList.remove('ready');
+            err.innerText = "Need at least 2 players total!";
+        } else {
+            btn.classList.add('ready');
+            err.innerText = "";
+        }
+    },
+    
+    launch() {
+        const activePlayers = [];
+        const cpuFlags = {};
+        
+        ['red','green','yellow','blue'].forEach(c => {
+            const type = this.config[c];
+            if (type !== 'off') {
+                activePlayers.push(c);
+                cpuFlags[c] = (type === 'bot');
+            }
+        });
+        
+        // Start Game with filtered players
+        game.start(activePlayers, cpuFlags);
+    }
+};
+
+// Initialize Lobby UI on Load
+window.onload = () => lobby.updateUI();
+
+// --- GAME ENGINE ---
+const game = {
+    turn: 0, diceVal: 0, sixCount: 0, canRoll: false, isMoving: false,
+    players: [], finishedPlayers: [], cpuFlags: {},
+    colors: { red: '#ff4d4d', green: '#2ecc71', yellow: '#f1c40f', blue: '#3498db' },
+    homeCenters: { red: {x:3, y:3}, green: {x:12, y:3}, yellow: {x:12, y:12}, blue: {x:3, y:12} },
+    homes: {
+        red: [[2,2],[4,2],[2,4],[4,4]], green: [[11,2],[13,2],[11,4],[13,4]],
+        yellow: [[11,11],[13,11],[11,13],[13,13]], blue: [[2,11],[4,11],[2,13],[4,13]]
+    },
+    loop: [[1,6],[2,6],[3,6],[4,6],[5,6],[6,5],[6,4],[6,3],[6,2],[6,1],[6,0],[7,0],[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[9,6],[10,6],[11,6],[12,6],[13,6],[14,6],[14,7],[14,8],[13,8],[12,8],[11,8],[10,8],[9,8],[8,9],[8,10],[8,11],[8,12],[8,13],[8,14],[7,14],[6,14],[6,13],[6,12],[6,11],[6,10],[6,9],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],[0,7],[0,6]],
+    tokens: [],
+    
+    start(playerList, cpuConfig) {
+        document.getElementById('lobbyScreen').style.display = 'none';
+        this.players = playerList;
+        this.cpuFlags = cpuConfig;
+        
+        this.initBoard();
+        this.updateUI(); 
+        this.checkCpuTurn();
+    },
+
+    initBoard() {
+        const rot = (a,n) => a.slice(n).concat(a.slice(0,n));
+        this.paths = {
+            red: [...this.loop, [1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],
+            green: [...rot(this.loop,13), [7,1],[7,2],[7,3],[7,4],[7,5],[7,6]],
+            yellow: [...rot(this.loop,26), [13,7],[12,7],[11,7],[10,7],[9,7],[8,7]],
+            blue: [...rot(this.loop,39), [7,13],[7,12],[7,11],[7,10],[7,9],[7,8]]
+        };
+        this.players.forEach(p => {
+            this.homes[p].forEach((pos, i) => {
+                this.tokens.push({ color: p, id: i, pos: -1, x: pos[0], y: pos[1], finished: false });
+            });
+        });
+        this.drawBoard();
+    },
+    
+    drawBoard() {
+        let s = `
+        <defs>
+            <pattern id="brick" x="0" y="0" width="0.2" height="0.1" patternUnits="objectBoundingBox">
+                <rect width="0.2" height="0.1" fill="#8B4513"/>
+                <rect width="0.19" height="0.09" fill="#cc6633"/>
+            </pattern>
+        </defs>
+        <rect width="15" height="15" fill="white" rx="1"/>`;
+        s += `<rect x="0" y="0" width="6" height="6" class="red"/><rect x="9" y="0" width="6" height="6" class="green"/>
+              <rect x="0" y="9" width="6" height="6" class="blue"/><rect x="9" y="9" width="6" height="6" class="yellow"/>`;
+        s += `<rect x="1.2" y="1.2" width="3.6" height="3.6" fill="white" rx="0.4"/><rect x="10.2" y="1.2" width="3.6" height="3.6" fill="white" rx="0.4"/>
+              <rect x="1.2" y="10.2" width="3.6" height="3.6" fill="white" rx="0.4"/><rect x="10.2" y="10.2" width="3.6" height="3.6" fill="white" rx="0.4"/>`;
+              
+        for(let x=0; x<15; x++) for(let y=0; y<15; y++) {
+            if ( (x<6 || x>8) && (y<6 || y>8) ) continue;
+            let fill = 'white';
+            if (y===7 && x>0 && x<6) fill = '#ff4d4d'; if (x===7 && y>0 && y<6) fill = '#2ecc71'; 
+            if (y===7 && x>8 && x<14) fill = '#f1c40f'; if (x===7 && y>8 && y<14) fill = '#3498db'; 
+            if (x===1 && y===6) fill = '#ff4d4d'; if (x===8 && y===1) fill = '#2ecc71'; 
+            if (x===13 && y===8) fill = '#f1c40f'; if (x===6 && y===13) fill = '#3498db'; 
+            s += `<rect id="c-${x}-${y}" x="${x}" y="${y}" width="1" height="1" class="cell" fill="${fill}" onclick="game.clickCell(${x},${y})"/>`;
+        }
+        
+        s += `<polygon points="6,6 9,6 7.5,7.5" fill="#2ecc71"/><polygon points="6,6 6,9 7.5,7.5" fill="#ff4d4d"/>
+              <polygon points="9,9 9,6 7.5,7.5" fill="#f1c40f"/><polygon points="9,9 6,9 7.5,7.5" fill="#3498db"/>`;
+
+        // FIXED STARS
+        const stars = [[1,6],[2,8],[6,2],[8,1],[12,6],[13,8],[8,12],[6,13]];
+        stars.forEach(p => s += `<text x="${p[0]+0.5}" y="${p[1]+0.8}" class="safe-star">★</text>`);
+        
+        s += `<g id="rankLayer"></g><g id="tks"></g>`;
+        document.getElementById('ludoBoard').innerHTML = s;
+        this.renderTokens();
+    },
+    
+    renderTokens() {
+        const g = document.getElementById('tks'); g.innerHTML = '';
+        const map = {};
+        this.tokens.forEach((t, i) => {
+            if(t.finished) return;
+            let cx = t.pos===-1 ? t.x : t.x+0.5;
+            let cy = t.pos===-1 ? t.y : t.y+0.5;
+            let k = `${Math.floor(cx)},${Math.floor(cy)}`;
+            let off = (map[k]||0); map[k] = off+1;
+            let c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("cx", cx + (off*0.15)); c.setAttribute("cy", cy - (off*0.15)); 
+            c.setAttribute("r", 0.42); c.setAttribute("fill", this.colors[t.color]);
+            c.setAttribute("class", "token token-smooth");
+            c.onclick = (e) => { e.stopPropagation(); this.clickCell(Math.floor(cx), Math.floor(cy)); };
+            g.appendChild(c);
+        });
+    },
+
+    // --- CPU LOGIC ---
+    checkCpuTurn() {
+        const currentPlayer = this.players[this.turn];
+        if (this.cpuFlags[currentPlayer]) {
+            document.getElementById('rollBtn').disabled = true;
+            document.getElementById('statusMsg').innerText = "THINKING...";
+            setTimeout(() => this.playCpu(), 800);
+        }
+    },
+
+    async playCpu() {
+        await this.rollDice(true); 
+        await sleep(1000); 
+
+        const p = this.players[this.turn];
+        const movables = this.tokens.filter(t => t.color === p && !t.finished && (t.pos !== -1 || this.diceVal===6) && (t.pos + this.diceVal < this.paths[p].length));
+        
+        if (movables.length === 0) {
+            await sleep(1000);
+            this.nextTurn();
+        } else {
+            // Heuristic
+            let bestToken = movables[0];
+            let maxScore = -999;
+            movables.forEach(t => {
+                let score = Math.random(); 
+                const nextPosIndex = t.pos === -1 ? 0 : t.pos + this.diceVal;
+                const nextCoords = this.paths[p][nextPosIndex];
+                if (nextPosIndex === this.paths[p].length - 1) score += 100;
+                const isSafe = [1,6, 8,1, 13,8, 6,13].some(s=>s===nextCoords[0] && s===nextCoords[1]) || [2,8, 6,2, 12,6, 8,12].some(s=>s===nextCoords[0] && s===nextCoords[1]);
+                if (!isSafe) {
+                    const enemies = this.tokens.filter(e => e.color !== p && !e.finished && Math.abs(e.x-nextCoords[0])<0.1 && Math.abs(e.y-nextCoords[1])<0.1);
+                    if (enemies.length > 0) score += 50; 
+                }
+                if (t.pos === -1) score += 20;
+                if (isSafe) score += 10;
+                if (score > maxScore) { maxScore = score; bestToken = t; }
+            });
+            await sleep(500);
+            this.moveToken(bestToken);
+        }
+    },
+
+    async rollDice(isCpu = false) {
+        if(!this.canRoll && !isCpu) return; 
+        if(this.isMoving) return;
+
+        this.canRoll = false; 
+        document.getElementById('rollBtn').disabled = true;
+        document.getElementById('statusMsg').innerText = "ROLLING...";
+        let spins = 0;
+        let iv = setInterval(() => {
+            spins++; playSound('roll');
+            let rx = Math.floor(Math.random()*360); let ry = Math.floor(Math.random()*360);
+            document.getElementById('dice').style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+            if(spins > 6) { clearInterval(iv); this.finalizeRoll(isCpu); }
+        }, 80);
+        if(isCpu) return new Promise(r => setTimeout(r, 600)); 
+    },
+    
+    finalizeRoll(isCpu) {
+        this.diceVal = (this.sixCount >= 2) ? Math.ceil(Math.random()*5) : Math.ceil(Math.random()*6);
+        const rot = {1:[0,0], 2:[0,-90], 3:[0,-180], 4:[0,90], 5:[-90,0], 6:[90,0]};
+        document.getElementById('dice').style.transform = `rotateX(${rot[this.diceVal][0]}deg) rotateY(${rot[this.diceVal][1]}deg)`;
+        document.getElementById('statusMsg').innerText = `ROLLED ${this.diceVal}`;
+        if(this.diceVal===6) this.sixCount++; else this.sixCount = 0;
+        
+        if (!isCpu) {
+            const p = this.players[this.turn];
+            const movables = this.tokens.filter(t => t.color === p && !t.finished && (t.pos !== -1 || this.diceVal===6) && (t.pos + this.diceVal < this.paths[p].length));
+            if (movables.length === 0) { setTimeout(() => this.nextTurn(), 1000); } 
+            else { this.canRoll = false; } 
+        }
+    },
+    
+    clickCell(x, y) {
+        if (this.cpuFlags[this.players[this.turn]]) return;
+        if (this.canRoll || this.isMoving || this.diceVal === 0) return;
+        const p = this.players[this.turn];
+        const cellTokens = this.tokens.filter(t => !t.finished && Math.floor(t.pos===-1?t.x:t.x+0.5)===x && Math.floor(t.pos===-1?t.y:t.y+0.5)===y);
+        const myTokens = cellTokens.filter(t => t.color === p);
+        if (myTokens.length === 0) return;
+        if (myTokens.length === 1) this.moveToken(myTokens[0]);
+        else {
+            const list = document.getElementById('popupList'); list.innerHTML = '';
+            myTokens.forEach(t => {
+                let d = document.createElement('div');
+                d.className = 'mini-token'; d.style.backgroundColor = this.colors[p];
+                d.onclick = () => { document.getElementById('stackPopup').style.display='none'; this.moveToken(t); };
+                list.appendChild(d);
+            });
+            document.getElementById('stackPopup').style.display = 'flex';
+        }
+    },
+    
+    async moveToken(t) {
+        if (t.pos === -1 && this.diceVal !== 6) return;
+        if (t.pos + this.diceVal >= this.paths[t.color].length) return;
+        this.isMoving = true;
+        if (t.pos === -1) {
+            t.pos = 0; let c = this.paths[t.color][0];
+            t.x = c[0]; t.y = c[1]; playSound('step'); this.renderTokens(); await sleep(300);
+        } else {
+            for(let i=0; i<this.diceVal; i++) {
+                t.pos++; let c = this.paths[t.color][t.pos];
+                t.x = c[0]; t.y = c[1]; playSound('step'); this.renderTokens(); await sleep(200);
+            }
+        }
+        
+        if (t.pos === this.paths[t.color].length - 1) { t.finished = true; this.checkRank(t.color); } 
+        else {
+            let isSafe = [1,6, 8,1, 13,8, 6,13].some(s=>s===t.x && s===t.y) || [2,8, 6,2, 12,6, 8,12].some(s=>s===t.x && s===t.y);
+            if (!isSafe) {
+                const enemies = this.tokens.filter(e => e.color !== t.color && !e.finished && Math.abs(e.x-t.x)<0.1 && Math.abs(e.y-t.y)<0.1);
+                if (enemies.length > 0) { for(let e of enemies) await this.killToken(e); this.canRoll = true; }
+            }
+        }
+        
+        this.isMoving = false;
+        if (this.finishedPlayers.length >= this.players.length - 1) { this.finishGame(); return; }
+
+        let rollAgain = false;
+        if (t.finished || this.diceVal === 6 || document.getElementById('rollBtn').innerText === "ROLL AGAIN") { 
+            if(!this.finishedPlayers.includes(t.color)) rollAgain = true;
+        }
+
+        if (rollAgain) {
+            this.diceVal = 0; this.canRoll = true;
+            document.getElementById('rollBtn').disabled = false;
+            document.getElementById('statusMsg').innerText = "ROLL AGAIN!";
+            this.checkCpuTurn(); 
+        } else { this.nextTurn(); }
+    },
+    
+    async killToken(t) {
+        while(t.pos >= 0) {
+            t.pos--;
+            if (t.pos < 0) { let h = this.homes[t.color][t.id]; t.x = h[0]; t.y = h[1]; } 
+            else { let c = this.paths[t.color][t.pos]; t.x = c[0]; t.y = c[1]; }
+            this.renderTokens(); await sleep(20);
+        }
+    },
+    
+    checkRank(color) {
+        const allDone = this.tokens.filter(t => t.color === color && !t.finished).length === 0;
+        if (allDone && !this.finishedPlayers.includes(color)) {
+            this.finishedPlayers.push(color); playSound('win');
+            this.displayRank(color, this.finishedPlayers.length);
+        }
+    },
+
+    displayRank(color, rank) {
+        let text = '', fill = '';
+        if (rank === 1) { text = '1ST'; fill = '#FFD700'; }
+        else if (rank === 2) { text = '2ND'; fill = '#C0C0C0'; }
+        else if (rank === 3) { text = '3RD'; fill = '#CD7F32'; }
+        else { text = '4TH'; fill = 'url(#brick)'; } 
+        const center = this.homeCenters[color];
+        const svgText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        svgText.setAttribute("x", center.x); svgText.setAttribute("y", center.y);
+        svgText.setAttribute("class", "rank-txt-svg");
+        if (rank === 4) { svgText.setAttribute("fill", "url(#brick)"); svgText.setAttribute("stroke", "#8B4513"); svgText.setAttribute("stroke-width", "0.08"); } 
+        else { svgText.setAttribute("fill", fill); }
+        svgText.textContent = text;
+        document.getElementById('rankLayer').appendChild(svgText);
+    },
+
+    nextTurn() {
+        let checks = 0;
+        do {
+            this.diceVal = 0; this.turn = (this.turn + 1) % this.players.length; checks++;
+        } while (this.finishedPlayers.includes(this.players[this.turn]) && checks < 5);
+        this.updateUI();
+        this.checkCpuTurn();
+    },
+    
+    updateUI() {
+        const p = this.players[this.turn];
+        const btn = document.getElementById('rollBtn');
+        const msg = document.getElementById('statusMsg');
+        msg.innerText = `${p.toUpperCase()}'S TURN`; msg.style.color = this.colors[p];
+        btn.style.background = this.colors[p]; 
+        if (!this.cpuFlags[p]) { btn.disabled = false; this.canRoll = true; } else { btn.disabled = true; }
+    },
+
+    finishGame() {
+        const loser = this.players.find(p => !this.finishedPlayers.includes(p));
+        if (loser) { this.finishedPlayers.push(loser); this.displayRank(loser, this.finishedPlayers.length); }
+        setTimeout(() => {
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            const table = document.getElementById('finalStandings'); table.innerHTML = '';
+            this.finishedPlayers.forEach((p, i) => {
+                const rank = i + 1;
+                table.innerHTML += `<div class="rank-row"><span class="rank-label">${rank}${rank===1?'ST':rank===2?'ND':rank===3?'RD':'TH'}</span><span style="color:${this.colors[p]}">${p.toUpperCase()}</span></div>`;
+            });
+        }, 1500);
+    }
+};
+</script>
+</body>
+</html>
