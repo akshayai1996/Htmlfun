@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Advanced Loan EMI Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* CSS STYLES */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 15px;
+    color: #333;
+}
+h1 { text-align: center; color: #2c3e50; }
+
+.section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+input, button, select {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box; 
+}
+
+input:focus { outline: 2px solid #3498db; border-color: transparent; }
+
+/* Readonly state for Auto EMI */
+input.read-only {
+    background: #eef2f5;
+    color: #7f8c8d;
+    cursor: not-allowed;
+}
+
+button {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 5px;
+}
+
+button:hover { background: #34495e; }
+button.secondary { background: #27ae60; }
+button.secondary:hover { background: #219150; }
+
+.checkbox-wrap {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #2980b9;
+    cursor: pointer;
+}
+.checkbox-wrap input {
+    width: auto;
+    margin-right: 5px;
+}
+
+/* SUMMARY CARDS */
+.summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.card small { display: block; color: #777; font-size: 12px; margin-bottom: 5px; }
+.card b { display: block; font-size: 16px; color: #2c3e50; }
+
+.highlight-card { border-bottom: 3px solid #e74c3c; }
+
+/* TABLE */
+.table-wrap {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+th, td {
+    padding: 10px;
+    text-align: right;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background: #2c3e50;
+    color: #fff;
+    position: sticky;
+    top: 0;
+}
+
+td:first-child, th:first-child { text-align: center; }
+tr:last-child td { border-bottom: none; }
+
+.paid { background-color: #d4edda; color: #155724; }
+.current { background-color: #fff3cd; color: #856404; font-weight: bold; border: 2px solid #ffeeba; }
+
+/* CHART & PRINT */
+canvas {
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+@media print {
+    body { background: white; padding: 0; }
+    .section, button { display: none; } 
+    .table-wrap, .summary, canvas { display: block; }
+    h1 { font-size: 18px; }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Advanced Loan EMI Tracker</h1>
+
+<div class="section">
+    <div class="grid">
+        <div>
+            <label>Loan Amount (₹)</label>
+            <input type="number" id="loan" value="630000">
+        </div>
+        <div>
+            <label>Annual Interest Rate (%)</label>
+            <input type="number" id="rate" value="8.9" step="0.1">
+        </div>
+        <div>
+            <label>Tenure (Months)</label>
+            <input type="number" id="tenure" value="84">
+        </div>
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="margin:0;">EMI Amount</label>
+                <label class="checkbox-wrap" style="margin:0;">
+                    <input type="checkbox" id="autoEMI" checked onchange="toggleAutoEMI()"> Auto-Calc
+                </label>
+            </div>
+            <input type="number" id="emi" class="read-only" readonly>
+        </div>
+        
+        <div>
+            <label>Disbursement Date (Optional)</label>
+            <input type="date" id="disburse" placeholder="When you got the money">
+        </div>
+        <div>
+            <label>First EMI Date</label>
+            <input type="date" id="start" value="2024-05-10">
+        </div>
+        
+        <div>
+            <label>Initial Prepayment (₹)</label>
+            <input type="number" id="prepay" value="0">
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <label style="font-size:15px; margin-bottom:10px;">📉 Floating Interest Rate Changes</label>
+    <div class="grid">
+        <input type="number" id="rateMonth" placeholder="Effective from EMI Month (e.g., 25)">
+        <input type="number" id="newRate" placeholder="New Interest Rate % (e.g., 9.4)">
+        <button class="secondary" onclick="addRateChange()">+ Add Rate Change</button>
+    </div>
+    <ul id="rateList" style="margin-top:10px; padding-left:20px; font-size:14px; color:#555;"></ul>
+</div>
+
+<div class="section" style="text-align: center;">
+    <div class="grid">
+        <button onclick="calculate()" style="background:#3498db;">Recalculate Schedule</button>
+        <button onclick="window.print()">Save as PDF</button>
+        <button onclick="exportCSV()">Export to Excel</button>
+    </div>
+</div>
+
+<div class="summary">
+    <div class="card"><small>EMIs Paid</small><b id="displayPaid">0</b></div>
+    <div class="card"><small>EMIs Remaining</small><b id="displayRemain">0</b></div>
+    <div class="card"><small>Outstanding Principal (Today)</small><b id="displayOutstanding">₹0</b></div>
+    <div class="card highlight-card"><small>Pre-EMI Interest (Gap)</small><b id="displayGapInterest">₹0</b></div>
+    <div class="card"><small>Interest Paid So Far</small><b id="displayIntPaid">₹0</b></div>
+    <div class="card"><small>Total Interest Cost</small><b id="displayIntTotal">₹0</b></div>
+    <div class="card"><small>Loan End Date</small><b id="displayEndDate">-</b></div>
+</div>
+
+<canvas id="chart"></canvas>
+
+<div class="table-wrap">
+    <table id="scheduleTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>EMI</th>
+                <th>Principal</th>
+                <th>Interest</th>
+                <th>Balance</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+    </table>
+</div>
+
+<script>
+// Global Variables
+let rateChanges = [];
+let chartInstance = null;
+
+// Helper: Get element by ID safely
+const getEl = (id) => document.getElementById(id);
+const getVal = (id) => parseFloat(getEl(id).value) || 0;
+
+// Format Currency (Indian Context)
+const formatMoney = (num) => {
+    return num.toLocaleString('en-IN', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+        style: 'currency',
+        currency: 'INR'
+    });
+};
+
+/* 1. TOGGLE MANUAL/AUTO EMI */
+function toggleAutoEMI() {
+    const isAuto = getEl('autoEMI').checked;
+    const emiInput = getEl('emi');
+    
+    if (isAuto) {
+        emiInput.readOnly = true;
+        emiInput.classList.add('read-only');
+        updateEMIInput(); // Force recalculation immediately
+    } else {
+        emiInput.readOnly = false;
+        emiInput.classList.remove('read-only');
+        emiInput.focus();
+    }
+}
+
+/* 2. AUTO-CALCULATE BASIC EMI */
+function calculateEMI(P, annualRate, months) {
+    if (P <= 0 || annualRate <= 0 || months <= 0) return 0;
+    const r = annualRate / 12 / 100;
+    const emi = P * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1);
+    return emi;
+}
+
+function updateEMIInput() {
+    if (!getEl('autoEMI').checked) return;
+
+    const P = getVal('loan');
+    const r = getVal('rate');
+    const n = getVal('tenure');
+    const emiVal = calculateEMI(P, r, n);
+    getEl('emi').value = emiVal.toFixed(2);
+}
+
+// Attach listeners
+['loan', 'rate', 'tenure'].forEach(id => {
+    getEl(id).addEventListener('input', updateEMIInput);
+});
+
+/* 3. MANAGE FLOATING RATES */
+function addRateChange() {
+    const month = getVal('rateMonth');
+    const rate = getVal('newRate');
+    
+    if (month <= 0 || rate <= 0) {
+        alert("Please enter valid positive numbers.");
+        return;
+    }
+
+    rateChanges.push({ month, rate });
+    rateChanges.sort((a, b) => a.month - b.month);
+    
+    // Render list
+    const listHtml = rateChanges.map(x => 
+        `<li>From EMI Month <strong>${x.month}</strong>: Interest changes to <strong>${x.rate}%</strong></li>`
+    ).join("");
+    getEl('rateList').innerHTML = listHtml;
+
+    getEl('rateMonth').value = "";
+    getEl('newRate').value = "";
+}
+
+function getCurrentRate(monthIndex, baseRate) {
+    let currentR = baseRate;
+    rateChanges.forEach(change => {
+        if (monthIndex >= change.month) {
+            currentR = change.rate;
+        }
+    });
+    return currentR / 12 / 100; 
+}
+
+/* 4. BROKEN PERIOD INTEREST (GAP ANALYSIS) */
+function calculateGapInterest(disburseDateStr, firstEMIDateStr, P, rate) {
+    if (!disburseDateStr || !firstEMIDateStr) return 0;
+
+    const dDate = new Date(disburseDateStr);
+    const eDate = new Date(firstEMIDateStr);
+    
+    // Standard loan starts exactly 1 month before first EMI
+    const standardStartDate = new Date(eDate);
+    standardStartDate.setMonth(eDate.getMonth() - 1);
+    
+    // If disbursement is BEFORE standard start, we have a gap
+    if (dDate < standardStartDate) {
+        const diffTime = Math.abs(standardStartDate - dDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        // Simple Interest for those extra days: P * R * (days/365)
+        const dailyRate = rate / 100 / 365;
+        const gapInterest = P * dailyRate * diffDays;
+        
+        return { days: diffDays, interest: gapInterest };
+    }
+    return { days: 0, interest: 0 };
+}
+
+/* 5. CORE CALCULATION LOOP */
+function calculate() {
+    const P_initial = getVal('loan');
+    const P_prepay = getVal('prepay');
+    const baseRate = getVal('rate');
+    const emiFixed = getVal('emi'); 
+    const maxMonths = getVal('tenure') + 360; 
+    
+    const startVal = getEl('start').value;
+    const disburseVal = getEl('disburse').value;
+
+    if (!startVal) { alert("Please select a First EMI date"); return; }
+    const startDate = new Date(startVal);
+    const today = new Date();
+
+    // --- GAP INTEREST CALCULATION ---
+    let gapInfo = { days: 0, interest: 0 };
+    if (disburseVal) {
+        gapInfo = calculateGapInterest(disburseVal, startVal, P_initial, baseRate);
+    }
+    
+    let balance = P_initial - P_prepay;
+    
+    let currentOutstanding = balance; 
+    let totalInterest = 0;
+    let totalPrincipal = 0;
+    let paidCount = 0;
+    let paidInterestSoFar = 0;
+    
+    let htmlRows = "";
+    let finalDateString = "";
+    
+    let i = 1;
+    while (balance > 1 && i <= maxMonths) {
+        const r = getCurrentRate(i, baseRate);
+        let interestPart = balance * r;
+        let principalPart = emiFixed - interestPart;
+        
+        if (principalPart > balance) {
+            principalPart = balance;
+        }
+        
+        balance -= principalPart;
+        if (balance < 0) balance = 0; 
+
+        totalInterest += interestPart;
+        totalPrincipal += principalPart;
+
+        const currentRowDate = new Date(startDate);
+        currentRowDate.setMonth(startDate.getMonth() + (i - 1));
+        
+        // Determine Status
+        let rowClass = "";
+        const isPast = currentRowDate < today;
+        const isCurrent = currentRowDate.getMonth() === today.getMonth() && 
+                          currentRowDate.getFullYear() === today.getFullYear();
+
+        if (isPast && !isCurrent) {
+            rowClass = "paid";
+            paidCount++;
+            paidInterestSoFar += interestPart;
+            currentOutstanding = balance;
+        } else if (isCurrent) {
+            rowClass = "current";
+        }
+
+        htmlRows += `
+            <tr class="${rowClass}">
+                <td>${i}</td>
+                <td>${formatMoney(principalPart + interestPart)}</td>
+                <td>${formatMoney(principalPart)}</td>
+                <td>${formatMoney(interestPart)}</td>
+                <td>${formatMoney(balance)}</td>
+                <td>${currentRowDate.toLocaleDateString('en-IN')}</td>
+            </tr>
+        `;
+
+        finalDateString = currentRowDate.toLocaleDateString('en-IN');
+        i++;
+    }
+
+    // Update UI
+    getEl('rows').innerHTML = htmlRows;
+    getEl('displayPaid').innerText = paidCount;
+    getEl('displayRemain').innerText = (i - 1) - paidCount; 
+    getEl('displayOutstanding').innerText = formatMoney(currentOutstanding); 
+    getEl('displayIntPaid').innerText = formatMoney(paidInterestSoFar);
+    getEl('displayIntTotal').innerText = formatMoney(totalInterest);
+    getEl('displayEndDate').innerText = finalDateString;
+
+    // Update Gap Display
+    const gapEl = getEl('displayGapInterest');
+    if (gapInfo.interest > 0) {
+        gapEl.innerHTML = `${formatMoney(gapInfo.interest)} <br><span style="font-size:11px;color:#777">(${gapInfo.days} days extra)</span>`;
+    } else {
+        gapEl.innerText = "₹0";
+    }
+
+    drawChart(totalPrincipal, totalInterest);
+}
+
+/* 6. CHART & EXPORT */
+function drawChart(principal, interest) {
+    const ctx = getEl('chart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Principal Amount', 'Total Interest'],
+            datasets: [{
+                data: [principal, interest],
+                backgroundColor: ['#27ae60', '#e74c3c'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Total Cost Breakdown' }
+            }
+        }
+    });
+}
+
+function exportCSV() {
+    let csv = "EMI No,Amount,Principal,Interest,Balance,Date\n";
+    document.querySelectorAll("#rows tr").forEach(row => {
+        const cols = row.querySelectorAll("td");
+        csv += Array.from(cols).map(c => c.innerText.replace(/₹|,/g, '')).join(",") + "\n";
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "emi_schedule_india.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// Initial Run
+updateEMIInput();
+setTimeout(calculate, 500);
+
+</script>
+
+</body>
+</html>
