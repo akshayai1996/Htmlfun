@@ -45,7 +45,7 @@
             <p class="subtitle">AI-Generated Interactive Projects & Games</p>
             <div class="stats">
                 <div class="stat-card">
-                    <strong>9</strong> Projects
+                    <strong>10</strong> Projects
                 </div>
                 <div class="stat-card">
                     <strong>100%</strong> AI Created
@@ -68,6 +68,13 @@
         </div>
 
         <div class="projects-grid" id="projectsGrid">
+
+            <a href="emi.html" class="project-card" data-keywords="emi loan calculator finance interest amortization bank" data-category="tool">
+                <div class="project-icon">🏦</div>
+                <div class="project-title">Advanced EMI Tracker</div>
+                <div class="project-description">Smart loan calculator with floating rates, prepayments, and gap interest analysis</div>
+                <div class="project-tags"><span class="project-tag">Tool</span></div>
+            </a>
 
             <a href="SPEEDCALC.HTML" class="project-card" data-keywords="speed calculator velocity tool physics distance time" data-category="tool">
                 <div class="project-icon">⚡</div>
@@ -125,7 +132,6 @@
                 <div class="project-tags"><span class="project-tag">Visualization</span></div>
             </a>
 
-            <!-- NEW LUDO ENTRY -->
             <a href="LUDO.html" class="project-card" data-keywords="LUDO board game multiplayer dice strategy" data-category="game">
                 <div class="project-icon">🎲</div>
                 <div class="project-title">LUDO Pro</div>
@@ -140,7 +146,7 @@
         </div>
         
         <footer>
-            <p>🤖 All projects created with AI assistance |
+            <p>🤖 All projects created with AI assistance | 
             <a href="https://github.com/akshayai1996/Htmlfun" target="_blank" style="color:white; font-weight:bold;">
                 View on GitHub
             </a></p>
@@ -176,7 +182,7 @@
 
         function sortAlphabetically() {
             const cards = getCards();
-            cards.sort((a, b) =>
+            cards.sort((a, b) => 
                 a.querySelector('.project-title').innerText.localeCompare(
                     b.querySelector('.project-title').innerText
                 )
