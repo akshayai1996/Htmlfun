@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMap Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Outfit:wght@300;400;500;600&family=Poppins:wght@300;400;500;600&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+:root {
+    --bg-color: #f4f4f9;
+    --grid-color: #e0e0e0;
+    --primary-color: #6c5ce7;
+    --accent-color: #00cec9;
+    --text-color: #2d3436;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.15);
+    --node-bg: #fff;
+    --header-bg: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-mode {
+    --bg-color: #000000;
+    --grid-color: transparent;
+    --primary-color: #cba6f7;
+    --text-color: #ffffff;
+    --glass-bg: rgba(20, 20, 20, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --node-bg: #1a1a1a;
+    --header-bg: rgba(0, 0, 0, 0.8);
+    --shadow-sm: 0 4px 6px rgba(255, 255, 255, 0.05);
+    --shadow-md: 0 10px 15px rgba(255, 255, 255, 0.1);
+    --shadow-lg: 0 20px 25px rgba(255, 255, 255, 0.15);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(var(--grid-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    color: var(--text-color);
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent selection of UI when dragging */
+}
+
+#scroll-wrapper {
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    position: relative;
+    /* Hide scrollbar for cleaner UI? Optional */
+}
+
+#app-container {
+    position: relative;
+    min-width: 100%;
+    min-height: 100%;
+    /* width/height will be set by JS if expanded */
+    background-image: radial-gradient(var(--grid-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Header */
+#app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    background: var(--header-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: none;
+    box-shadow: 0 1px 0 var(--glass-border);
+    z-index: 1000;
+}
+
+#theme-toggle {
+    position: absolute;
+    right: 20px;
+}
+
+.logo {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: -0.5px;
+    filter: drop-shadow(0 2px 4px rgba(108, 92, 231, 0.2));
+}
+
+.logo i {
+    font-size: 28px;
+    color: var(--primary-color);
+    -webkit-text-fill-color: initial;
+    /* Don't clip icon if using font icon, or keep gradient if desired */
+    /* Let's keep gradient on icon too by inheriting or applying similar */
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Palette Colors */
+.p-red {
+    background-color: #ff7675;
+}
+
+.p-blue {
+    background-color: #74b9ff;
+}
+
+.p-green {
+    background-color: #55efc4;
+}
+
+.p-yellow {
+    background-color: #ffeaa7;
+}
+
+.p-purple {
+    background-color: #a29bfe;
+}
+
+.p-grey {
+    background-color: #636e72;
+}
+
+/* Layers */
+#connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    /* Let clicks pass through to canvas/nodes */
+}
+
+#nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+/* Resize Handle */
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    cursor: nwse-resize;
+    z-index: 15;
+}
+
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 8px 8px;
+    border-color: transparent transparent var(--text-color) transparent;
+    opacity: 0.3;
+}
+
+.mind-node:hover .resize-handle::after {
+    opacity: 0.7;
+}
+
+/* Nodes */
+.mind-node {
+    position: absolute;
+    min-width: 60px;
+    min-height: 30px;
+    height: auto;
+    width: auto;
+    max-width: 300px;
+    padding: 8px 12px;
+    background-color: var(--node-bg);
+    color: var(--text-color);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: box-shadow 0.2s;
+    font-size: 14px;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.mind-node:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+}
+
+.mind-node.selected {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+    z-index: 20;
+}
+
+.node-content {
+    width: auto;
+    height: auto;
+    min-width: 10px;
+    min-height: 1em;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: inherit;
+    color: inherit;
+    outline: none;
+    cursor: text;
+    white-space: pre-wrap;
+    word-break: break-word;
+    pointer-events: auto;
+    display: inline-block;
+}
+
+/* Toolbar */
+#toolbar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    /* Force horizontal */
+    align-items: center;
+    gap: 8px;
+    /* Reduced gap to fit content */
+    padding: 10px 10px;
+    /* Reduced padding */
+    border-radius: 16px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 98vw;
+    /* Allow slightly more width */
+    /* Allow more width */
+    overflow-x: auto;
+    /* Hide scrollbar for toolbar */
+    scrollbar-width: none;
+    padding-right: 10px;
+    /* Reduced right padding */
+    /* Add extra breathing room at the end */
+}
+
+#current-filename {
+    flex-shrink: 0;
+    /* Prevent shrinking */
+    margin-right: 10px;
+}
+
+#toolbar::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #toolbar {
+        bottom: 20px;
+        padding: 5px 15px;
+        max-width: 95vw;
+        border-radius: 12px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        /* scroll from left */
+    }
+
+    .toolbar-section {
+        flex-shrink: 0;
+        /* Prevent shrinking on mobile */
+    }
+}
+
+#toolbar.collapsed {
+    bottom: 15px;
+    padding: 8px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+#toolbar.collapsed .toolbar-content {
+    display: none;
+    opacity: 0;
+}
+
+#toolbar.collapsed #btn-toggle-toolbar i {
+    transform: rotate(180deg);
+}
+
+.toolbar-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: opacity 0.2s;
+}
+
+#btn-toggle-toolbar {
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: 0.2s;
+}
+
+#btn-toggle-toolbar:hover {
+    opacity: 1;
+}
+
+.toolbar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mini-input {
+    width: 40px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: var(--node-bg);
+    color: var(--text-color);
+    text-align: center;
+    font-family: inherit;
+}
+
+.color-picker-wrapper.small {
+    width: 24px;
+    height: 24px;
+}
+
+.toolbar-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0.7;
+    letter-spacing: 0.5px;
+}
+
+.tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--node-bg);
+    color: var(--text-color);
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-btn i {
+    pointer-events: none;
+}
+
+.tool-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.tool-btn.danger:hover {
+    background: #ff7675;
+}
+
+.divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 0 5px;
+}
+
+/* Inputs */
+.color-picker-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid var(--node-bg);
+}
+
+/* Palette Buttons */
+.palette-container {
+    display: flex;
+    gap: 5px;
+}
+
+.palette-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.palette-btn:hover {
+    transform: scale(1.2);
+    z-index: 2;
+}
+
+/* Text Toggle */
+.text-color-toggle {
+    display: flex;
+    gap: 5px;
+}
+
+.color-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: var(--shadow-sm);
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+input[type="color"] {
+    width: 150%;
+    height: 150%;
+    border: none;
+    background: none;
+    transform: translate(-25%, -25%);
+    cursor: pointer;
+}
+
+select {
+    padding: 5px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: var(--node-bg);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: var(--shadow-sm);
+}
+
+select:focus {
+    border-color: var(--primary-color);
+}
+
+
+/* SVG Arrow Styling */
+.arrow-shape {
+    fill: var(--text-color);
+    transition: fill 0.3s ease;
+}
+
+/* Info Overlay */
+/* Info Overlay Removed */
+
+
+
+/* Connection Lines */
+path.connection-line {
+    transition: stroke 0.3s;
+}
+
+path.connection-line:hover {
+    stroke-width: 4px;
+    cursor: pointer;
+}
+
+/* Context Menu */
+.context-menu {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-lg);
+    border-radius: 8px;
+    padding: 5px 0;
+    z-index: 1000;
+    min-width: 150px;
+    list-style: none;
+}
+
+.context-menu.visible {
+    display: flex;
+}
+
+.context-menu li {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    color: var(--text-color);
+}
+
+.context-menu li:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.context-menu li.danger {
+    color: #e74c3c;
+}
+
+.context-menu li.danger:hover {
+    background: #ffeaa7;
+}
+
+.context-menu i {
+    width: 16px;
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #toolbar {
+        bottom: 0;
+        left: 0;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+        padding: 10px;
+        gap: 12px;
+        justify-content: flex-start;
+        /* Scrollable from start */
+        background: rgba(255, 255, 255, 0.98);
+        /* More solid on mobile */
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode #toolbar {
+        background: rgba(30, 30, 30, 0.98);
+    }
+
+    .toolbar-label {
+        display: none;
+        /* Hide labels to save space */
+    }
+
+    .toolbar-section {
+        gap: 0;
+        /* Remove gap since labels are gone */
+    }
+
+    /* Make buttons slightly more compact but touch-friendly */
+    .tool-btn {
+        width: 42px;
+        /* Good touch target */
+        height: 42px;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Compact Palette */
+    .palette-container {
+        gap: 6px;
+    }
+
+    .palette-btn {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    #current-filename {
+        display: none;
+        /* Hide filename on mobile */
+    }
+
+    .divider {
+        height: 24px;
+        margin: 0 4px;
+    }
+
+    /* Ensure inputs are touch-friendly */
+    input[type="color"] {
+        width: 32px;
+        height: 32px;
+    }
+
+    .mini-input {
+        height: 32px;
+        width: 50px;
+        font-size: 14px;
+    }
+
+    select {
+        height: 32px;
+        font-size: 14px;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) {
+    .tool-btn:hover {
+        transform: none;
+        /* Remove hover transform on touch */
+    }
+
+    /* Add slight active state instead */
+    .tool-btn:active {
+        transform: scale(0.95);
+        background: var(--primary-color);
+        color: white;
+    }
+}
+
+/* Action Group Padding (Touch Up) */
+.action-group {
+    /* margin-left removed to prevent overflow (toolbar has gap) */
+    padding: 4px 8px;
+    /* Slightly reduced padding */
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+}
+
+body.dark-mode .action-group {
+    background: rgba(255, 255, 255, 0.05);
+}
+</style>
+</head>
+
+<body>
+    <header id="app-header" class="glass-panel">
+        <div class="logo">
+            <i class="fa-solid fa-brain"></i> MindMap
+        </div>
+        <button id="theme-toggle" class="tool-btn" title="Toggle Dark Mode">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </header>
+
+    <div id="scroll-wrapper">
+        <div id="app-container">
+            <!-- Canvas for drawing lines (background layer) -->
+            <svg id="connections-layer">
+                <defs>
+                    <marker id="arrow" markerWidth="12" markerHeight="12" refX="8" refY="6" orient="auto"
+                        markerUnits="userSpaceOnUse">
+                        <path d="M0,0 L12,6 L0,12 L4,6 Z" class="arrow-shape" />
+                    </marker>
+                </defs>
+            </svg>
+
+            <!-- Nodes container (foreground layer) -->
+            <div id="nodes-layer"></div>
+        </div>
+    </div>
+
+    <!-- Toolbar (Fixed to screen) -->
+    <div id="toolbar" class="glass-panel">
+        <button id="btn-toggle-toolbar" class="tool-btn small" title="Minimize Toolbar">
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+
+        <div class="toolbar-content">
+            <div class="toolbar-section">
+                <span class="toolbar-label">Add</span>
+                <button id="btn-add-node" class="tool-btn" title="Add Node"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Palette</span>
+                <div class="palette-container">
+                    <button class="palette-btn p-red" data-color="#ff7675" title="Red"></button>
+                    <button class="palette-btn p-blue" data-color="#74b9ff" title="Blue"></button>
+                    <button class="palette-btn p-green" data-color="#55efc4" title="Green"></button>
+                    <button class="palette-btn p-yellow" data-color="#ffeaa7" title="Yellow"></button>
+                    <button class="palette-btn p-purple" data-color="#a29bfe" title="Purple"></button>
+                    <button class="palette-btn p-grey" data-color="#636e72" title="Grey"></button>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Border</span>
+                <select id="border-style" title="Border Style">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="double">Double</option>
+                    <option value="none">None</option>
+                </select>
+            </div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Font</span>
+                <select id="font-family" title="Font Family">
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Indie Flower', cursive">Handwritten</option>
+                    <option value="'Roboto Mono', monospace">Mono</option>
+                    <option value="'Outfit', sans-serif">Outfit</option>
+                </select>
+            </div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Text</span>
+                <div class="toolbar-row">
+                    <div class="text-color-toggle">
+                        <button class="color-btn" data-color="#2d3436" title="Black Text"
+                            style="background:#2d3436; border:1px solid #fff;"></button>
+                        <button class="color-btn" data-color="#ffffff" title="White Text"
+                            style="background:#fff; border:1px solid #ccc;"></button>
+                        <button id="btn-toggle-text-all" class="tool-btn small" title="Invert All Text Colors"
+                            style="width:24px; height:24px; font-size:12px;">
+                            <i class="fa-solid fa-retweet"></i>
+                        </button>
+                    </div>
+                    <input type="number" id="font-size" value="14" min="8" max="72" title="Font Size"
+                        class="mini-input">
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Line</span>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="line-color" value="#333333" title="Line Color">
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">Edit</span>
+                <div class="toolbar-row">
+                    <button id="btn-undo" class="tool-btn" title="Undo (Ctrl+Z)"><i
+                            class="fa-solid fa-rotate-left"></i></button>
+                    <button id="btn-redo" class="tool-btn" title="Redo (Ctrl+X)"><i
+                            class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="toolbar-section">
+                <span class="toolbar-label">File</span>
+                <div class="toolbar-row">
+                    <button id="btn-new" class="tool-btn" title="New Project (Ctrl+N)"><i
+                            class="fa-solid fa-file"></i></button>
+                    <button id="btn-save" class="tool-btn" title="Save Project (.mm) (Ctrl+S)"><i
+                            class="fa-solid fa-floppy-disk"></i></button>
+                    <button id="btn-open" class="tool-btn" title="Open Project (.mm)"><i
+                            class="fa-solid fa-folder-open"></i></button>
+                    <!-- Export MM button removed as Save is now default .mm -->
+                    <button id="btn-export-img" class="tool-btn" title="Export as Image"><i
+                            class="fa-solid fa-image"></i></button>
+                    <span id="current-filename"
+                        style="font-size: 12px; color: var(--text-color); margin-left: 8px; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Untitled</span>
+                    <input type="file" id="file-input" accept=".mm" style="display: none;">
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="toolbar-section action-group">
+                <button id="btn-delete" class="tool-btn danger" title="Delete Selected"><i
+                        class="fa-solid fa-trash"></i></button>
+                <button id="btn-clear" class="tool-btn danger" title="Clear All"><i
+                        class="fa-solid fa-eraser"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <ul id="context-menu" class="context-menu glass-panel">
+        <li id="cm-add-child"><i class="fa-solid fa-diagram-project"></i> Add Child Node</li>
+        <li id="cm-duplicate"><i class="fa-regular fa-copy"></i> Duplicate</li>
+        <li id="cm-connect" style="display:none;"><i class="fa-solid fa-link"></i> Establish Relationship</li>
+        <li id="cm-delete-node" class="danger"><i class="fa-solid fa-trash"></i> Delete</li>
+    </ul>
+
+
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const appContainer = document.getElementById('app-container');
+        const nodesLayer = document.getElementById('nodes-layer');
+        const connectionsLayer = document.getElementById('connections-layer');
+        const btnAddNode = document.getElementById('btn-add-node');
+        const btnDelete = document.getElementById('btn-delete');
+        const btnClear = document.getElementById('btn-clear');
+        const colorPicker = document.getElementById('node-color');
+        const lineColorPicker = document.getElementById('line-color');
+        const borderStylePicker = document.getElementById('border-style');
+        const fontFamilyPicker = document.getElementById('font-family');
+        const textColorPicker = document.getElementById('text-color');
+        const fontSizeInput = document.getElementById('font-size');
+        const contextMenu = document.getElementById('context-menu');
+        const cmAddChild = document.getElementById('cm-add-child');
+        const cmDuplicate = document.getElementById('cm-duplicate');
+        const cmDeleteNode = document.getElementById('cm-delete-node');
+        const themeToggle = document.getElementById('theme-toggle');
+        const scrollWrapper = document.getElementById('scroll-wrapper');
+
+        const btnToggleToolbar = document.getElementById('btn-toggle-toolbar');
+        const toolbar = document.getElementById('toolbar');
+
+        const btnToggleTextAll = document.getElementById('btn-toggle-text-all');
+        const btnSave = document.getElementById('btn-save');
+        const btnNew = document.getElementById('btn-new');
+        const btnUndo = document.getElementById('btn-undo');
+        const btnRedo = document.getElementById('btn-redo');
+
+        const btnOpen = document.getElementById('btn-open');
+        const btnExportImg = document.getElementById('btn-export-img');
+        const fileInput = document.getElementById('file-input');
+        const currentFilename = document.getElementById('current-filename');
+
+        if (!appContainer || !nodesLayer || !connectionsLayer) {
+            // console.log check passed
+        }
+
+
+        let nodes = [];
+        let connections = [];
+        let selectedNode = null;
+        let selectedNodes = []; // Multi-select support
+        let isDraggingNode = false;
+        let dragOffset = { x: 0, y: 0 };
+        let currentLineColor = '#333';
+        let isResizingNode = false;
+        let resizeStart = { x: 0, y: 0, width: 0, height: 0 };
+
+        let contextMenuTarget = null;
+        const cmConnect = document.getElementById('cm-connect');
+
+        // Undo/Redo history
+        let undoHistory = [];
+        let redoHistory = [];
+        let fileHandle = null; // For File System Access API
+        let hasUnsavedChanges = false;
+        let isLoading = false; // Flag to prevent saveState during loading
+
+        // Default Styles State
+        let defaultNodeStyle = {
+            textColor: '#2d3436',
+            fontSize: '14px',
+            fontFamily: "'Poppins', sans-serif",
+            borderStyle: 'solid',
+            borderColor: '#333',
+            borderWidth: '0' // Default to 0 unless set
+        };
+
+        // --- Initialization ---
+
+        function init() {
+            console.log('MindMap Initializing...');
+
+            // Scroll to center of the 5000x5000 canvas
+            // Scroll to center disabled - starting at 0,0
+            // if (scrollWrapper) {
+            //     scrollWrapper.scrollTop = 0;
+            //     scrollWrapper.scrollLeft = 0;
+            // }
+
+            // Add initial central node safe position relative to VIEWPORT Center
+            // Since appContainer starts at 100vw/100vh, this puts it in the middle of the initial view.
+            const startX = window.innerWidth / 2 - 100;
+            const startY = window.innerHeight / 2 - 50;
+            createNode(startX, startY, 'Main Idea', '#6c5ce7', true);
+
+            // Theme Toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const icon = themeToggle.querySelector('i');
+                    if (document.body.classList.contains('dark-mode')) {
+                        icon.classList.remove('fa-moon');
+                        icon.classList.add('fa-sun');
+                        // Auto-swap default lines from black to white
+                        connections.forEach(conn => {
+                            const stroke = conn.element.getAttribute('stroke');
+                            if (stroke === '#333' || stroke === '#333333') {
+                                conn.element.setAttribute('stroke', '#ffffff');
+                            }
+                        });
+                        currentLineColor = '#ffffff';
+                        if (lineColorPicker) lineColorPicker.value = '#ffffff';
+                    } else {
+                        icon.classList.remove('fa-sun');
+                        icon.classList.add('fa-moon');
+                        // Auto-swap default lines from white to black
+                        connections.forEach(conn => {
+                            const stroke = conn.element.getAttribute('stroke');
+                            if (stroke === '#fff' || stroke === '#ffffff') {
+                                conn.element.setAttribute('stroke', '#333333');
+                            }
+                        });
+                        currentLineColor = '#333333';
+                        if (lineColorPicker) lineColorPicker.value = '#333333';
+                    }
+                });
+            }
+
+            // Event Listeners
+
+
+            // Global Mouse Events for Dragging and Connecting
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchmove', handleTouchMove, { passive: false });
+            window.addEventListener('touchend', handleTouchEnd);
+
+            // Keyboard Shortcuts
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key.toLowerCase()) {
+                        case 's':
+                            e.preventDefault();
+                            saveMapWithPicker();
+                            break;
+                        case 'z':
+                            e.preventDefault();
+                            undo();
+                            break;
+                        case 'x':
+                            e.preventDefault();
+                            redo();
+                            break;
+                        case 'n':
+                            e.preventDefault();
+                            newMap();
+                            break;
+                    }
+                }
+            });
+
+            // Context Menu Global Click to Close
+            window.addEventListener('click', (e) => {
+                if (contextMenu && !contextMenu.contains(e.target)) {
+                    contextMenu.classList.remove('visible');
+                }
+            });
+
+            // Toolbar Events
+            if (btnAddNode) {
+                btnAddNode.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    saveState(); // Save for undo
+                    // Add near center of CURRENT VIEWPORT
+                    // Add near center of CURRENT VIEWPORT
+                    // We need scroll position since we are adding relative to container
+                    const scrollX = scrollWrapper ? scrollWrapper.scrollLeft : 0;
+                    const scrollY = scrollWrapper ? scrollWrapper.scrollTop : 0;
+
+                    const x = scrollX + (window.innerWidth / 2) - 75 + (Math.random() * 40 - 20);
+                    const y = scrollY + (window.innerHeight / 2) - 50 + (Math.random() * 40 - 20);
+                    createNode(x, y);
+                });
+            }
+
+            if (btnDelete) btnDelete.addEventListener('click', deleteSelected);
+
+            if (btnClear) {
+                btnClear.addEventListener('click', () => {
+                    if (confirm('Clear entire mind map?')) {
+                        saveState(); // Save for undo
+                        nodesLayer.innerHTML = '';
+                        connections.forEach(c => c.element.remove());
+                        nodes = [];
+                        connections = [];
+                        selectedNode = null;
+                    }
+                });
+            }
+
+            // Toolbar Toggle
+            if (btnToggleToolbar && toolbar) {
+                btnToggleToolbar.addEventListener('click', () => {
+                    toolbar.classList.toggle('collapsed');
+                });
+            }
+
+            // Style Updaters
+            // Palette Buttons
+            document.querySelectorAll('.palette-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    saveState();
+                    const color = e.target.dataset.color;
+                    updateSelectedStyle('backgroundColor', color);
+                });
+            });
+
+            // Text Color Buttons
+            document.querySelectorAll('.text-color-toggle .color-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    saveState();
+                    const color = e.target.dataset.color;
+                    defaultNodeStyle.textColor = color;
+                    updateSelectedStyle('color', color);
+                });
+            });
+
+            // Toggle All Text Colors
+            if (btnToggleTextAll) {
+                btnToggleTextAll.addEventListener('click', () => {
+                    saveState();
+                    nodes.forEach(n => {
+                        const txt = n.element.querySelector('.node-content');
+                        if (txt) {
+                            // Simple heuristic: if dark, make white; if light, make black.
+                            // Actually user wants "toggle".
+                            // Let's assume toggle between #2d3436 (black-ish) and #ffffff.
+                            const current = window.getComputedStyle(txt).color;
+                            // rgb(45, 52, 54) is #2d3436
+                            // rgb(255, 255, 255) is #ffffff
+
+                            // We can check brightness or specific values.
+                            // Let's force swap based on simple check.
+                            // If it looks "dark", make it white.
+
+                            // Using simple rgb parsing or just checking style
+                            // If we set it via style, it's in style.color. 
+                            // If not, it's computed.
+
+                            if (txt.style.color === 'rgb(45, 52, 54)' || txt.style.color === '#2d3436' || txt.style.color === 'rgb(51, 51, 51)' || txt.style.color === '#333') {
+                                txt.style.color = '#ffffff';
+                            } else {
+                                txt.style.color = '#2d3436';
+                            }
+
+                            // Also update node color prop just in case
+                            n.element.style.color = txt.style.color;
+                        }
+                    });
+                });
+            }
+
+            if (borderStylePicker) borderStylePicker.addEventListener('change', (e) => {
+                saveState();
+                defaultNodeStyle.borderStyle = e.target.value;
+                defaultNodeStyle.borderWidth = e.target.value === 'none' ? '0' : '3px';
+                updateSelectedStyle('borderStyle', e.target.value);
+            });
+            if (fontFamilyPicker) fontFamilyPicker.addEventListener('change', (e) => {
+                saveState();
+                defaultNodeStyle.fontFamily = e.target.value;
+                updateSelectedStyle('fontFamily', e.target.value);
+            });
+            if (lineColorPicker) {
+                lineColorPicker.addEventListener('input', (e) => {
+                    // Debounce or save on start? Input fires rapidly.
+                    // For now, let's strictly save only on 'change' or use a specialized approach.
+                    // But user specifically asked to check all buttons.
+                    // 'input' is noisy. Better to use 'change' for history?
+                    // Actually, let's rely on 'change' for history, but 'input' for live preview.
+                    // But changing line color via picker is a state change.
+                    // Let's optimize: saveState only on 'change' event for color pickers if possible, 
+                    // but listeners are set to 'input' here.
+                    // Simpler: just saveState. It might flood history if drag, but acceptable for now.
+                    // Or better: change listener type for saving? NO, keep it simple.
+                    // Wait, standard practice for undo/redo on sliders/pickers is save on mouseup/change.
+                    // I will change this to 'change' for saving, or just accept the flood.
+                    // Given the request, I will just add saveState() here.
+                    // Ideally should check if value actually changed significantly.
+                });
+                lineColorPicker.addEventListener('change', (e) => {
+                    saveState();
+                    currentLineColor = e.target.value;
+                    updateSelectedConnectionStyle(e.target.value);
+                });
+            }
+            // Removed old textColorPicker and colorPicker listener
+            if (fontSizeInput) fontSizeInput.addEventListener('change', (e) => {
+                saveState();
+                defaultNodeStyle.fontSize = e.target.value + 'px';
+                updateSelectedStyle('fontSize', e.target.value + 'px');
+            });
+
+            // File Operations
+            if (btnNew) {
+                btnNew.addEventListener('click', newMap);
+            }
+            if (btnSave) {
+                btnSave.addEventListener('click', saveMapWithPicker);
+            }
+            if (btnUndo) {
+                btnUndo.addEventListener('click', undo);
+            }
+            if (btnRedo) {
+                btnRedo.addEventListener('click', redo);
+            }
+
+            if (btnOpen) {
+                btnOpen.addEventListener('click', async () => {
+                    if ('showOpenFilePicker' in window) {
+                        try {
+                            const [handle] = await window.showOpenFilePicker({
+                                types: [{
+                                    description: 'FreeMind MindMap',
+                                    accept: { 'application/xml': ['.mm'] }
+                                }],
+                                multiple: false
+                            });
+                            fileHandle = handle;
+                            const file = await handle.getFile();
+                            importMM(file);
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('Open failed:', err);
+                            }
+                        }
+                    } else {
+                        fileInput.click();
+                    }
+                });
+            }
+            if (btnExportImg) {
+                btnExportImg.addEventListener('click', exportImage);
+            }
+            if (fileInput) {
+                fileInput.addEventListener('change', openMap);
+            }
+
+            // Context Menu Actions
+            // Context Menu Actions
+            if (cmAddChild) {
+                cmAddChild.addEventListener('click', () => {
+                    if (contextMenuTarget) {
+                        saveState(); // Save for undo
+                        // Use offsetLeft/Top relative to CONTAINER, not Viewport
+                        const pLeft = contextMenuTarget.offsetLeft;
+                        const pTop = contextMenuTarget.offsetTop;
+                        const pWidth = contextMenuTarget.offsetWidth;
+
+                        // Place 50px to the right of parent
+                        const child = createNode(pLeft + pWidth + 50, pTop, 'Child Idea');
+                        createConnection(contextMenuTarget.dataset.id, child.dataset.id, currentLineColor);
+                        contextMenu.classList.remove('visible');
+                    }
+                });
+            }
+
+            if (cmDuplicate) {
+                cmDuplicate.addEventListener('click', () => {
+                    if (contextMenuTarget) {
+                        saveState(); // Save for undo
+                        // Use offsetLeft/Top relative to CONTAINER
+                        const pLeft = contextMenuTarget.offsetLeft;
+                        const pTop = contextMenuTarget.offsetTop;
+
+                        const text = contextMenuTarget.querySelector('.node-content').innerText;
+                        const style = getComputedStyle(contextMenuTarget);
+                        const clone = createNode(pLeft + 20, pTop + 20, text, style.backgroundColor);
+
+                        clone.style.width = contextMenuTarget.style.width;
+                        clone.style.height = contextMenuTarget.style.height;
+                        clone.style.color = contextMenuTarget.style.color;
+                        clone.style.fontSize = contextMenuTarget.style.fontSize;
+                        clone.style.borderStyle = contextMenuTarget.style.borderStyle;
+                        clone.style.borderColor = contextMenuTarget.style.borderColor;
+                        clone.style.borderWidth = contextMenuTarget.style.borderWidth;
+
+                        contextMenu.classList.remove('visible');
+                    }
+                });
+            }
+
+            if (cmDeleteNode) {
+                cmDeleteNode.addEventListener('click', () => {
+                    if (contextMenuTarget) {
+                        selectedNode = contextMenuTarget;
+                        deleteSelected();
+                        contextMenu.classList.remove('visible');
+                    }
+                });
+            }
+
+            if (cmConnect) {
+                cmConnect.addEventListener('click', () => {
+                    if (selectedNodes.length === 2) {
+                        const id1 = selectedNodes[0].dataset.id;
+                        const id2 = selectedNodes[1].dataset.id;
+                        // No arrow for relationship connections
+                        createConnection(id1, id2, currentLineColor, false);
+                        clearMultiSelect();
+                        contextMenu.classList.remove('visible');
+                    }
+                });
+            }
+        }
+
+        // Auto-Expand Canvas Logic
+        function expandCanvas(x, y) {
+            if (!appContainer) return;
+            // Get current dimensions
+            let currentWidth = appContainer.offsetWidth; // e.g. 1920 or scaled
+            let currentHeight = appContainer.offsetHeight;
+
+            // Padding
+            const padding = 200;
+
+            // If node is beyond edge
+            if (x + padding > currentWidth) {
+                appContainer.style.width = (x + padding) + 'px';
+            }
+            if (y + padding > currentHeight) {
+                appContainer.style.height = (y + padding) + 'px';
+            }
+        }
+
+        // --- Node Logic ---
+
+        function createNode(x, y, text = 'New Idea', color = null, isRoot = false) {
+            const defaultColors = ['#ff7675', '#74b9ff', '#55efc4', '#ffeaa7', '#a29bfe'];
+            const randomColor = color || defaultColors[Math.floor(Math.random() * defaultColors.length)];
+
+            const node = document.createElement('div');
+            node.className = 'mind-node';
+            node.style.left = `${x}px`;
+            node.style.top = `${y}px`;
+            node.style.backgroundColor = randomColor;
+
+            // Apply User Defaults or Root Overrides
+            node.style.color = isRoot ? '#fff' : defaultNodeStyle.textColor;
+            node.style.fontFamily = defaultNodeStyle.fontFamily;
+            node.style.fontSize = defaultNodeStyle.fontSize;
+            if (!isRoot && defaultNodeStyle.borderStyle !== 'none') {
+                node.style.borderStyle = defaultNodeStyle.borderStyle;
+                node.style.borderColor = defaultNodeStyle.borderColor;
+                node.style.borderWidth = defaultNodeStyle.borderWidth;
+            }
+
+            if (isRoot) {
+                node.style.color = '#fff';
+                node.style.fontWeight = 'bold';
+                node.style.width = '200px';
+                node.style.height = '120px';
+            }
+
+            const content = document.createElement('div');
+            content.className = 'node-content';
+            content.contentEditable = true;
+            content.innerText = text;
+            content.spellcheck = false;
+
+            // Prevent drag start on text
+            content.addEventListener('mousedown', (e) => e.stopPropagation());
+
+            // Update connections when typing (size changes)
+            content.addEventListener('input', () => {
+                updateConnections(node.dataset.id);
+            });
+
+            // Context Menu Trigger
+            content.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const event = new MouseEvent('contextmenu', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    clientX: e.clientX,
+                    clientY: e.clientY
+                });
+                node.dispatchEvent(event);
+            });
+
+            node.appendChild(content);
+
+            // Trigger connection update just in case
+            setTimeout(() => updateConnections(node.dataset.id), 0);
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            resizeHandle.addEventListener('mousedown', (e) => handleResizeMouseDown(e, node));
+            node.appendChild(resizeHandle);
+
+            const id = Date.now() + Math.random().toString(36).substr(2, 9);
+            node.dataset.id = id;
+
+            // Interaction handlers
+            node.addEventListener('mousedown', (e) => handleNodeMouseDown(e, node));
+            node.addEventListener('touchstart', (e) => handleTouchStart(e, node), { passive: false });
+            node.addEventListener('click', (e) => {
+                if (e.ctrlKey) {
+                    toggleMultiSelect(node);
+                } else {
+                    selectNode(node);
+                }
+            });
+            node.addEventListener('contextmenu', (e) => handleContextMenu(e, node));
+
+            nodesLayer.appendChild(node);
+            nodes.push({ id, element: node });
+
+            selectNode(node);
+
+            // Animation
+            if (node.animate) {
+                node.animate([
+                    { transform: 'scale(0.8)', opacity: 0 },
+                    { transform: 'scale(1)', opacity: 1 }
+                ], { duration: 300, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+            }
+
+            // Check if expansion needed on creation
+            expandCanvas(x, y);
+
+            return node;
+        }
+
+        function selectNode(node) {
+            // Clear previous single selection
+            if (selectedNode && selectedNode !== node) {
+                selectedNode.classList.remove('selected');
+            }
+
+            // Clear multi-select when selecting a single node
+            selectedNodes.forEach(n => {
+                if (n !== node) n.classList.remove('selected');
+            });
+            selectedNodes = [node];
+
+            selectedNode = node;
+            selectedNode.classList.add('selected');
+        }
+
+        function toggleMultiSelect(node) {
+            const index = selectedNodes.indexOf(node);
+            if (index > -1) {
+                // Remove from selection
+                selectedNodes.splice(index, 1);
+                node.classList.remove('selected');
+            } else {
+                // Add to selection
+                selectedNodes.push(node);
+                node.classList.add('selected');
+            }
+            selectedNode = selectedNodes.length > 0 ? selectedNodes[selectedNodes.length - 1] : null;
+        }
+
+        function deleteSelected() {
+            if (selectedNode) {
+                saveState(); // Save for undo
+                const id = selectedNode.dataset.id;
+                connections = connections.filter(conn => {
+                    if (conn.from === id || conn.to === id) {
+                        conn.element.remove();
+                        return false;
+                    }
+                    return true;
+                });
+                selectedNode.remove();
+                nodes = nodes.filter(n => n.id !== id);
+                selectedNode = null;
+            }
+        }
+
+        function updateSelectedStyle(property, value) {
+            if (selectedNode) {
+                if (property === 'borderStyle') {
+                    selectedNode.style.borderWidth = value === 'none' ? '0' : '3px';
+                    selectedNode.style.borderColor = '#333';
+                }
+                selectedNode.style[property] = value;
+                if (property === 'color') {
+                    const content = selectedNode.querySelector('.node-content');
+                    if (content) content.style.color = value;
+                }
+            }
+        }
+
+        function handleResizeMouseDown(e, node) {
+            e.stopPropagation();
+            isResizingNode = true;
+            selectedNode = node;
+            const rect = node.getBoundingClientRect();
+            resizeStart = {
+                x: e.clientX,
+                y: e.clientY,
+                width: rect.width,
+                height: rect.height
+            };
+        }
+
+        function handleContextMenu(e, node) {
+            e.preventDefault();
+            contextMenuTarget = node;
+
+            // If not in multi-select, select this node
+            if (!selectedNodes.includes(node)) {
+                if (!e.ctrlKey) {
+                    clearMultiSelect();
+                }
+                selectNode(node);
+            }
+
+            // Show/hide 'Establish Relationship' based on multi-select
+            if (cmConnect) {
+                cmConnect.style.display = selectedNodes.length === 2 ? 'block' : 'none';
+            }
+
+            if (contextMenu) {
+                contextMenu.style.left = `${e.clientX}px`;
+                contextMenu.style.top = `${e.clientY}px`;
+                contextMenu.classList.add('visible');
+            }
+        }
+
+        function clearMultiSelect() {
+            selectedNodes.forEach(n => n.classList.remove('selected'));
+            selectedNodes = [];
+        }
+
+        function handleNodeMouseDown(e, node) {
+            if (!e.target.isContentEditable) {
+                saveState(); // Save for undo before moving
+                isDraggingNode = true;
+                selectedNode = node;
+                selectNode(node);
+                // dragOffset needs to be relative to the NODE's position vs Client (viewport) mouse
+                // Node position is absolute in container.
+                // e.clientX is viewport.
+                // We want to track delta.
+
+                // Keep distinct drag start logic?
+                // Actually, simplest is:
+                // offset = mousePagePos - nodePos
+                // where mousePagePos = clientX + scrollLeft
+
+                const rect = node.getBoundingClientRect(); // Viewport rect
+                // rect.left is relative to viewport. e.clientX is viewport.
+                // difference = e.clientX - rect.left. This matches "offset inside node".
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                e.stopPropagation();
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (isDraggingNode && selectedNode) {
+                // We need new Left/Top relative to CONTAINER
+                // Mouse Viewport X = e.clientX
+                // Container X = e.clientX + scrollLeft - containerOffset(0)
+                // New Node Left = Container X - dragOffset
+
+                // Correction: e.clientX/Y is strictly viewport.
+                // If container is relative, left/top are pixels from 0,0 of container.
+                // Mouse in container = (e.clientX + scrollWrapper.scrollLeft)
+
+                let containerMouseX = e.clientX + (scrollWrapper ? scrollWrapper.scrollLeft : 0);
+                let containerMouseY = e.clientY + (scrollWrapper ? scrollWrapper.scrollTop : 0);
+
+                let x = containerMouseX - dragOffset.x;
+                let y = containerMouseY - dragOffset.y;
+
+                selectedNode.style.left = `${x}px`;
+                selectedNode.style.top = `${y}px`;
+                updateConnections(selectedNode.dataset.id);
+                expandCanvas(x, y); // Check expansion during drag
+            } else if (isResizingNode && selectedNode) {
+                let dx = e.clientX - resizeStart.x;
+                let dy = e.clientY - resizeStart.y;
+                let newWidth = Math.max(100, resizeStart.width + dx);
+                let newHeight = Math.max(40, resizeStart.height + dy);
+                selectedNode.style.width = `${newWidth}px`;
+                selectedNode.style.height = `${newHeight}px`;
+                updateConnections(selectedNode.dataset.id);
+            }
+        }
+
+        function handleMouseUp(e) {
+            isDraggingNode = false;
+            isResizingNode = false;
+        }
+
+        // --- Touch Support ---
+        // Mapping touch events to mouse logig
+
+        let longPressTimer = null;
+
+        function handleTouchStart(e, node) {
+            if (e.touches.length > 1) return; // Ignore multi-touch
+            const touch = e.touches[0];
+
+            // Long press for context menu
+            longPressTimer = setTimeout(() => {
+                handleContextMenu({
+                    preventDefault: () => { },
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                }, node);
+                isDraggingNode = false; // Cancel drag if it was a hold
+            }, 600);
+
+            // Create mock mouse event
+            const mockEvent = {
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                target: e.target,
+                stopPropagation: () => e.stopPropagation(),
+                preventDefault: () => e.preventDefault(),
+                shiftKey: false // No shift drag on mobile yet
+            };
+            handleNodeMouseDown(mockEvent, node);
+        }
+
+        function handleTouchMove(e) {
+            if (isDraggingNode) {
+                e.preventDefault(); // Prevent scrolling while dragging
+                if (longPressTimer) clearTimeout(longPressTimer); // Cancel context menu if moved
+            }
+
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mockEvent = {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                };
+                handleMouseMove(mockEvent);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (longPressTimer) clearTimeout(longPressTimer);
+            handleMouseUp(e); // Passing original event is ok, or mock if needed. 
+            // mouseup uses e.target which might be missing in touchend.
+            // But handleMouseUp only checks connectionMode.
+            // If connectionMode active, we need target.
+            // Touchend doesn't have target of release point usually, document.elementFromPoint needed?
+
+            if (connectionMode.active && e.changedTouches.length > 0) {
+                const t = e.changedTouches[0];
+                const targetElem = document.elementFromPoint(t.clientX, t.clientY);
+                if (targetElem) {
+                    const targetNode = targetElem.closest('.mind-node');
+                    if (targetNode) {
+                        // Mock e.target for handleMouseUp logic
+                        handleMouseUp({ target: targetNode });
+                        return;
+                    }
+                }
+            }
+
+            handleMouseUp({ target: null }); // Fallback
+        }
+
+
+
+        function createConnection(id1, id2, color = '#333', showArrow = true) {
+            const exists = connections.find(c => (c.from === id1 && c.to === id2) || (c.from === id2 && c.to === id1));
+            if (exists) return;
+
+            saveState(); // Save for undo
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.setAttribute('stroke', color);
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('fill', 'none');
+            if (showArrow) {
+                line.setAttribute('marker-end', 'url(#arrow)');
+            }
+            line.classList.add('connection-line');
+
+            connectionsLayer.appendChild(line);
+            connections.push({ from: id1, to: id2, element: line, hasArrow: showArrow });
+
+            updateConnectionPath(line, id1, id2, showArrow);
+        }
+
+        function updateConnections(nodeId) {
+            connections.forEach(conn => {
+                if (conn.from === nodeId || conn.to === nodeId) {
+                    updateConnectionPath(conn.element, conn.from, conn.to, conn.hasArrow);
+                }
+            });
+        }
+
+        function updateConnectionPath(element, id1, id2, hasArrow = true) {
+            const n1 = nodes.find(n => n.id === id1).element;
+            const n2 = nodes.find(n => n.id === id2).element;
+            const container = document.getElementById('app-container');
+            const containerRect = container.getBoundingClientRect();
+
+            // Get actual visual positions relative to container
+            const r1 = n1.getBoundingClientRect();
+            const r2 = n2.getBoundingClientRect();
+
+            // Calculate centers relative to app-container
+            const scrollX = scrollWrapper ? scrollWrapper.scrollLeft : 0;
+            const scrollY = scrollWrapper ? scrollWrapper.scrollTop : 0;
+
+            const c1x = r1.left - containerRect.left + r1.width / 2 + scrollX;
+            const c1y = r1.top - containerRect.top + r1.height / 2 + scrollY;
+            const c2x = r2.left - containerRect.left + r2.width / 2 + scrollX;
+            const c2y = r2.top - containerRect.top + r2.height / 2 + scrollY;
+
+            // Direction vector
+            const dx = c2x - c1x;
+            const dy = c2y - c1y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance === 0) return;
+
+            const ndx = dx / distance;
+            const ndy = dy / distance;
+
+            // Calculate intersection with source node border
+            const hw1 = r1.width / 2;
+            const hh1 = r1.height / 2;
+            const t1x = ndx !== 0 ? hw1 / Math.abs(ndx) : Infinity;
+            const t1y = ndy !== 0 ? hh1 / Math.abs(ndy) : Infinity;
+            const t1 = Math.min(t1x, t1y);
+            const startX = c1x + ndx * t1;
+            const startY = c1y + ndy * t1;
+
+            // Calculate intersection with target node border
+            // Pull back by arrow length (12px) so arrow is visible (only if hasArrow)
+            const arrowOffset = hasArrow ? 12 : 0;
+            const hw2 = r2.width / 2;
+            const hh2 = r2.height / 2;
+            const t2x = ndx !== 0 ? hw2 / Math.abs(ndx) : Infinity;
+            const t2y = ndy !== 0 ? hh2 / Math.abs(ndy) : Infinity;
+            const t2 = Math.min(t2x, t2y);
+            // End point is at border minus arrow offset
+            const endX = c2x - ndx * (t2 + arrowOffset);
+            const endY = c2y - ndy * (t2 + arrowOffset);
+
+            element.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
+        }
+
+        function getBoxIntersection(p1, p2, rect) {
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const w = rect.width / 2;
+            const h = rect.height / 2;
+
+            const dx = p2.x - cx;
+            const dy = p2.y - cy;
+
+            if (dx === 0 && dy === 0) return { x: cx, y: cy };
+
+            let scaleX = 100000;
+            let scaleY = 100000;
+
+            if (dx !== 0) scaleX = Math.abs(w / dx);
+            if (dy !== 0) scaleY = Math.abs(h / dy);
+
+            const scale = Math.min(scaleX, scaleY);
+
+            return {
+                x: cx + dx * scale,
+                y: cy + dy * scale
+            };
+        }
+
+        function updateSelectedConnectionStyle(color) {
+            if (selectedNode) {
+                const id = selectedNode.dataset.id;
+                connections.forEach(conn => {
+                    if (conn.from === id || conn.to === id) {
+                        conn.element.setAttribute('stroke', color);
+                    }
+                });
+            }
+        }
+
+        // --- File I/O ---
+
+        function getMapData() {
+            return {
+                nodes: nodes.map(n => {
+                    const content = n.element.querySelector('.node-content');
+                    return {
+                        id: n.id,
+                        x: parseInt(n.element.style.left),
+                        y: parseInt(n.element.style.top),
+                        text: content ? content.innerText : '',
+                        style: {
+                            width: n.element.style.width,
+                            height: n.element.style.height,
+                            backgroundColor: n.element.style.backgroundColor,
+                            color: n.element.style.color,
+                            fontFamily: n.element.style.fontFamily,
+                            fontSize: n.element.style.fontSize,
+                            borderStyle: n.element.style.borderStyle,
+                            borderColor: n.element.style.borderColor,
+                            borderWidth: n.element.style.borderWidth,
+                            textColor: content ? content.style.color : '#2d3436'
+                        }
+                    };
+                }),
+                connections: connections.map(c => ({
+                    from: c.from,
+                    to: c.to,
+                    color: c.element.getAttribute('stroke'),
+                    hasArrow: c.hasArrow !== false // Default true for backwards compatibility
+                })),
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+            };
+        }
+
+        function saveState() {
+            if (isLoading) return; // Don't save state during loading/restoring
+            undoHistory.push(JSON.stringify(getMapData()));
+            redoHistory = []; // Clear redo when new action is taken
+            hasUnsavedChanges = true;
+            if (undoHistory.length > 50) undoHistory.shift(); // Limit history
+        }
+
+        function undo() {
+            if (undoHistory.length === 0) return;
+            const currentState = JSON.stringify(getMapData());
+            redoHistory.push(currentState);
+            const previousState = undoHistory.pop();
+            loadMapFromData(JSON.parse(previousState));
+        }
+
+        function redo() {
+            if (redoHistory.length === 0) return;
+            const currentState = JSON.stringify(getMapData());
+            undoHistory.push(currentState);
+            const nextState = redoHistory.pop();
+            loadMapFromData(JSON.parse(nextState));
+        }
+
+        async function newMap() {
+            if (hasUnsavedChanges) {
+                const result = confirm('Save current progress before creating new map?\n\nClick OK to save, Cancel to discard changes.');
+                if (result) {
+                    await saveMapWithPicker();
+                }
+            }
+            // Clear everything
+            nodes.forEach(n => n.element.remove());
+            nodes = [];
+            connections.forEach(c => c.element.remove());
+            connections = [];
+            undoHistory = [];
+            redoHistory = [];
+            fileHandle = null;
+            hasUnsavedChanges = false;
+            if (currentFilename) currentFilename.innerText = '';
+
+            // Create new main node
+            const startX = window.innerWidth / 2;
+            const startY = window.innerHeight / 2;
+            createNode(startX, startY, 'Main Idea', '#6c5ce7', true);
+        }
+
+        // Helper to generate FreeMind XML
+        function generateMMContent() {
+            // Identify Root(s) - nodes with no incoming connections
+            const incoming = new Set(connections.map(c => c.to));
+            // Note: In a cyclic graph, there might be no true root.
+            // But we start with what looks like a root or the first node.
+            // With "visited" tracking, we can pick any node and treat it as root for saving if needed,
+            // but preserving the user's implicit root is better.
+            const roots = nodes.filter(n => !incoming.has(n.id));
+            let mainRoot = roots.length > 0 ? roots[0] : nodes[0];
+            if (!mainRoot && nodes.length > 0) mainRoot = nodes[0];
+            if (!mainRoot) return null;
+
+            const visited = new Set();
+            visited.add(mainRoot.id); // Mark root as visited immediately
+
+            function escapeXml(unsafe) {
+                return unsafe.replace(/[<>&'"]/g, function (c) {
+                    switch (c) {
+                        case '<': return '&lt;';
+                        case '>': return '&gt;';
+                        case '&': return '&amp;';
+                        case '\'': return '&apos;';
+                        case '"': return '&quot;';
+                    }
+                });
+            }
+
+            function rgbToHex(rgb) {
+                if (!rgb) return null;
+                if (rgb.startsWith('#')) return rgb;
+                const result = rgb.match(/\d+/g);
+                if (!result) return null;
+                return "#" + ((1 << 24) + (parseInt(result[0]) << 16) + (parseInt(result[1]) << 8) + parseInt(result[2])).toString(16).slice(1);
+            }
+
+            // incomingArrowState/Color is for the connection leading TO this node
+            function buildNodeXml(node, incomingArrowState = true, incomingColor = null) {
+                const content = node.element.querySelector('.node-content');
+                const text = content ? content.innerText : '';
+                let xml = `<node TEXT="${escapeXml(text)}"`;
+
+                // Add ID for referencing
+                xml += ` ID="${node.id}"`;
+
+                // Add connection visual state (for the link from Parent to this Node)
+                if (incomingArrowState === false) {
+                    xml += ` EDGE_HAS_ARROW="false"`;
+                }
+                if (incomingColor) {
+                    // Start saving as simple hex or rgb; stroke attr usually is hex or rgb
+                    xml += ` EDGE_COLOR="${incomingColor}"`;
+                }
+
+                const bgColor = node.element.style.backgroundColor;
+                if (bgColor) {
+                    const hex = rgbToHex(bgColor);
+                    if (hex) xml += ` BACKGROUND_COLOR="${hex}"`;
+                }
+                const txtColor = content ? content.style.color : '';
+                if (txtColor) {
+                    const hex = rgbToHex(txtColor);
+                    if (hex) xml += ` COLOR="${hex}"`;
+                }
+
+                // Save position and size as attributes for restoration if needed
+                const x = parseInt(node.element.style.left);
+                const y = parseInt(node.element.style.top);
+                const w = parseInt(node.element.style.width);
+                const h = parseInt(node.element.style.height);
+                if (!isNaN(x)) xml += ` X="${x}"`;
+                if (!isNaN(y)) xml += ` Y="${y}"`;
+                if (!isNaN(w)) xml += ` WIDTH="${w}"`;
+                if (!isNaN(h)) xml += ` HEIGHT="${h}"`;
+
+                xml += '>';
+
+                const childConnections = connections.filter(c => c.from === node.id);
+                childConnections.forEach(c => {
+                    const childNode = nodes.find(n => n.id === c.to);
+                    if (childNode) {
+                        const connColor = c.element.getAttribute('stroke');
+
+                        if (!visited.has(childNode.id)) {
+                            visited.add(childNode.id);
+                            xml += buildNodeXml(childNode, c.hasArrow, connColor);
+                        } else {
+                            // Cross-link or Cycle
+                            // Use FreeMind arrowlink to represent this connection
+                            // We need to support 'hasArrow' for these too.
+                            // FreeMind arrowlink typical attrs: DESTINATION="id"
+                            let linkXml = `<arrowlink DESTINATION="${childNode.id}"`;
+                            if (c.hasArrow === false) {
+                                linkXml += ` HAS_ARROW="false"`;
+                            }
+                            if (connColor) {
+                                linkXml += ` COLOR="${connColor}"`;
+                            }
+                            linkXml += ` />`;
+                            xml += linkXml;
+                        }
+                    }
+                });
+                xml += '</node>';
+                return xml;
+            }
+
+            let xmlContent = '<map version="1.0.1">';
+            xmlContent += buildNodeXml(mainRoot);
+
+            // Capture any disconnected islands
+            nodes.forEach(n => {
+                if (!visited.has(n.id)) {
+                    visited.add(n.id);
+                    // Append as sibling roots (technically invalid MM but prevents data loss)
+                    xmlContent += buildNodeXml(n);
+                }
+            });
+
+            xmlContent += '</map>';
+            return xmlContent;
+        }
+
+        async function saveMapWithPicker() {
+            const xmlContent = generateMMContent();
+            if (!xmlContent) {
+                alert("Map is empty or invalid.");
+                return;
+            }
+
+            try {
+                if ('showSaveFilePicker' in window) {
+                    const options = {
+                        suggestedName: 'mindmap.mm',
+                        types: [{
+                            description: 'FreeMind MindMap',
+                            accept: { 'application/xml': ['.mm'] } // Using XML mime type for .mm
+                        }]
+                    };
+
+                    if (!fileHandle) {
+                        fileHandle = await window.showSaveFilePicker(options);
+                    }
+
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(xmlContent);
+                    await writable.close();
+
+                    hasUnsavedChanges = false;
+                    if (currentFilename) currentFilename.innerText = fileHandle.name;
+                    alert('Saved successfully!');
+                } else {
+                    saveMap();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Save failed:', err);
+                    saveMap();
+                }
+            }
+        }
+
+        function saveMap() {
+            const xmlContent = generateMMContent();
+            if (!xmlContent) return;
+
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mindmap.mm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            hasUnsavedChanges = false;
+        }
+
+        function loadMapFromData(data) {
+            isLoading = true; // Start loading
+            // Clear current
+            nodes.forEach(n => n.element.remove());
+            nodes = [];
+            connections.forEach(c => c.element.remove());
+            connections = [];
+
+            // Set theme
+            if (data.theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+
+            // Create nodes
+            const idMap = {};
+            data.nodes.forEach(nodeData => {
+                const node = createNode(nodeData.x, nodeData.y, nodeData.text, nodeData.style?.backgroundColor);
+                idMap[nodeData.id] = node.dataset.id;
+
+                if (nodeData.style) {
+                    if (nodeData.style.width) node.style.width = nodeData.style.width;
+                    if (nodeData.style.height) node.style.height = nodeData.style.height;
+                    if (nodeData.style.fontFamily) node.style.fontFamily = nodeData.style.fontFamily;
+                    if (nodeData.style.fontSize) node.style.fontSize = nodeData.style.fontSize;
+                    if (nodeData.style.borderStyle) node.style.borderStyle = nodeData.style.borderStyle;
+                    if (nodeData.style.borderColor) node.style.borderColor = nodeData.style.borderColor;
+                    if (nodeData.style.borderWidth) node.style.borderWidth = nodeData.style.borderWidth;
+                    const content = node.querySelector('.node-content');
+                    if (content && nodeData.style.textColor) {
+                        content.style.color = nodeData.style.textColor;
+                    }
+                }
+            });
+
+            // Create connections
+            data.connections.forEach(connData => {
+                const newFrom = idMap[connData.from];
+                const newTo = idMap[connData.to];
+                if (newFrom && newTo) {
+                    // createConnection calls saveState, but isLoading will block it
+                    createConnection(newFrom, newTo, connData.color || '#333', connData.hasArrow !== false);
+                }
+            });
+            isLoading = false; // End loading
+        }
+
+        function openMap(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            // Always treat as .mm
+            importMM(file);
+            e.target.value = '';
+        }
+
+        function exportImage() {
+            if (typeof html2canvas === 'undefined') {
+                alert('Image export library not loaded. Please refresh or check connection.');
+                return;
+            }
+
+            // Deselect formatting
+            if (selectedNode) selectedNode.classList.remove('selected');
+            selectedNode = null;
+
+            // Temp style to ensure full capture
+            // We want to capture app-container logic
+            // But html2canvas captures visible part often.
+            // We need to temporarily set container to fit content strictly or just capture appContainer.
+
+            // Wait for UI update
+            setTimeout(() => {
+                html2canvas(document.getElementById('app-container'), {
+                    backgroundColor: document.body.classList.contains('dark-mode') ? '#000000' : '#f4f4f9',
+                    ignoreElements: (element) => {
+                        // Ignore resize handles for cleaner image
+                        if (element.classList.contains('resize-handle')) return true;
+                        return false;
+                    },
+                    logging: false
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'mindmap.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                }).catch(err => {
+                    console.error("Export failed:", err);
+                    alert("Failed to export image.");
+                });
+            }, 100);
+        }
+
+
+
+        function importMM(file) {
+            if (currentFilename) {
+                currentFilename.innerText = file.name;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+
+                const map = xmlDoc.getElementsByTagName("map")[0];
+                if (!map) { alert("Invalid .mm file"); return; }
+
+                isLoading = true; // Prevent history spam during import
+
+                // Clear Canvas
+                nodesLayer.innerHTML = '';
+                connections.forEach(c => c.element.remove());
+                nodes = [];
+                connections = [];
+                selectedNode = null;
+
+                // Clear History for new file
+                undoHistory = [];
+                redoHistory = [];
+
+                const xmlIdToAppId = {};
+                const pendingArrowLinks = [];
+
+                const centerX = window.innerWidth / 2 + (scrollWrapper ? scrollWrapper.scrollLeft : 0);
+                const centerY = window.innerHeight / 2 + (scrollWrapper ? scrollWrapper.scrollTop : 0);
+
+                function parseNode(xmlNode, x, y, parentId = null, depth = 0, index = 0, sibCount = 1) {
+                    if (xmlNode.nodeName !== 'node') return;
+
+                    const text = xmlNode.getAttribute('TEXT') || '';
+                    const xmlId = xmlNode.getAttribute('ID');
+                    const bgColor = xmlNode.getAttribute('BACKGROUND_COLOR');
+                    const textColor = xmlNode.getAttribute('COLOR');
+
+                    // Connection Style (Edge from parent)
+                    const edgeHasArrow = xmlNode.getAttribute('EDGE_HAS_ARROW') !== 'false';
+                    const edgeColor = xmlNode.getAttribute('EDGE_COLOR') || '#333';
+
+                    const savedX = xmlNode.getAttribute('X');
+                    const savedY = xmlNode.getAttribute('Y');
+                    const finalX = savedX ? parseInt(savedX) : x;
+                    const finalY = savedY ? parseInt(savedY) : y;
+
+                    // Create Node
+                    const node = createNode(finalX, finalY, text, bgColor || null, depth === 0);
+
+                    // Map XML ID to new App ID
+                    if (xmlId) {
+                        xmlIdToAppId[xmlId] = node.dataset.id;
+                    }
+
+                    if (textColor) {
+                        const content = node.querySelector('.node-content');
+                        if (content) content.style.color = textColor;
+                    }
+
+                    const savedW = xmlNode.getAttribute('WIDTH');
+                    const savedH = xmlNode.getAttribute('HEIGHT');
+                    if (savedW) node.style.width = savedW + 'px';
+                    if (savedH) node.style.height = savedH + 'px';
+
+                    // Create Structural Connection
+                    if (parentId) {
+                        createConnection(parentId, node.dataset.id, edgeColor, edgeHasArrow);
+                    }
+
+                    // Children
+                    const children = Array.from(xmlNode.children);
+
+                    // Separate Node children from ArrowLinks
+                    const childNodes = children.filter(c => c.nodeName === 'node');
+                    const arrowLinks = children.filter(c => c.nodeName === 'arrowlink');
+
+                    // Store pending arrow links
+                    arrowLinks.forEach(link => {
+                        const dest = link.getAttribute('DESTINATION');
+                        const hasArrow = link.getAttribute('HAS_ARROW') !== 'false';
+                        const color = link.getAttribute('COLOR') || '#333';
+                        if (dest) {
+                            pendingArrowLinks.push({
+                                from: node.dataset.id,
+                                toXmlId: dest,
+                                hasArrow: hasArrow,
+                                color: color
+                            });
+                        }
+                    });
+
+                    // Layout logic for children (fallback if no positions)
+                    const childCount = childNodes.length;
+                    const heightSpan = Math.max(100 * childCount, 100);
+                    const startY = y - heightSpan / 2 + 50;
+
+                    childNodes.forEach((childXml, i) => {
+                        const cx = finalX + 250;
+                        const cy = startY + (i * 100);
+                        parseNode(childXml, cx, cy, node.dataset.id, depth + 1, i, childCount);
+                    });
+                }
+
+                // Process Roots
+                const rootNodes = Array.from(map.children).filter(c => c.nodeName === 'node');
+
+                rootNodes.forEach((rootXml, i) => {
+                    const rootXAttr = rootXml.getAttribute('X');
+                    const rootYAttr = rootXml.getAttribute('Y');
+                    const startX = rootXAttr ? parseInt(rootXAttr) : centerX;
+                    const startY = rootYAttr ? parseInt(rootYAttr) : centerY + (i * 150); // Offset multiple roots
+                    parseNode(rootXml, startX, startY);
+                });
+
+                // Second Pass: Resolve Cross-Links (ArrowLinks)
+                pendingArrowLinks.forEach(link => {
+                    const targetAppId = xmlIdToAppId[link.toXmlId];
+                    if (targetAppId) {
+                        createConnection(link.from, targetAppId, link.color, link.hasArrow);
+                    }
+                });
+
+                isLoading = false; // Import complete
+            };
+            reader.readAsText(file);
+        }
+
+
+
+        // Start
+        init();
+
+    } catch (error) {
+        console.error("Initialization Error:", error);
+        alert("Failed to initialize MindMap app: " + error.message);
+    }
+});
+
+</script>
+</body>
+
+</html>
