@@ -1,220 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Htmlfun - AI Generated Projects Gallery</title>
     <style>
-        /* [CSS preserved from your original design] */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 40px 20px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header { text-align: center; color: white; margin-bottom: 50px; }
-        h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); animation: fadeInDown 0.8s ease; }
-        .subtitle { font-size: 1.2em; opacity: 0.9; animation: fadeInUp 0.8s ease; }
-        .stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; flex-wrap: wrap; }
-        .stat-card { background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; backdrop-filter: blur(10px); color: white; font-size: 1.1em; text-align: center; }
-        .stat-card strong { font-size: 1.5em; display: block; margin-bottom: 5px; }
-        .search-box { max-width: 500px; margin: 30px auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 20px; font-size: 16px; border: none; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); outline: none; }
-        .filter-tags { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
-        .filter-tag { padding: 8px 20px; background: rgba(255,255,255,0.3); color: white; border-radius: 25px; cursor: pointer; transition: all 0.3s ease; }
-        .filter-tag.active { background: white; color: #667eea; }
-        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
-        .project-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: all 0.3s ease; text-decoration: none; color: inherit; display: block; overflow: hidden; animation: fadeIn 0.5s ease; }
-        .project-card:hover { transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
-        .project-icon { font-size: 3.5em; margin-bottom: 15px; display: block; }
-        .project-title { font-size: 1.5em; font-weight: bold; color: #667eea; margin-bottom: 12px; }
-        .project-description { color: #666; line-height: 1.6; font-size: 0.95em; }
-        .project-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
-        .project-tag { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.hidden {
+            display: none;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            font-size: 1.1rem;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
             <h1>🎨 Htmlfun Gallery</h1>
             <p class="subtitle">AI-Generated Interactive Projects & Games</p>
-            <div class="stats">
+
+            <div class="stats-container">
                 <div class="stat-card">
-                    <strong>12</strong> Projects
+                    <div class="stat-number">14</div>
+                    <div class="stat-label">Projects</div>
                 </div>
                 <div class="stat-card">
-                    <strong>100%</strong> AI Created
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">AI Created</div>
                 </div>
                 <div class="stat-card">
-                    <strong>0</strong> Dependencies
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Dependencies</div>
                 </div>
+            </div>
+
+            <div class="search-container">
+                <input type="text" class="search-box" placeholder="🔍 Search projects..." id="searchInput">
+            </div>
+
+            <div class="filter-container">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="game">Games</button>
+                <button class="filter-btn" data-filter="tool">Tools</button>
+                <button class="filter-btn" data-filter="visualization">Visualizations</button>
             </div>
         </header>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Search projects...">
+        <div class="gallery" id="gallery">
+            <a href="askvalentine.html" class="card" data-tags="interactive,fun">
+                <span class="card-icon">💖</span>
+                <h2 class="card-title">Ask Valentine</h2>
+                <p class="card-description">Fun interactive Valentine's Day question with playful button animations and
+                    heart effects</p>
+                <div class="card-tags">
+                    <span class="tag">Interactive</span>
+                    <span class="tag">Fun</span>
+                </div>
+            </a>
+
+            <a href="BrickBreaker.html" class="card" data-tags="game">
+                <span class="card-icon">🧱</span>
+                <h2 class="card-title">Brick Breaker</h2>
+                <p class="card-description">Classic arcade brick breaker game with bouncing physics</p>
+                <div class="card-tags">
+                    <span class="tag">Game</span>
+                </div>
+            </a>
+
+            <a href="emi.html" class="card" data-tags="tool">
+                <span class="card-icon">🏦</span>
+                <h2 class="card-title">EMI Tracker</h2>
+                <p class="card-description">Smart loan calculator with floating rates, prepayments, and gap interest
+                    analysis</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                </div>
+            </a>
+
+            <a href="LUDO.html" class="card" data-tags="game">
+                <span class="card-icon">🎲</span>
+                <h2 class="card-title">LUDO Pro</h2>
+                <p class="card-description">Interactive modern LUDO game with AI bots, animations and rankings</p>
+                <div class="card-tags">
+                    <span class="tag">Game</span>
+                </div>
+            </a>
+
+            <a href="MEMORYGRIDGAME.html" class="card" data-tags="game">
+                <span class="card-icon">🧠</span>
+                <h2 class="card-title">Memory Grid Game</h2>
+                <p class="card-description">Test your memory with pattern recognition challenges</p>
+                <div class="card-tags">
+                    <span class="tag">Game</span>
+                </div>
+            </a>
+
+            <a href="mindmap.html" class="card" data-tags="tool,visualization">
+                <span class="card-icon">🗺️</span>
+                <h2 class="card-title">MindMap Studio</h2>
+                <p class="card-description">Professional mind mapping tool with FreeMind compatibility, drag & drop, and
+                    visual styling</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                    <span class="tag">Visualization</span>
+                </div>
+            </a>
+
+            <a href="PDFOVERLAY.HTML" class="card" data-tags="tool">
+                <span class="card-icon">📄</span>
+                <h2 class="card-title">PDF Overlay Tool</h2>
+                <p class="card-description">Overlay and annotate PDFs directly in browser</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                </div>
+            </a>
+
+            <a href="Portfolio.html" class="card" data-tags="tool,visualization">
+                <span class="card-icon">📋</span>
+                <h2 class="card-title">Portfolio Template</h2>
+                <p class="card-description">Modern, responsive portfolio template with animated timeline and skills
+                    visualization</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                    <span class="tag">Visualization</span>
+                </div>
+            </a>
+
+            <a href="advanced_solar_system_autofit_mobile_controls.html" class="card" data-tags="visualization">
+                <span class="card-icon">🌌</span>
+                <h2 class="card-title">Solar System 3D</h2>
+                <p class="card-description">Interactive 3D solar system with auto-fit camera & mobile controls</p>
+                <div class="card-tags">
+                    <span class="tag">Visualization</span>
+                </div>
+            </a>
+
+            <a href="SPEEDCALC.HTML" class="card" data-tags="tool">
+                <span class="card-icon">⚡</span>
+                <h2 class="card-title">Speed Calculator</h2>
+                <p class="card-description">Quickly calculate speed, distance, or time with physics-based logic</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                </div>
+            </a>
+
+            <a href="SUDOKUZENPRO.HTML" class="card" data-tags="game">
+                <span class="card-icon">🔢</span>
+                <h2 class="card-title">Sudoku Zen Pro</h2>
+                <p class="card-description">Professional sudoku with multiple difficulty levels</p>
+                <div class="card-tags">
+                    <span class="tag">Game</span>
+                </div>
+            </a>
+
+            <a href="TIc-Tac-Toe.html" class="card" data-tags="game">
+                <span class="card-icon">❌⭕</span>
+                <h2 class="card-title">Tic-Tac-Toe</h2>
+                <p class="card-description">Classic strategic Tic-Tac-Toe game</p>
+                <div class="card-tags">
+                    <span class="tag">Game</span>
+                </div>
+            </a>
+
+            <a href="todolist.html" class="card" data-tags="tool,productivity">
+                <span class="card-icon">✅</span>
+                <h2 class="card-title">Todo List</h2>
+                <p class="card-description">Modern task management app with drag & drop, categories, and local storage
+                </p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                    <span class="tag">Productivity</span>
+                </div>
+            </a>
+
+            <a href="torrentbillcalculator.html" class="card" data-tags="tool">
+                <span class="card-icon">💰</span>
+                <h2 class="card-title">Torrent Bill Calculator</h2>
+                <p class="card-description">Calculate monthly billing with TORRENT power usage</p>
+                <div class="card-tags">
+                    <span class="tag">Tool</span>
+                </div>
+            </a>
         </div>
 
-        <div class="filter-tags">
-            <div class="filter-tag active" data-category="all">All</div>
-            <div class="filter-tag" data-category="game">Games</div>
-            <div class="filter-tag" data-category="tool">Tools</div>
-            <div class="filter-tag" data-category="visualization">Visualizations</div>
-        </div>
-
-        <div class="projects-grid" id="projectsGrid">
-
-            <a href="advanced_solar_system_autofit_mobile_controls.html" class="project-card" data-keywords="solar system planets visualization astronomy 3d" data-category="visualization">
-                <div class="project-icon">🌌</div>
-                <div class="project-title">Solar System 3D</div>
-                <div class="project-description">Interactive 3D solar system with auto-fit camera & mobile controls</div>
-                <div class="project-tags"><span class="project-tag">Visualization</span></div>
-            </a>
-
-            <a href="emi.html" class="project-card" data-keywords="emi loan calculator finance interest amortization bank" data-category="tool">
-                <div class="project-icon">🏦</div>
-                <div class="project-title">Advanced EMI Tracker</div>
-                <div class="project-description">Smart loan calculator with floating rates, prepayments, and gap interest analysis</div>
-                <div class="project-tags"><span class="project-tag">Tool</span></div>
-            </a>
-
-            <a href="BrickBreaker.html" class="project-card" data-keywords="brick breaker arcade breakout paddle ball" data-category="game">
-                <div class="project-icon">🧱</div>
-                <div class="project-title">Brick Breaker</div>
-                <div class="project-description">Classic arcade brick breaker game with bouncing physics</div>
-                <div class="project-tags"><span class="project-tag">Game</span></div>
-            </a>
-
-            <a href="LUDO.html" class="project-card" data-keywords="LUDO board game multiplayer dice strategy" data-category="game">
-                <div class="project-icon">🎲</div>
-                <div class="project-title">LUDO Pro</div>
-                <div class="project-description">Interactive modern LUDO game with AI bots, animations and rankings</div>
-                <div class="project-tags"><span class="project-tag">Game</span></div>
-            </a>
-
-            <a href="MEMORYGRIDGAME.html" class="project-card" data-keywords="memory grid puzzle cognitive challenge" data-category="game">
-                <div class="project-icon">🧠</div>
-                <div class="project-title">Memory Grid Game</div>
-                <div class="project-description">Test your memory with pattern recognition challenges</div>
-                <div class="project-tags"><span class="project-tag">Game</span></div>
-            </a>
-
-            <a href="mindmap.html" class="project-card" data-keywords="mindmap visualization brainstorming diagram thinking tool" data-category="tool">
-                <div class="project-icon">🗺️</div>
-                <div class="project-title">MindMap Studio</div>
-                <div class="project-description">Professional mind mapping tool with FreeMind compatibility, drag & drop, and visual styling</div>
-                <div class="project-tags"><span class="project-tag">Tool</span><span class="project-tag">Visualization</span></div>
-            </a>
-
-            <a href="PDFOVERLAY.HTML" class="project-card" data-keywords="pdf overlay annotate document tool" data-category="tool">
-                <div class="project-icon">📄</div>
-                <div class="project-title">PDF Overlay Tool</div>
-                <div class="project-description">Overlay and annotate PDFs directly in browser</div>
-                <div class="project-tags"><span class="project-tag">Tool</span></div>
-            </a>
-
-            <a href="Portfolio.html" class="project-card" data-keywords="portfolio resume cv professional designer developer job" data-category="tool">
-                <div class="project-icon">📋</div>
-                <div class="project-title">Interactive Portfolio</div>
-                <div class="project-description">Modern, responsive portfolio template with animated timeline and skills visualization</div>
-                <div class="project-tags"><span class="project-tag">Tool</span><span class="project-tag">Visualization</span></div>
-            </a>
-
-            <a href="SPEEDCALC.HTML" class="project-card" data-keywords="speed calculator velocity tool physics distance time" data-category="tool">
-                <div class="project-icon">⚡</div>
-                <div class="project-title">Speed Calculator</div>
-                <div class="project-description">Quickly calculate speed, distance, or time with physics-based logic</div>
-                <div class="project-tags"><span class="project-tag">Tool</span></div>
-            </a>
-
-            <a href="SUDOKUZENPRO.HTML" class="project-card" data-keywords="sudoku puzzle logic grid numbers" data-category="game">
-                <div class="project-icon">🔢</div>
-                <div class="project-title">Sudoku Zen Pro</div>
-                <div class="project-description">Professional sudoku with multiple difficulty levels</div>
-                <div class="project-tags"><span class="project-tag">Game</span></div>
-            </a>
-
-            <a href="TIc-Tac-Toe.html" class="project-card" data-keywords="tic tac toe game strategy classic" data-category="game">
-                <div class="project-icon">❌⭕</div>
-                <div class="project-title">Tic-Tac-Toe</div>
-                <div class="project-description">Classic strategic Tic-Tac-Toe game</div>
-                <div class="project-tags"><span class="project-tag">Game</span></div>
-            </a>
-
-            <a href="torrentbillcalculator.html" class="project-card" data-keywords="torrent bill calculator utility electricity" data-category="tool">
-                <div class="project-icon">💰</div>
-                <div class="project-title">Torrent Bill Calculator</div>
-                <div class="project-description">Calculate monthly billing with TORRENT power usage</div>
-                <div class="project-tags"><span class="project-tag">Tool</span></div>
-            </a>
-
-        </div>
-
-        <div id="noResults" style="display:none; text-align:center; color:white; margin-top:50px;">
-            😕 No projects found. Try different keywords!
-        </div>
-        
-        <footer style="text-align:center; color:white; margin-top:60px; padding:20px; opacity:0.8;">
-            <p>🤖 All projects created with AI assistance | 
-            <a href="https://github.com/akshayai1996/Htmlfun" target="_blank" style="color:white; font-weight:bold;">
-                View on GitHub
-            </a></p>
+        <footer>
+            🤖 All projects created with AI assistance | <a href="https://github.com/akshayai1996/Htmlfun"
+                target="_blank" rel="noopener">View on GitHub</a>
         </footer>
     </div>
 
     <script>
+        // Search functionality
         const searchInput = document.getElementById('searchInput');
-        const filterTags = document.querySelectorAll('.filter-tag');
-        const grid = document.getElementById('projectsGrid');
+        const cards = document.querySelectorAll('.card');
 
-        function getCards() {
-            return Array.from(grid.querySelectorAll('.project-card'));
-        }
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
 
-        function applySearchAndFilter() {
-            const term = searchInput.value.toLowerCase();
-            const activeCat = document.querySelector('.filter-tag.active').dataset.category;
-            let visibleCount = 0;
+            cards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.card-description').textContent.toLowerCase();
 
-            getCards().forEach(card => {
-                const text = card.innerText.toLowerCase() + card.dataset.keywords;
-                const cat = card.dataset.category;
-                const matchesSearch = text.includes(term);
-                const matchesCat = activeCat === 'all' || cat === activeCat;
-                const visible = matchesSearch && matchesCat;
-                card.style.display = visible ? 'block' : 'none';
-                if (visible) visibleCount++;
-            });
-
-            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-
-        function sortAlphabetically() {
-            const cards = getCards();
-            cards.sort((a, b) => 
-                a.querySelector('.project-title').innerText.localeCompare(
-                    b.querySelector('.project-title').innerText
-                )
-            );
-            cards.forEach(c => grid.appendChild(c));
-        }
-
-        searchInput.addEventListener('input', applySearchAndFilter);
-
-        filterTags.forEach(tag => {
-            tag.addEventListener('click', () => {
-                filterTags.forEach(t => t.classList.remove('active'));
-                tag.classList.add('active');
-                applySearchAndFilter();
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
             });
         });
 
-        sortAlphabetically();
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+
+                cards.forEach(card => {
+                    const tags = card.dataset.tags;
+
+                    if (filter === 'all' || tags.includes(filter)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Clear search when filtering
+                searchInput.value = '';
+            });
+        });
     </script>
 </body>
+
 </html>
