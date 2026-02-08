@@ -1,618 +1,588 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe Platinum</title>
-    <style>
-        :root {
-            --bg-color: #1a1a2e;
-            --container-bg: #16213e;
-            --accent-color: #0f3460;
-            --highlight: #e94560;
-            --text-color: #ffffff;
-            --x-color: #4facfe;
-            --o-color: #f093fb;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe | Ultimate</title>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+<style>
+:root {
+    --bg: #0f172a;       /* Dark Blue/Slate */
+    --card: #1e293b;     /* Card Background */
+    --cell: #334155;     /* Cell Background */
+    --accent: #38bdf8;   /* Neon Blue */
+    --text: #f8fafc;     /* White Text */
+    --win: #4ade80;      /* Green */
+    --lose: #f87171;     /* Red */
+}
 
-        .container {
-            background-color: var(--container-bg);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            text-align: center;
-            width: 90%;
-            max-width: 450px;
-            position: relative;
-            overflow: hidden;
-        }
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        h1 {
-            margin-top: 0;
-            color: var(--highlight);
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            letter-spacing: 1px;
-        }
+body {
+    margin: 0;
+    background: var(--bg);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* Prevents scroll when confetti falls */
+}
 
-        /* Screens */
-        .screen {
-            display: none;
-            animation: fadeIn 0.4s ease-out;
-        }
-        .screen.active {
-            display: block;
-        }
+#app {
+    width: min(92vw, 400px);
+    background: var(--card);
+    padding: 24px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeUp 0.5s ease-out;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        /* Forms */
-        .form-group {
-            margin-bottom: 1.2rem;
-            text-align: left;
-        }
-        .form-group.hidden { display: none; }
+h2 {
+    text-align: center;
+    margin: 0 0 24px 0;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-size: 1.8rem;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #bdc3c7;
-            font-size: 0.95rem;
-        }
+/* --- Form Elements --- */
+.section {
+    margin-bottom: 20px;
+}
 
-        select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            border: 2px solid var(--accent-color);
-            background: var(--bg-color);
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-        }
+.label-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    display: block;
+    font-weight: 700;
+}
 
-        select:focus { border-color: var(--highlight); }
+.options {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+}
 
-        button {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            border: none;
-            background: var(--highlight);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s, opacity 0.2s;
-            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
-            margin-top: 0.5rem;
-        }
+.options label {
+    flex: 1;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
 
-        button:hover {
-            transform: translateY(-2px);
-            background: #ff5e78;
-        }
-        button:active { transform: scale(0.98); }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+.options input {
+    display: none;
+}
 
-        button.secondary {
-            background: transparent;
-            border: 2px solid var(--accent-color);
-            box-shadow: none;
-            margin-top: 1rem;
-            color: #bdc3c7;
-        }
-        button.secondary:hover {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border-color: #bdc3c7;
-        }
+.options span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    color: #cbd5e1;
+}
 
-        /* Status & Board */
-        .status-bar {
-            margin-bottom: 1.5rem;
-            font-size: 1.4rem;
-            font-weight: 600;
-            min-height: 2rem;
-            color: #bdc3c7;
-            transition: color 0.3s;
-        }
+.options input:checked + span {
+    background: var(--accent);
+    color: #0f172a;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
 
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 2rem;
-            background: var(--bg-color);
-            padding: 15px;
-            border-radius: 15px;
-            transition: opacity 0.3s;
-        }
+/* --- Buttons --- */
+button {
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
 
-        /* Interaction Blocker */
-        .board.disabled {
-            pointer-events: none;
-            opacity: 0.7;
-        }
+button:active {
+    transform: scale(0.96);
+}
 
-        .cell {
-            background-color: var(--accent-color);
-            aspect-ratio: 1;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3.5rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+.primary-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    border-radius: 14px;
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 800;
+    margin-top: 8px;
+    box-shadow: 0 4px 0 #0ea5e9; /* 3D effect */
+}
 
-        @media (hover: hover) {
-            .board:not(.disabled) .cell:hover:not(.taken) {
-                background-color: #163d6e;
-                transform: scale(1.02);
-            }
-        }
+.primary-btn:active {
+    box-shadow: 0 0 0 #0ea5e9;
+    transform: translateY(4px);
+}
 
-        .cell.taken {
-            cursor: default;
-            background-color: #0d2b4f;
-        }
+#musicBtn {
+    margin-top: 16px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: none;
+}
 
-        .cell.X { color: var(--x-color); text-shadow: 0 0 10px rgba(79, 172, 254, 0.4); }
-        .cell.O { color: var(--o-color); text-shadow: 0 0 10px rgba(240, 147, 251, 0.4); }
+/* --- Game Board --- */
+#board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
 
-        /* Modal */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(22, 33, 62, 0.98);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none; 
-            transition: opacity 0.3s;
-            z-index: 100;
-            border-radius: 20px;
-        }
+.cell {
+    aspect-ratio: 1;
+    background: var(--cell);
+    border-radius: 16px;
+    font-size: clamp(40px, 15vw, 64px);
+    font-weight: 900;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+    transition: background 0.2s, transform 0.1s;
+}
 
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
+.cell:not(.taken):active {
+    transform: translateY(6px);
+    box-shadow: none;
+}
 
-        .modal-content h2 { font-size: 3rem; margin: 0 0 0.5rem 0; }
-        .modal-content p { font-size: 1.3rem; color: #bdc3c7; margin-bottom: 2.5rem; }
+.cell.taken {
+    background: #1e293b; /* Slightly darker */
+    box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
+    transform: none;
+    cursor: default;
+}
 
-    </style>
+.cell.win {
+    background: var(--win);
+    color: #064e3b;
+    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    100% { transform: scale(1); }
+}
+
+/* --- Utilities --- */
+.hidden { display: none !important; }
+
+#status {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    min-height: 1.5em;
+    color: #e2e8f0;
+}
+
+.disabled-board {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+/* --- Confetti --- */
+.confetti {
+    position: fixed;
+    top: -10px;
+    z-index: 9999;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); }
+}
+</style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Tic-Tac-Toe</h1>
+<div id="app">
 
-    <!-- Setup Screen -->
-    <div id="setup-screen" class="screen active">
-        <div class="form-group">
-            <label>Game Mode</label>
-            <select id="mode-select" onchange="updateSetupUI()">
-                <option value="pvc">1 Player (vs Computer)</option>
-                <option value="pvp">2 Players (Local)</option>
-            </select>
+    <div id="settings">
+        <h2>Tic Tac Toe</h2>
+
+        <div class="section">
+            <span class="label-title">Choose Side</span>
+            <div class="options">
+                <label><input type="radio" name="marker" value="X" checked><span>Play as X</span></label>
+                <label><input type="radio" name="marker" value="O"><span>Play as O</span></label>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Choose Marker (Player 1)</label>
-            <select id="marker-select">
-                <option value="X">Play as X (Blue)</option>
-                <option value="O">Play as O (Pink)</option>
-            </select>
+        <div class="section">
+            <span class="label-title">Who Starts?</span>
+            <div class="options">
+                <label><input type="radio" name="first" value="player" checked><span>You</span></label>
+                <label><input type="radio" name="first" value="computer"><span>Computer</span></label>
+            </div>
         </div>
 
-        <div class="form-group" id="difficulty-group">
-            <label>Difficulty</label>
-            <select id="difficulty-select">
-                <option value="easy">Easy (You will win)</option>
-                <option value="medium">Medium (Balanced)</option>
-                <option value="hard">Hard (Unbeatable)</option>
-            </select>
+        <div class="section">
+            <span class="label-title">Difficulty</span>
+            <div class="options">
+                <label><input type="radio" name="difficulty" value="easy" checked><span>Easy</span></label>
+                <label><input type="radio" name="difficulty" value="medium"><span>Med</span></label>
+                <label><input type="radio" name="difficulty" value="hard"><span>Hard</span></label>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label id="starter-label">First Move</label>
-            <select id="starter-select">
-                <option value="P1">Player 1 Starts</option>
-                <option value="P2">Computer Starts</option>
-            </select>
-        </div>
-
-        <button id="start-btn" onclick="startGame(this)">Start Game</button>
+        <button class="primary-btn" onclick="startGame()">Start Game</button>
+        <button id="musicBtn" onclick="toggleMusic()">🔊 Sound On</button>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="screen">
-        <div class="status-bar" id="status-display">Player X's Turn</div>
-        <div class="board" id="board">
-            <!-- Cells generated by JS -->
-        </div>
-        <button class="secondary" onclick="backToMenu()">Back to Menu</button>
+    <div id="game" class="hidden">
+        <div id="status">Your Turn</div>
+        <div id="board"></div>
+        <button class="primary-btn" style="background: #475569; box-shadow: 0 4px 0 #334155;" onclick="resetGame()">Restart Game</button>
     </div>
 
-    <!-- Game Over Modal -->
-    <div id="modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="modal-title">Winner!</h2>
-            <p id="modal-msg">Game Over</p>
-            <button onclick="resetBoard()">Play Again</button>
-            <button class="secondary" onclick="backToMenu()">Main Menu</button>
-        </div>
-    </div>
 </div>
 
 <script>
-    // --- Constants ---
-    const WIN_COMBOS = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-        [0, 4, 8], [2, 4, 6]             
-    ];
-    const SCORES = { win: 10, lose: -10, draw: 0 };
+/* --- AUDIO SYSTEM --- */
+const ASSETS = {
+    // Background Music (Lo-fi Loop)
+    bgm: "https://raw.githubusercontent.com/redsolver/flutter_flappy_bird/master/assets/audio/theme.mp3",
+    // Sound Effects
+    tap: "https://raw.githubusercontent.com/maykbrito/libs/main/sounds/button.wav",
+    win: "https://raw.githubusercontent.com/redsolver/flutter_flappy_bird/master/assets/audio/point.mp3",
+    lose: "https://raw.githubusercontent.com/redsolver/flutter_flappy_bird/master/assets/audio/die.mp3"
+};
 
-    // --- State ---
-    let gameState = {
-        board: Array(9).fill(""),
-        isActive: false,
-        mode: 'pvc', 
-        p1Marker: 'X',
-        p2Marker: 'O',
-        currentPlayer: 'X',
-        difficulty: 'easy',
-        starter: 'P1'
-    };
+const audio = {
+    bgm: new Audio(ASSETS.bgm),
+    tap: new Audio(ASSETS.tap),
+    win: new Audio(ASSETS.win),
+    lose: new Audio(ASSETS.lose)
+};
 
-    // Bug Fix 2: Variable to hold the timer ID
-    let computerTimeoutID = null;
+// Audio Config
+audio.bgm.loop = true;
+audio.bgm.volume = 0.4;
+let soundEnabled = true;
 
-    // --- DOM Elements ---
-    const screens = { setup: document.getElementById('setup-screen'), game: document.getElementById('game-screen') };
-    const boardEl = document.getElementById('board');
-    const statusEl = document.getElementById('status-display');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalMsg = document.getElementById('modal-msg');
+function playSound(name) {
+    if (!soundEnabled) return;
+    const sound = audio[name];
+    sound.currentTime = 0; // Rewind to start for rapid clicks
+    sound.play().catch(e => console.log("Browser blocked audio:", e));
+}
 
-    // --- Setup Logic ---
-
-    function updateSetupUI() {
-        const mode = document.getElementById('mode-select').value;
-        const diffGroup = document.getElementById('difficulty-group');
-        const starterSelect = document.getElementById('starter-select');
-        
-        if (mode === 'pvp') {
-            diffGroup.classList.add('hidden');
-            starterSelect.options[1].text = "Player 2 Starts";
-        } else {
-            diffGroup.classList.remove('hidden');
-            starterSelect.options[1].text = "Computer Starts";
+function toggleMusic() {
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById("musicBtn");
+    btn.innerText = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+    
+    if (soundEnabled) {
+        // If we are in-game, resume BGM
+        if (!document.getElementById("game").classList.contains("hidden")) {
+            audio.bgm.play().catch(e => {});
         }
+    } else {
+        audio.bgm.pause();
     }
+}
 
-    function startGame(btnElement) {
-        // Bug Fix 3: Debounce - Disable button to prevent double clicks
-        btnElement.disabled = true;
-        setTimeout(() => btnElement.disabled = false, 1000);
+/* --- GAME LOGIC --- */
+const WIN_COMBOS = [
+    [0,1,2],[3,4,5],[6,7,8], // Rows
+    [0,3,6],[1,4,7],[2,5,8], // Cols
+    [0,4,8],[2,4,6]          // Diagonals
+];
 
-        gameState.mode = document.getElementById('mode-select').value;
-        gameState.p1Marker = document.getElementById('marker-select').value;
-        gameState.p2Marker = (gameState.p1Marker === 'X') ? 'O' : 'X';
-        gameState.starter = document.getElementById('starter-select').value;
-        gameState.difficulty = document.getElementById('difficulty-select').value;
+let board = [];
+let player = "X";
+let computer = "O";
+let turn = "X";
+let difficulty = "medium";
+let gameOver = false;
+let computerTimer = null; // Stores the timeout ID to prevent ghost moves
 
-        switchScreen('game');
-        resetBoard();
+function startGame() {
+    // 1. Get Settings
+    player = document.querySelector('input[name="marker"]:checked').value;
+    computer = player === "X" ? "O" : "X";
+    difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+    const first = document.querySelector('input[name="first"]:checked').value;
+    turn = first === "player" ? player : computer;
+
+    // 2. Initialize
+    board = Array(9).fill(null);
+    gameOver = false;
+    clearTimeout(computerTimer); // CRITICAL FIX: Kill any pending CPU moves
+
+    // 3. UI Transition
+    document.getElementById("settings").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+    renderBoard();
+    updateStatus();
+
+    // 4. Start Music
+    if (soundEnabled) audio.bgm.play().catch(e => console.log("Tap to start audio"));
+
+    // 5. Computer First?
+    if (turn === computer) {
+        document.getElementById("board").classList.add("disabled-board");
+        computerTimer = setTimeout(computerMove, 800);
     }
+}
 
-    function switchScreen(name) {
-        Object.values(screens).forEach(s => s.classList.remove('active'));
-        screens[name].classList.add('active');
-        modal.classList.remove('show');
-    }
+function renderBoard() {
+    const boardEl = document.getElementById("board");
+    boardEl.innerHTML = "";
+    boardEl.className = (turn === computer || gameOver) ? "disabled-board" : "";
 
-    function backToMenu() {
-        gameState.isActive = false;
-        // Bug Fix 2: Clear any pending AI move when leaving
-        if (computerTimeoutID) clearTimeout(computerTimeoutID);
-        switchScreen('setup');
-    }
+    board.forEach((cell, i) => {
+        const btn = document.createElement("button");
+        btn.className = `cell ${cell ? 'taken' : ''}`;
+        btn.innerText = cell || "";
+        btn.onclick = () => playerMove(i);
+        boardEl.appendChild(btn);
+    });
+}
 
-    function resetBoard() {
-        gameState.board.fill("");
-        gameState.isActive = true;
-        
-        if (gameState.starter === 'P1') {
-            gameState.currentPlayer = gameState.p1Marker;
-        } else {
-            gameState.currentPlayer = gameState.p2Marker;
-        }
+function playerMove(i) {
+    if (gameOver || board[i] || turn !== player) return;
+    
+    // Player Turn
+    playSound("tap");
+    makeMove(i, player);
 
-        modal.classList.remove('show');
-        renderBoard();
-        
-        updateStatus(); 
-        setBoardInteraction(true);
-
-        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) {
-            setBoardInteraction(false); 
-            // Bug Fix 2: Store the ID
-            computerTimeoutID = setTimeout(computerMove, 600);
-        }
-    }
-
-    // --- Game Logic ---
-
-    function setBoardInteraction(allowed) {
-        if (allowed) {
-            boardEl.classList.remove('disabled');
-        } else {
-            boardEl.classList.add('disabled');
-        }
-    }
-
-    function renderBoard() {
-        boardEl.innerHTML = '';
-        gameState.board.forEach((cell, index) => {
-            const btn = document.createElement('div');
-            btn.classList.add('cell');
-            if (cell) {
-                btn.classList.add('taken', cell);
-                btn.innerText = cell;
-            }
-            btn.onclick = () => handleCellClick(index);
-            boardEl.appendChild(btn);
-        });
-    }
-
-    function updateStatus() {
-        if (!gameState.isActive) return;
-
-        if (gameState.mode === 'pvp') {
-            const pNum = (gameState.currentPlayer === gameState.p1Marker) ? "1" : "2";
-            statusEl.innerText = `Player ${pNum}'s Turn (${gameState.currentPlayer})`;
-            // Bug Fix 4: Ensure color matches the CURRENT marker, not just Player Number
-            statusEl.style.color = (gameState.currentPlayer === 'X') ? "var(--x-color)" : "var(--o-color)";
-        } else {
-            if (gameState.currentPlayer === gameState.p1Marker) {
-                statusEl.innerText = "Your Turn";
-                statusEl.style.color = "#ffffff";
-                setBoardInteraction(true);
-            } else {
-                statusEl.innerText = "Computer Thinking...";
-                statusEl.style.color = "#bdc3c7";
-                setBoardInteraction(false);
-            }
-        }
-    }
-
-    function handleCellClick(index) {
-        if (!gameState.isActive || gameState.board[index] !== "") return;
-        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) return;
-
-        executeMove(index, gameState.currentPlayer);
-
-        if (checkGameEnd()) return;
-
-        gameState.currentPlayer = (gameState.currentPlayer === 'X') ? 'O' : 'X';
+    if (!checkGameEnd(player)) {
+        turn = computer;
+        renderBoard(); // Disables board
         updateStatus();
+        // CPU "Thinking" Delay
+        computerTimer = setTimeout(computerMove, 600 + Math.random() * 400);
+    }
+}
 
-        if (gameState.mode === 'pvc' && gameState.currentPlayer === gameState.p2Marker) {
-            computerTimeoutID = setTimeout(computerMove, 600);
-        }
+function computerMove() {
+    if (gameOver) return;
+
+    let idx;
+    
+    // --- DIFFICULTY LOGIC ---
+    if (difficulty === "easy") {
+        // Suicide Mode: Finds the move that is WORST for the computer
+        idx = getWorstMove();
+    } else if (difficulty === "medium") {
+        // 30% chance to be random, 70% chance to be smart
+        idx = Math.random() < 0.3 ? getRandomMove() : getBestMove();
+    } else {
+        // Hard: 100% Perfect Minimax
+        idx = getBestMove();
     }
 
-    function executeMove(index, marker) {
-        gameState.board[index] = marker;
-        renderBoard();
-    }
+    playSound("tap"); // Sound for AI too!
+    makeMove(idx, computer);
 
-    function checkGameEnd() {
-        const current = gameState.currentPlayer;
-        if (checkWinner(gameState.board, current)) {
-            endGame('win', current);
-            return true;
-        }
-        if (!gameState.board.includes("")) {
-            endGame('draw');
-            return true;
-        }
-        return false;
-    }
-
-    function endGame(result, winnerMarker) {
-        gameState.isActive = false;
-        
-        setTimeout(() => {
-            modalTitle.style.color = "#ffffff"; 
-            
-            if (result === 'draw') {
-                modalTitle.innerText = "It's a Draw";
-                modalMsg.innerText = "No one wins this time.";
-            } else {
-                modalTitle.style.color = (winnerMarker === 'X') ? "var(--x-color)" : "var(--o-color)";
-                
-                if (gameState.mode === 'pvp') {
-                    const pNum = (winnerMarker === gameState.p1Marker) ? "1" : "2";
-                    modalTitle.innerText = `Player ${pNum} Wins!`;
-                    modalMsg.innerText = `Victory for ${winnerMarker}`;
-                } else {
-                    if (winnerMarker === gameState.p1Marker) {
-                        modalTitle.innerText = "You Won!";
-                        modalMsg.innerText = "Great job beating the AI.";
-                    } else {
-                        modalTitle.innerText = "You Lost";
-                        modalMsg.innerText = "Better luck next time.";
-                    }
-                }
-            }
-            modal.classList.add('show');
-        }, 500);
-    }
-
-    // --- AI System ---
-
-    function computerMove() {
-        if (!gameState.isActive) return;
-
-        let moveIndex;
-
-        if (gameState.difficulty === 'easy') {
-            moveIndex = findLosingMove();
-        } else if (gameState.difficulty === 'medium') {
-            moveIndex = (Math.random() < 0.4) ? findRandomMove() : findOptimalMove();
-        } else {
-            moveIndex = findOptimalMove();
-        }
-
-        if (moveIndex === -1 || gameState.board[moveIndex] !== "") {
-            moveIndex = findRandomMove();
-        }
-
-        executeMove(moveIndex, gameState.p2Marker);
-
-        if (checkGameEnd()) return;
-
-        gameState.currentPlayer = gameState.p1Marker;
+    if (!checkGameEnd(computer)) {
+        turn = player;
+        renderBoard(); // Re-enables board
         updateStatus();
     }
+}
 
-    function checkWinner(board, player) {
-        return WIN_COMBOS.some(combo => combo.every(idx => board[idx] === player));
-    }
+function makeMove(i, who) {
+    board[i] = who;
+    renderBoard();
+}
 
-    function findRandomMove() {
-        let available = gameState.board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
-        if (available.length === 0) return -1;
-        return available[Math.floor(Math.random() * available.length)];
-    }
-
-    // Bug Fix 1: "Active Loser" Logic
-    function findLosingMove() {
-        let available = gameState.board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+function checkGameEnd(lastPlayer) {
+    // 1. Check Win
+    const winningCombo = WIN_COMBOS.find(c => c.every(i => board[i] === lastPlayer));
+    
+    if (winningCombo) {
+        gameOver = true;
+        const isPlayerWin = lastPlayer === player;
         
-        // 1. Identify moves that create a win for AI (Avoid these if possible)
-        let nonWinningMoves = available.filter(index => {
-            gameState.board[index] = gameState.p2Marker;
-            let wins = checkWinner(gameState.board, gameState.p2Marker);
-            gameState.board[index] = "";
-            return !wins;
-        });
-
-        // If all moves win, we are forced to win (rare)
-        if (nonWinningMoves.length === 0) return findRandomMove();
-
-        // 2. From non-winning moves, try to avoid blocking the player's win
-        // Logic: If Player has a winning spot, DO NOT take it (unless AI has to).
-        let friendlyMoves = nonWinningMoves.filter(index => {
-            gameState.board[index] = gameState.p1Marker; // Pretend it's player
-            let playerWins = checkWinner(gameState.board, gameState.p1Marker);
-            gameState.board[index] = "";
-            // If playerWins is true, taking this spot BLOCKS them. We return false (filter it out).
-            return !playerWins;
-        });
-
-        // If we have moves that don't block the player, use them. 
-        // Note: If ALL moves block the player, we fall back to nonWinningMoves.
-        if (friendlyMoves.length > 0) {
-            return friendlyMoves[Math.floor(Math.random() * friendlyMoves.length)];
-        }
-
-        return nonWinningMoves[Math.floor(Math.random() * nonWinningMoves.length)];
-    }
-
-    // Minimax with Pruning (unchanged, as it was already optimal)
-    function findOptimalMove() {
-        let bestScore = -Infinity;
-        let move = -1;
+        // Highlight Cells
+        const cells = document.getElementsByClassName("cell");
+        winningCombo.forEach(i => cells[i].classList.add("win"));
         
-        for (let i = 0; i < 9; i++) {
-            if (gameState.board[i] === "") {
-                gameState.board[i] = gameState.p2Marker;
-                let score = minimax(gameState.board, 0, false, -Infinity, Infinity);
-                gameState.board[i] = "";
-                if (score > bestScore) {
-                    bestScore = score;
-                    move = i;
-                }
-            }
-        }
-        return move;
+        endGame(isPlayerWin ? "You Win! 🎉" : "Computer Wins 🤖", isPlayerWin);
+        return true;
     }
 
-    function minimax(board, depth, isMaximizing, alpha, beta) {
-        if (checkWinner(board, gameState.p2Marker)) return SCORES.win - depth;
-        if (checkWinner(board, gameState.p1Marker)) return SCORES.lose + depth;
-        if (!board.includes("")) return SCORES.draw;
-
-        if (isMaximizing) {
-            let bestScore = -Infinity;
-            for (let i = 0; i < 9; i++) {
-                if (board[i] === "") {
-                    board[i] = gameState.p2Marker;
-                    let score = minimax(board, depth + 1, false, alpha, beta);
-                    board[i] = "";
-                    bestScore = Math.max(score, bestScore);
-                    alpha = Math.max(alpha, score);
-                    if (beta <= alpha) break; 
-                }
-            }
-            return bestScore;
-        } else {
-            let bestScore = Infinity;
-            for (let i = 0; i < 9; i++) {
-                if (board[i] === "") {
-                    board[i] = gameState.p1Marker;
-                    let score = minimax(board, depth + 1, true, alpha, beta);
-                    board[i] = "";
-                    bestScore = Math.min(score, bestScore);
-                    beta = Math.min(beta, score);
-                    if (beta <= alpha) break; 
-                }
-            }
-            return bestScore;
-        }
+    // 2. Check Draw
+    if (board.every(cell => cell !== null)) {
+        gameOver = true;
+        endGame("It's a Draw 😐", false);
+        return true;
     }
 
-    updateSetupUI();
+    return false;
+}
+
+function endGame(msg, isWin) {
+    document.getElementById("status").innerText = msg;
+    document.getElementById("board").classList.remove("disabled-board"); // Allow clicking Restart
+    
+    if (isWin) {
+        playSound("win");
+        launchConfetti();
+    } else if (msg.includes("Draw")) {
+        // No sound or generic sound
+    } else {
+        playSound("lose");
+    }
+}
+
+function updateStatus() {
+    if (gameOver) return;
+    document.getElementById("status").innerText = 
+        turn === player ? "Your Turn" : "Computer is thinking...";
+}
+
+function resetGame() {
+    clearTimeout(computerTimer); // Stop CPU
+    audio.bgm.pause();
+    audio.bgm.currentTime = 0;
+    document.getElementById("settings").classList.remove("hidden");
+    document.getElementById("game").classList.add("hidden");
+}
+
+/* --- AI ALGORITHMS --- */
+
+function getRandomMove() {
+    const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+    if (empty.length === 0) return -1;
+    return empty[Math.floor(Math.random() * empty.length)];
+}
+
+// "Suicide" AI for Easy Mode
+function getWorstMove() {
+    let worstScore = Infinity; 
+    let move = -1;
+    const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+    // If opening, play random to not be boring
+    if (empty.length >= 8) return getRandomMove();
+
+    for (let i of empty) {
+        board[i] = computer;
+        // Check what the result of this move is
+        let score = minimax(board, 0, false);
+        board[i] = null;
+
+        // We want the score to be as LOW as possible (favoring Player Win)
+        if (score < worstScore) {
+            worstScore = score;
+            move = i;
+        }
+    }
+    return move !== -1 ? move : getRandomMove();
+}
+
+// Perfect AI for Hard Mode
+function getBestMove() {
+    let bestScore = -Infinity;
+    let move = -1;
+    const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+    // Opening optimization
+    if (empty.length === 9) return 4;
+    if (empty.length === 8 && board[4] === null) return 4;
+
+    for (let i of empty) {
+        board[i] = computer;
+        let score = minimax(board, 0, false);
+        board[i] = null;
+        if (score > bestScore) {
+            bestScore = score;
+            move = i;
+        }
+    }
+    return move;
+}
+
+function minimax(bd, depth, isMaximizing) {
+    // Check terminal states
+    if (checkWin(bd, computer)) return 10 - depth;
+    if (checkWin(bd, player)) return depth - 10;
+    if (bd.every(c => c !== null)) return 0;
+
+    const empty = bd.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+    if (isMaximizing) {
+        let maxEval = -Infinity;
+        for (let i of empty) {
+            bd[i] = computer;
+            let eval = minimax(bd, depth + 1, false);
+            bd[i] = null;
+            maxEval = Math.max(maxEval, eval);
+        }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for (let i of empty) {
+            bd[i] = player;
+            let eval = minimax(bd, depth + 1, true);
+            bd[i] = null;
+            minEval = Math.min(minEval, eval);
+        }
+        return minEval;
+    }
+}
+
+function checkWin(bd, who) {
+    return WIN_COMBOS.some(c => c.every(i => bd[i] === who));
+}
+
+/* --- VISUAL EFFECTS --- */
+function launchConfetti() {
+    const colors = ['#38bdf8', '#4ade80', '#f472b6', '#facc15'];
+    for (let i = 0; i < 150; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.width = Math.random() * 8 + 4 + "px";
+        c.style.height = Math.random() * 8 + 4 + "px";
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.borderRadius = "50%";
+        
+        let duration = Math.random() * 3 + 2;
+        c.style.animationDuration = duration + "s";
+        
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), duration * 1000);
+    }
+}
 </script>
-
 </body>
 </html>
