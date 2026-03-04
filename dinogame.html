@@ -64,71 +64,63 @@
 
         /* ═══════════════════════════════════════
            MOBILE VIRTUAL CONTROLS
-           Shown only in landscape on small screens
+           Floating overlay — right side, no layout impact
         ═══════════════════════════════════════ */
         #mobile-controls {
-            display: none;
+            display: none;            /* JS shows on touch devices */
             position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 160px;
-            height: 100vh;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 18px;
             z-index: 9000;
-            padding: 10px;
-            box-sizing: border-box;
-            background: rgba(83,83,83,0.05);
         }
 
         /* CSS-drawn circular button — no emoji needed */
         .vbtn {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            border: 3px solid #535353;
-            background: rgba(255,255,255,0.90);
+            border: 2.5px solid rgba(83,83,83,0.7);
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(6px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 5px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.18);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.20);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.1s, transform 0.1s;
         }
         .vbtn:active {
-            background: rgba(83,83,83,0.18);
-            transform: scale(0.91);
+            background: rgba(83,83,83,0.25);
+            transform: scale(0.89);
         }
-        /* CSS triangle arrows */
+        /* Pure CSS triangles — no emoji */
         .arrow-up {
             width: 0; height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-bottom: 22px solid #535353;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 19px solid rgba(83,83,83,0.85);
         }
         .arrow-down {
             width: 0; height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-top: 22px solid #535353;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 19px solid rgba(83,83,83,0.85);
         }
         .vbtn-label {
-            font-size: 0.62rem;
+            font-size: 0.58rem;
             letter-spacing: 1.5px;
             font-family: 'Courier New', monospace;
-            color: #535353;
+            color: rgba(83,83,83,0.9);
             font-weight: bold;
-        }
-
-        /* Show controls only in landscape on small screens */
-        @media (max-width: 900px) and (orientation: landscape) {
-            #mobile-controls { display: flex; }
         }
 
         #game-container {
@@ -841,43 +833,35 @@
     const wrapper     = document.getElementById('scale-wrapper');
     const rotateOvl   = document.getElementById('rotate-overlay');
     const mobileCtrl  = document.getElementById('mobile-controls');
-    const CTRL_W      = 160; // width of right-side button column on mobile landscape
 
-    function isMobileLandscape() {
-        return window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
+    // Show virtual controls on any touch-capable device
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        mobileCtrl.style.display = 'flex';
     }
+
     function isMobilePortrait() {
-        return window.innerWidth <= 900 && window.innerWidth <= window.innerHeight;
+        // Small screen AND taller than wide
+        return Math.min(window.innerWidth, window.innerHeight) <= 600
+            && window.innerHeight > window.innerWidth;
     }
 
     function scaleGame() {
-        const pad   = 16;
-        const isML  = isMobileLandscape();
-        // Reserve right column for controls on mobile landscape
-        const usableW = window.innerWidth  - (isML ? CTRL_W : 0) - pad * 2;
-        const usableH = window.innerHeight - pad * 2;
-        const scaleX  = usableW / GAME_W;
-        const scaleY  = usableH / GAME_H;
-        const scale   = Math.min(scaleX, scaleY, 1);
+        // Buttons are overlays — full screen is available for the game
+        const pad    = 16;
+        const scaleX = (window.innerWidth  - pad * 2) / GAME_W;
+        const scaleY = (window.innerHeight - pad * 2) / GAME_H;
+        const scale  = Math.min(scaleX, scaleY, 1);
         const scaledW = GAME_W * scale;
         const scaledH = GAME_H * scale;
-        // Centre in the non-controls area
-        const leftOff = (window.innerWidth - (isML ? CTRL_W : 0) - scaledW) / 2;
-        const topOff  = (window.innerHeight - scaledH) / 2;
         wrapper.style.transform = `scale(${scale})`;
         wrapper.style.width     = GAME_W + 'px';
         wrapper.style.height    = GAME_H + 'px';
-        wrapper.style.left      = Math.max(0, leftOff) + 'px';
-        wrapper.style.top       = Math.max(0, topOff)  + 'px';
+        wrapper.style.left      = ((window.innerWidth  - scaledW) / 2) + 'px';
+        wrapper.style.top       = ((window.innerHeight - scaledH) / 2) + 'px';
     }
 
     function handleOrientation() {
-        if (isMobilePortrait()) {
-            // Show the rotate prompt, hide game
-            rotateOvl.style.display = 'flex';
-        } else {
-            rotateOvl.style.display = 'none';
-        }
+        rotateOvl.style.display = isMobilePortrait() ? 'flex' : 'none';
         scaleGame();
     }
 
