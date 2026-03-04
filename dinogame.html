@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chrome Dino Clone</title>
     <style>
         :root {
@@ -29,62 +29,105 @@
 
         #scale-wrapper {
             transform-origin: top left;
-            /* JS sets the scale dynamically */
+            position: absolute;
         }
 
-        /* ── Mobile virtual controls ── */
-        #mobile-controls {
-            display: none; /* hidden on desktop */
+        /* ═══════════════════════════════════════
+           PORTRAIT ROTATE OVERLAY
+        ═══════════════════════════════════════ */
+        #rotate-overlay {
+            display: none;
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 120px;
-            background: rgba(83,83,83,0.08);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-sizing: border-box;
-            z-index: 9000;
-        }
-
-        .vbtn {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 3px solid #535353;
-            background: rgba(255,255,255,0.85);
-            font-size: 2.2rem;
-            display: flex;
+            inset: 0;
+            background: var(--bg-color);
+            z-index: 99999;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 20px;
+        }
+        #rotate-overlay .rotate-icon {
+            font-size: 4rem;
+            animation: wiggle 1.4s ease-in-out infinite;
+        }
+        #rotate-overlay p {
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        @keyframes wiggle {
+            0%,100% { transform: rotate(0deg); }
+            30%      { transform: rotate(90deg); }
+            60%      { transform: rotate(90deg); }
+        }
+
+        /* ═══════════════════════════════════════
+           MOBILE VIRTUAL CONTROLS
+           Shown only in landscape on small screens
+        ═══════════════════════════════════════ */
+        #mobile-controls {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 160px;
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 9000;
+            padding: 10px;
+            box-sizing: border-box;
+            background: rgba(83,83,83,0.05);
+        }
+
+        /* CSS-drawn circular button — no emoji needed */
+        .vbtn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #535353;
+            background: rgba(255,255,255,0.90);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.18);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            color: #535353;
             transition: background 0.1s, transform 0.1s;
         }
-
         .vbtn:active {
-            background: rgba(83,83,83,0.2);
-            transform: scale(0.93);
+            background: rgba(83,83,83,0.18);
+            transform: scale(0.91);
         }
-
+        /* CSS triangle arrows */
+        .arrow-up {
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-bottom: 22px solid #535353;
+        }
+        .arrow-down {
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 22px solid #535353;
+        }
         .vbtn-label {
-            font-size: 0.7rem;
-            letter-spacing: 1px;
-            margin-top: 3px;
-            display: block;
-            text-align: center;
+            font-size: 0.62rem;
+            letter-spacing: 1.5px;
             font-family: 'Courier New', monospace;
             color: #535353;
+            font-weight: bold;
         }
 
-        /* Show virtual controls only on mobile/tablet */
-        @media (max-width: 767px) {
+        /* Show controls only in landscape on small screens */
+        @media (max-width: 900px) and (orientation: landscape) {
             #mobile-controls { display: flex; }
         }
 
@@ -383,19 +426,25 @@
     </div>
     </div><!-- end scale-wrapper -->
 
-    <!-- Mobile virtual controls (hidden on desktop via CSS) -->
+    <!-- Portrait rotate prompt -->
+    <div id="rotate-overlay">
+        <div class="rotate-icon">&#x1F4F1;</div>
+        <p>ROTATE DEVICE<br>TO LANDSCAPE</p>
+    </div>
+
+    <!-- Mobile virtual controls: right-side column, landscape only -->
     <div id="mobile-controls">
         <div style="text-align:center">
-            <div class="vbtn" id="vbtn-duck" title="Duck">
-                <span>⬇️</span>
+            <div class="vbtn" id="vbtn-jump" title="Jump">
+                <div class="arrow-up"></div>
+                <span class="vbtn-label">JUMP</span>
             </div>
-            <span class="vbtn-label">DUCK</span>
         </div>
         <div style="text-align:center">
-            <div class="vbtn" id="vbtn-jump" title="Jump">
-                <span>⬆️</span>
+            <div class="vbtn" id="vbtn-duck" title="Duck">
+                <div class="arrow-down"></div>
+                <span class="vbtn-label">DUCK</span>
             </div>
-            <span class="vbtn-label">JUMP</span>
         </div>
     </div>
 
@@ -529,6 +578,10 @@
     async function startGame() {
         if (gameStarted) return;
         gameStarted = true;
+        // Try to lock to landscape on Android Chrome
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
         await initAudio();
         sounds.jump(); // Prime
         
@@ -785,34 +838,52 @@
     // =============================================
     const GAME_W = 640;
     const GAME_H = 240;
-    const wrapper = document.getElementById('scale-wrapper');
-    const mobileCtrl = document.getElementById('mobile-controls');
+    const wrapper     = document.getElementById('scale-wrapper');
+    const rotateOvl   = document.getElementById('rotate-overlay');
+    const mobileCtrl  = document.getElementById('mobile-controls');
+    const CTRL_W      = 160; // width of right-side button column on mobile landscape
 
-    function isMobileView() {
-        return window.innerWidth < 768;
+    function isMobileLandscape() {
+        return window.innerWidth <= 900 && window.innerWidth > window.innerHeight;
+    }
+    function isMobilePortrait() {
+        return window.innerWidth <= 900 && window.innerWidth <= window.innerHeight;
     }
 
     function scaleGame() {
-        const sidePad = 24;
-        const ctrlH = isMobileView() ? 130 : 0; // reserve space for virtual buttons
-        const availW = window.innerWidth  - sidePad * 2;
-        const availH = window.innerHeight - ctrlH - sidePad;
-        const scaleX = availW / GAME_W;
-        const scaleY = availH / GAME_H;
-        const scale = Math.min(scaleX, scaleY, 1); // never upscale
+        const pad   = 16;
+        const isML  = isMobileLandscape();
+        // Reserve right column for controls on mobile landscape
+        const usableW = window.innerWidth  - (isML ? CTRL_W : 0) - pad * 2;
+        const usableH = window.innerHeight - pad * 2;
+        const scaleX  = usableW / GAME_W;
+        const scaleY  = usableH / GAME_H;
+        const scale   = Math.min(scaleX, scaleY, 1);
         const scaledW = GAME_W * scale;
         const scaledH = GAME_H * scale;
-        const leftOff = (window.innerWidth - scaledW) / 2;
-        const topOff  = (window.innerHeight - ctrlH - scaledH) / 2;
+        // Centre in the non-controls area
+        const leftOff = (window.innerWidth - (isML ? CTRL_W : 0) - scaledW) / 2;
+        const topOff  = (window.innerHeight - scaledH) / 2;
         wrapper.style.transform = `scale(${scale})`;
         wrapper.style.width     = GAME_W + 'px';
         wrapper.style.height    = GAME_H + 'px';
-        wrapper.style.position  = 'absolute';
-        wrapper.style.left      = leftOff + 'px';
-        wrapper.style.top       = topOff  + 'px';
+        wrapper.style.left      = Math.max(0, leftOff) + 'px';
+        wrapper.style.top       = Math.max(0, topOff)  + 'px';
     }
-    scaleGame();
-    window.addEventListener('resize', scaleGame);
+
+    function handleOrientation() {
+        if (isMobilePortrait()) {
+            // Show the rotate prompt, hide game
+            rotateOvl.style.display = 'flex';
+        } else {
+            rotateOvl.style.display = 'none';
+        }
+        scaleGame();
+    }
+
+    handleOrientation();
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
 
     // =============================================
     // VIRTUAL BUTTON CONTROLS (mobile)
