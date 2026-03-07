@@ -315,9 +315,9 @@ let pendingScore=0,pendingLevel=1;
 // ═══════════════════════════════════════════════════
 // ─── RESPONSIVE SIZE SCALE ───────────────────────────
 // PC screens (>768px) get 0.65x ship+asteroid size. Mobile stays 1.0
-const sizeScale  = window.innerWidth > 768 ? 0.65 : 1.0;
+const sizeScale  = window.innerWidth > 768 ? 0.6 : 1.0;
 // Smaller objects look slower — boost speed on PC to compensate
-const speedScale = window.innerWidth > 768 ? 1.28 : 1.0;
+const speedScale = window.innerWidth > 768 ? 1.32 : 1.0;
 
 //  GAME STATE
 // ═══════════════════════════════════════════════════
@@ -1151,8 +1151,8 @@ pauseBtn.addEventListener('click',(e)=>{e.stopPropagation();togglePause()});
 document.body.appendChild(pauseBtn);
 
 const origPlaySound=playSound;
-// Wrap playSound to respect mute
-window.playSound=function(type){if(!muted)origPlaySound(type)};
+// Wrap playSound to respect mute AND pause
+window.playSound=function(type){if(!muted && !paused)origPlaySound(type)};
 
 function togglePause(){
   paused=!paused;
