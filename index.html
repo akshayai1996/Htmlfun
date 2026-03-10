@@ -3,21 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <!-- ✅ Google Search Console Verification -->
-    <meta name="google-site-verification"
-        content="fu_gR8ZDEv1fMKPvPLemdLjBJl3C7Ek0wELh2OQZVGs" />
-
+    <meta name="google-site-verification" content="fu_gR8ZDEv1fMKPvPLemdLjBJl3C7Ek0wELh2OQZVGs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Html Fun</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,28 +17,71 @@
             padding: 40px 20px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
+        header { text-align: center; color: white; margin-bottom: 40px; }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
+        h1 { font-size: 3rem; margin-bottom: 10px; }
 
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 24px; }
+
+        /* ── GitHub Mini Profile Card ── */
+        .github-profile-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 60px;
+            padding: 10px 22px 10px 10px;
             margin-bottom: 30px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
+        .github-profile-card:hover {
+            background: rgba(0, 0, 0, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+
+        .github-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            object-fit: cover;
+        }
+
+        .github-info { text-align: left; }
+
+        .github-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .github-sub {
+            font-size: 0.78rem;
+            opacity: 0.75;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+        }
+
+        .github-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            display: inline-block;
+            box-shadow: 0 0 6px #4ade80;
+            flex-shrink: 0;
+        }
+
+/* ── Stats ── */
         .stats-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -64,10 +98,7 @@
             color: white;
         }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
+        .stat-number { font-size: 2.5rem; font-weight: bold; }
 
         .search-box {
             width: 100%;
@@ -95,10 +126,9 @@
             cursor: pointer;
         }
 
-        .filter-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        .filter-btn.active { background: rgba(255, 255, 255, 0.4); }
 
+        /* ── Gallery ── */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -114,24 +144,11 @@
             color: inherit;
         }
 
-        .card.hidden {
-            display: none;
-        }
+        .card.hidden { display: none; }
 
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
-
-        .card-description {
-            color: #666;
-            margin-bottom: 15px;
-        }
+        .card-icon { font-size: 3rem; margin-bottom: 15px; }
+        .card-title { font-size: 1.5rem; margin-bottom: 10px; }
+        .card-description { color: #666; margin-bottom: 15px; }
 
         .tag {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -142,16 +159,8 @@
             margin-right: 6px;
         }
 
-        footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-        }
-
-        footer a {
-            color: white;
-            text-decoration: underline;
-        }
+        footer { text-align: center; color: white; margin-top: 40px; }
+        footer a { color: white; text-decoration: underline; }
     </style>
 </head>
 
@@ -161,6 +170,23 @@
 <header>
     <h1>🎨 Htmlfun Gallery</h1>
     <p class="subtitle">AI-Generated Interactive Projects & Games</p>
+
+    <!-- GitHub Mini Profile Card -->
+    <a href="https://github.com/akshayai1996" target="_blank" class="github-profile-card">
+        <img
+            class="github-avatar"
+            src="https://github.com/akshayai1996.png"
+            alt="akshayai1996 avatar"
+        >
+        <div class="github-info">
+            <div class="github-name" id="ghName">akshayai1996</div>
+            <div class="github-sub">
+                <span class="github-dot"></span>
+                <span id="ghMeta">View on GitHub</span>
+            </div>
+        </div>
+
+    </a>
 
     <div class="stats-container">
         <div class="stat-card"><div class="stat-number">16</div>Projects</div>
@@ -294,38 +320,48 @@
 </div>
 
 <footer>
-🤖 Built with AI |
-<a href="https://github.com/akshayai1996/Htmlfun" target="_blank">GitHub</a>
+    🤖 Built with AI |
+    <a href="https://github.com/akshayai1996/Htmlfun" target="_blank">GitHub</a>
 </footer>
 
 </div>
 
 <script>
-const searchInput = document.getElementById('searchInput');
-const cards = document.querySelectorAll('.card');
-const buttons = document.querySelectorAll('.filter-btn');
+  // ── Search & Filter ──
+  const searchInput = document.getElementById('searchInput');
+  const cards = document.querySelectorAll('.card');
+  const buttons = document.querySelectorAll('.filter-btn');
 
-searchInput.addEventListener('input', e => {
-  const v = e.target.value.toLowerCase();
-  cards.forEach(c => {
-    c.classList.toggle('hidden',
-      !c.textContent.toLowerCase().includes(v)
-    );
-  });
-});
-
-buttons.forEach(b => {
-  b.onclick = () => {
-    buttons.forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    const f = b.dataset.filter;
+  searchInput.addEventListener('input', e => {
+    const v = e.target.value.toLowerCase();
     cards.forEach(c => {
-      c.classList.toggle('hidden',
-        f !== 'all' && !c.dataset.tags.includes(f)
-      );
+      c.classList.toggle('hidden', !c.textContent.toLowerCase().includes(v));
     });
-  };
-});
+  });
+
+  buttons.forEach(b => {
+    b.onclick = () => {
+      buttons.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const f = b.dataset.filter;
+      cards.forEach(c => {
+        c.classList.toggle('hidden', f !== 'all' && !c.dataset.tags.includes(f));
+      });
+    };
+  });
+
+  // ── Enrich profile card via GitHub public API ──
+  fetch('https://api.github.com/users/akshayai1996')
+    .then(r => r.json())
+    .then(data => {
+      if (data.name) document.getElementById('ghName').textContent = data.name;
+      const repos = data.public_repos ?? null;
+      const followers = data.followers ?? null;
+      if (repos !== null) {
+        document.getElementById('ghMeta').textContent = `${repos} repos`;
+      }
+    })
+    .catch(() => { /* fallback text stays */ });
 </script>
 
 </body>
