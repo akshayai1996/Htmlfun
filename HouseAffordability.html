@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Housing Affordability Dashboard</title>
+    
+    <!-- Leaflet Base CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Sleek custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        #map { z-index: 1; touch-action: manipulation; } /* prevents 300ms tap delay on Android */
+        
+        .leaflet-tooltip.custom-tooltip {
+            background: transparent; border: none; box-shadow: none; padding: 0;
+        }
+        
+        /* Lightweight hover label — styled, not transparent */
+        .leaflet-tooltip.hover-label {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #f1f5f9;
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 12px;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+        .leaflet-tooltip.hover-label::before {
+            border-top-color: rgba(15, 23, 42, 0.9);
+        }
+
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: transparent; box-shadow: none; padding: 0; border-radius: 0;
+        }
+        .custom-popup .leaflet-popup-content { margin: 0; }
+        .custom-popup .leaflet-popup-tip-container { display: none; }
+        /* Keep close button visible but style it to match the card */
+        .custom-popup a.leaflet-popup-close-button {
+            top: 6px; right: 8px;
+            color: #64748b;
+            font-size: 18px;
+            font-weight: bold;
+            width: 22px; height: 22px;
+            line-height: 22px;
+            text-align: center;
+        }
+        .custom-popup a.leaflet-popup-close-button:hover { color: #0f172a; }
+        
+        /* Marker Cluster Customization for Tailwind look */
+        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+            background-color: rgba(51, 65, 85, 0.6); /* Slate 700 */
+        }
+        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+            background-color: rgba(15, 23, 42, 0.9); /* Slate 900 */
+            color: white;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-slate-900 text-white shadow-lg py-4 px-4 md:px-8 shrink-0">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+            <div class="text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">India Housing Affordability</h1>
+                <p class="text-slate-400 mt-1 text-sm md:text-base flex items-center justify-center md:justify-start gap-3">
+                    Price-to-Income Ratio Across 103 Cities · Source: Numbeo 2026
+                </p>
+            </div>
+            <div class="flex flex-col md:items-end gap-2 w-full md:w-auto">
+                <div class="bg-slate-800 p-2 md:p-3 rounded-lg border border-slate-700 text-xs md:text-sm text-center md:text-left w-full md:w-auto">
+                    <span class="text-slate-300">Metric:</span> 
+                    <span class="font-semibold text-white">Years of income needed to buy a house</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Responsive Grid -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 items-stretch w-full">
+        
+        <!-- Left Column: Map & Legend -->
+        <div class="lg:col-span-2 flex flex-col gap-4 h-full">
+            
+            <!-- Map Container -->
+            <div class="bg-white p-2 rounded-xl shadow-md border border-slate-200 flex-1 flex flex-col min-h-[400px]">
+                <div id="map" class="w-full rounded-lg flex-1" style="min-height:380px"></div>
+            </div>
+
+            <!-- Enhanced Legend -->
+            <div class="bg-white p-3 md:p-4 rounded-xl shadow-md border border-slate-200 flex flex-wrap gap-3 md:gap-4 justify-between items-center text-xs md:text-sm shrink-0">
+                <h3 class="font-bold text-slate-700 w-full md:w-auto text-center md:text-left">Affordability Index</h3>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 md:w-4 md:h-4 rounded-full bg-emerald-500 opacity-80 shrink-0"></div>
+                    <span class="font-medium whitespace-nowrap">Affordable (≤5)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 md:w-5 md:h-5 rounded-full bg-amber-500 opacity-80 shrink-0"></div>
+                    <span class="font-medium whitespace-nowrap">Expensive (6-8)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 md:w-6 md:h-6 rounded-full bg-rose-500 opacity-80 shrink-0"></div>
+                    <span class="font-medium whitespace-nowrap">Very Exp. (9-12)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-purple-700 opacity-80 shrink-0"></div>
+                    <span class="font-medium whitespace-nowrap">Extreme (>12)</span>
+                </div>
+                <div class="ml-auto text-[10px] text-slate-400 text-right leading-tight">
+                    <span class="font-semibold text-slate-500">Source:</span> Numbeo Mar 2026 (confirmed)<br>
+                    Regional estimates for smaller cities
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Paginated Data Table -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden flex flex-col h-full">
+            
+            <!-- Search Header -->
+            <div class="bg-slate-100 p-3 md:p-4 border-b border-slate-200 shrink-0">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="font-bold text-base md:text-lg text-slate-800">City Data Tracker</h2>
+                    <span class="text-[10px] md:text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-1 rounded shadow-sm border border-emerald-200 flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Mar 2026
+                    </span>
+                </div>
+                <!-- UX Upgrade: Live Search Bar -->
+                <input 
+                    id="citySearch" 
+                    type="text" 
+                    placeholder="Search by city name..." 
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent transition-shadow"
+                />
+            </div>
+            
+            <!-- Table Wrapper -->
+            <div class="overflow-x-auto flex-1 p-0 relative min-h-[480px]">
+                <table class="w-full text-left text-xs md:text-sm" id="cityTable">
+                    <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
+                        <tr>
+                            <th class="py-2 md:py-3 px-2 md:px-3 font-semibold text-slate-600">City</th>
+                            <th class="py-2 md:py-3 px-2 md:px-3 font-semibold text-slate-600 text-center">Ratio</th>
+                            <th class="py-2 md:py-3 px-2 md:px-3 font-semibold text-slate-600 text-right leading-tight">Avg SqFt<br>Rate</th>
+                            <th class="py-2 md:py-3 px-2 md:px-3 font-semibold text-slate-600 text-right leading-tight">Avg<br>Salary/Yr</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="bg-slate-50 p-3 md:p-4 border-t border-slate-200 flex justify-between items-center text-xs md:text-sm shrink-0 mt-auto">
+                <button id="prevPage" class="px-3 md:px-4 py-1.5 md:py-2 rounded-md bg-white border border-slate-300 hover:bg-slate-100 hover:text-slate-900 text-slate-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+                    Previous
+                </button>
+                <span id="pageIndicator" class="font-semibold text-slate-700">Page 1 of 10</span>
+                <button id="nextPage" class="px-3 md:px-4 py-1.5 md:py-2 rounded-md bg-slate-800 text-white border border-slate-800 hover:bg-slate-700 hover:text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+                    Next
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+    <script>
+        /* -------------------------------
+           1. MAP INITIALIZATION
+        -------------------------------- */
+        const map = L.map('map').setView([22.5937, 78.9629], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        map.whenReady(() => {
+            const geoJsonUrl = 'https://raw.githubusercontent.com/geohacker/india/master/state/india_state.geojson';
+            fetch(geoJsonUrl)
+                .then(res => res.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        style: { color: "#334155", weight: 1.5, opacity: 0.6, fillColor: "#e2e8f0", fillOpacity: 0.1 }
+                    }).addTo(map);
+                }).catch(err => console.warn("GeoJSON load skipped."));
+        });
+
+        /* Reliable map resize using ResizeObserver instead of guessing with setTimeout */
+        const mapContainer = document.getElementById('map');
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => map.invalidateSize());
+            ro.observe(mapContainer);
+        }
+        // Fallback for older browsers + initial render
+        setTimeout(() => map.invalidateSize(), 100);
+        window.addEventListener('resize', () => map.invalidateSize());
+
+        /* -------------------------------
+           2. FROZEN CITY DATASET
+        -------------------------------- */
+        // ratio = Numbeo Mar 2026 (N) or regional estimate (E)
+        // sqft  = avg market rate per sqft from 99acres/MagicBricks/regional data Mar 2026
+        const rawCities = [
+            // ── EXTREME (>20) ─────────────────────────────────────────────────────────
+            {name:"Thrissur",       lat:10.5276,lng:76.2144,ratio:37.5,sqft:8000},  // N — NRI-driven; very low local income base
+            {name:"Mumbai",         lat:19.0760,lng:72.8777,ratio:33.3,sqft:35000}, // N — blended; city centre ₹55k+, suburbs ₹18-25k
+            {name:"Thane",          lat:19.2183,lng:72.9781,ratio:23.6,sqft:15000}, // N
+            {name:"Panaji",         lat:15.4909,lng:73.8278,ratio:21.1,sqft:18000}, // N — post-pandemic Goa migration boom
+            {name:"Kozhikode",      lat:11.2588,lng:75.7804,ratio:19.4,sqft:6500},  // N — NRI money + low local salaries
+            {name:"Chandigarh",     lat:30.7333,lng:76.7794,ratio:18.9,sqft:16000}, // N
+            // ── VERY EXPENSIVE (13–20) ────────────────────────────────────────────────
+            {name:"Panchkula",      lat:30.6942,lng:76.8606,ratio:13.5,sqft:12000}, // E — Chandigarh metro spillover
+            // ── Delhi Zones (replacing single blended entry) ─────────────────────────
+            {name:"South Delhi",    lat:28.5355,lng:77.2090,ratio:20.0,sqft:25000}, // E — GK/Vasant Kunj/Hauz Khas; 99acres Feb 2026 ₹18k-31k/sqft
+            {name:"North Delhi",    lat:28.7041,lng:77.1025,ratio:14.0,sqft:10000}, // E — Rohini/Civil Lines; 99acres ₹8k-12.5k/sqft
+            {name:"East Delhi",     lat:28.6304,lng:77.2923,ratio:12.0,sqft:9500},  // E — Mayur Vihar/IP Ext; 99acres ₹9k-11k/sqft
+            {name:"West Delhi",     lat:28.6234,lng:77.0858,ratio:11.0,sqft:9500},  // E — Janakpuri/Dwarka/Rajouri; 99acres ₹8k-11k/sqft
+            // ── Gurugram Zones (replacing single blended entry) ─────────────────────
+            {name:"Gurugram (Golf Course Rd)", lat:28.4461,lng:77.0731,ratio:22.0,sqft:35000}, // E — India Sotheby's 2025: WAP ₹49,119/sqft GCR
+            {name:"Gurugram (Dwarka Expy)",    lat:28.4648,lng:76.9921,ratio:15.0,sqft:18000}, // E — 99acres/GurgaonFloors Jan 2026: ₹13k-24k/sqft
+            {name:"Gurugram (New/Sohna Rd)",   lat:28.3867,lng:76.9905,ratio:10.0,sqft:10000}, // E — Sohna Rd avg ₹9,800/sqft 2024; New Gurgaon ₹6k-10k
+            {name:"Jamshedpur",     lat:22.8046,lng:86.2029,ratio:14.5,sqft:6000},  // N — low income base, steel-belt pricing
+            {name:"Ranchi",         lat:23.3441,lng:85.3096,ratio:15.6,sqft:6500},  // N
+            {name:"Raipur",         lat:21.2514,lng:81.6296,ratio:13.6,sqft:6000},  // N
+            {name:"Patna",          lat:25.5941,lng:85.1376,ratio:13.2,sqft:7000},  // N
+            {name:"Shimla",         lat:31.1048,lng:77.1734,ratio:13.0,sqft:10000}, // E — scarce flat land, hill station premium
+            {name:"Navi Mumbai",    lat:19.0330,lng:73.0297,ratio:13.2,sqft:12000}, // N
+            {name:"Vasai",          lat:19.3717,lng:72.8397,ratio:12.0,sqft:9000},  // E — 99acres Mar 2026 blended E+W avg
+            {name:"Kochi",          lat:9.9312, lng:76.2673,ratio:12.7,sqft:10500}, // N
+            {name:"Rajkot",         lat:22.3039,lng:70.8022,ratio:12.8,sqft:7500},  // N — lower incomes inflate ratio
+            {name:"Jabalpur",       lat:23.1815,lng:79.9864,ratio:14.4,sqft:6500},  // N
+            {name:"Bhubaneswar",    lat:20.2961,lng:85.8245,ratio:12.5,sqft:7500},  // N
+            {name:"Nagpur",         lat:21.1458,lng:79.0882,ratio:12.5,sqft:7000},  // N
+            {name:"Bhopal",         lat:23.2599,lng:77.4126,ratio:12.3,sqft:6500},  // N
+            // ── EXPENSIVE (9–13) ─────────────────────────────────────────────────────
+            {name:"Indore",         lat:22.7196,lng:75.8577,ratio:11.6,sqft:7000},  // N
+            {name:"Kanpur",         lat:26.4499,lng:80.3319,ratio:11.6,sqft:5500},  // N
+            {name:"Lucknow",        lat:26.8467,lng:80.9462,ratio:11.5,sqft:6500},  // N
+            {name:"Prayagraj",      lat:25.4358,lng:81.8463,ratio:11.3,sqft:5500},  // N (as Allahabad)
+            {name:"Udaipur",        lat:24.5854,lng:73.7125,ratio:11.3,sqft:7000},  // N
+            {name:"Dehradun",       lat:30.3165,lng:78.0322,ratio:10.9,sqft:8000},  // N
+            {name:"Kolhapur",       lat:16.7050,lng:74.2433,ratio:10.5,sqft:6000},  // N
+            {name:"Agra",           lat:27.1767,lng:78.0081,ratio:10.5,sqft:5500},  // N
+            {name:"Gandhinagar",    lat:23.2156,lng:72.6369,ratio:10.5,sqft:7000},  // N
+            {name:"Chhatrapati Sambhajinagar",lat:19.8762,lng:75.3433,ratio:10.1,sqft:5500}, // N (renamed from Aurangabad 2023)
+            {name:"Ghaziabad",      lat:28.6692,lng:77.4538,ratio:10.0,sqft:7500},  // N
+            {name:"Kolkata",        lat:22.5726,lng:88.3639,ratio:9.9, sqft:7000},  // N
+            {name:"Vijayawada",     lat:16.5062,lng:80.6480,ratio:9.9, sqft:5500},  // N
+            {name:"Nashik",         lat:19.9975,lng:73.7898,ratio:9.5, sqft:6000},  // N
+            {name:"Howrah",         lat:22.5958,lng:88.2636,ratio:9.5, sqft:6500},  // E — Kolkata metro
+            {name:"Thiruvananthapuram",lat:8.5241,lng:76.9366,ratio:9.7,sqft:6500}, // N
+            {name:"Jodhpur",        lat:26.2389,lng:73.0243,ratio:9.3, sqft:5500},  // N
+            {name:"Varanasi",       lat:25.3176,lng:82.9739,ratio:9.0, sqft:6000},  // E — pilgrimage/tourism premium
+            {name:"Meerut",         lat:28.9845,lng:77.7064,ratio:9.0, sqft:6500},  // E — NCR proximity
+            {name:"Virar",          lat:19.4667,lng:72.8125,ratio:9.0, sqft:6200},  // E — 99acres Mar 2026; Metro Line 13 corridor
+            {name:"Srinagar",       lat:34.0837,lng:74.7973,ratio:9.0, sqft:7000},  // E — J&K land scarcity
+            // ── MODERATELY EXPENSIVE (7–9) ──────────────────────────────────────────
+            {name:"Chennai",        lat:13.0827,lng:80.2707,ratio:8.2, sqft:9000},  // N
+            {name:"Mangalore",      lat:12.9141,lng:74.8560,ratio:8.2, sqft:8000},  // N
+            {name:"Ahmedabad",      lat:23.0225,lng:72.5714,ratio:7.9, sqft:6500},  // N
+            {name:"Pune",           lat:18.5204,lng:73.8567,ratio:7.6, sqft:8500},  // N
+            {name:"Surat",          lat:21.1702,lng:72.8311,ratio:7.6, sqft:7500},  // N
+            {name:"Ludhiana",       lat:30.9010,lng:75.8573,ratio:7.6, sqft:7500},  // N
+            {name:"Jaipur",         lat:26.9124,lng:75.7873,ratio:7.3, sqft:7000},  // N
+            {name:"Visakhapatnam",  lat:17.6868,lng:83.2185,ratio:6.8, sqft:6500},  // N
+            // ── Bengaluru Zones (replacing single blended entry) ─────────────────────
+            {name:"Bengaluru (Koramangala)",   lat:12.9352,lng:77.6245,ratio:11.0,sqft:18000}, // E — nobroker Jan 2026: ₹14k-25k/sqft
+            {name:"Bengaluru (Whitefield)",    lat:12.9698,lng:77.7499,ratio:9.0, sqft:12000}, // E — prestige/adarsh Feb 2026: ₹11k-13k/sqft
+            {name:"Bengaluru (North/Hebbal)",  lat:13.0456,lng:77.5970,ratio:7.0, sqft:8500},  // E — onecityproperty Jan 2026: ₹5.5k-11k/sqft
+            {name:"Bengaluru (Yeshwanthpur)",  lat:13.0234,lng:77.5406,ratio:7.0, sqft:8000},  // E — homebazaar 2026: West Blr avg ₹7k-9k/sqft
+            {name:"Bengaluru (Electronic City)",lat:12.8399,lng:77.6770,ratio:5.5,sqft:5700},  // E — homebazaar/99acres 2026: ₹5,600-5,900/sqft
+            {name:"Siliguri",       lat:26.7133,lng:88.4336,ratio:7.5, sqft:5500},  // E — WB growing city
+            {name:"Amritsar",       lat:31.6340,lng:74.8723,ratio:7.5, sqft:6500},  // E — heritage/tourism premium
+            {name:"Karnal",         lat:29.6857,lng:76.9905,ratio:7.5, sqft:5500},  // E — Haryana belt
+            {name:"Panipat",        lat:29.3909,lng:76.9635,ratio:7.5, sqft:5500},  // E — Haryana belt
+            {name:"Kota",           lat:25.2138,lng:75.8648,ratio:8.0, sqft:5500},  // E — education hub premium
+            {name:"Ajmer",          lat:26.4499,lng:74.6399,ratio:8.0, sqft:5500},  // E — Rajasthan tourism
+            {name:"Bhavnagar",      lat:21.7645,lng:72.1519,ratio:7.5, sqft:5000},  // E — Gujarat tier-2
+            {name:"Solapur",        lat:17.6599,lng:75.9064,ratio:7.5, sqft:5500},  // E — Maharashtra tier-2
+            {name:"Belagavi",       lat:15.8497,lng:74.4977,ratio:7.5, sqft:5500},  // E — Karnataka border city
+            {name:"Cuttack",        lat:20.4625,lng:85.8828,ratio:8.0, sqft:6000},  // E — Odisha metro twin
+            {name:"Hubli",          lat:15.3647,lng:75.1240,ratio:7.0, sqft:5500},  // E — Karnataka tier-2
+            {name:"Jalandhar",      lat:31.3260,lng:75.5762,ratio:7.5, sqft:6000},  // E — Punjab tier-2
+            {name:"Alwar",          lat:27.5530,lng:76.6346,ratio:7.5, sqft:5500},  // E — Rajasthan NCR belt
+            {name:"Bikaner",        lat:28.0229,lng:73.3119,ratio:7.0, sqft:5000},  // E — Rajasthan heritage
+            {name:"Kollam",         lat:8.8932, lng:76.6141,ratio:8.0, sqft:6500},  // E — Kerala port city
+            // ── AFFORDABLE (≤7) ──────────────────────────────────────────────────────
+            {name:"Noida",          lat:28.5355,lng:77.3910,ratio:6.6, sqft:8000},  // N
+            {name:"Vadodara",       lat:22.3072,lng:73.1812,ratio:6.2, sqft:6200},  // N
+            {name:"Mysuru",         lat:12.2958,lng:76.6394,ratio:6.0, sqft:6500},  // N (as Mysore)
+            {name:"Tiruchirapalli",lat:10.7905, lng:78.7047,ratio:5.8, sqft:5500},  // N (as Trichy)
+            {name:"Gwalior",        lat:26.2183,lng:78.1828,ratio:5.4, sqft:5000},  // N
+            {name:"Hyderabad",      lat:17.3850,lng:78.4867,ratio:4.8, sqft:6500},  // N — IT correction kept it affordable
+            {name:"Nellore",        lat:14.4426,lng:79.9865,ratio:4.4, sqft:3800},  // N
+            {name:"Bharuch",        lat:21.7051,lng:72.9959,ratio:3.3, sqft:3000},  // N — most affordable city tracked
+            {name:"Mohali",         lat:30.7046,lng:76.7179,ratio:7.0, sqft:9500},  // N
+            {name:"Jamnagar",       lat:22.4707,lng:70.0577,ratio:7.0, sqft:5500},  // E — Gujarat port city
+            {name:"Junagadh",       lat:21.5222,lng:70.4579,ratio:6.5, sqft:4800},  // E
+            {name:"Anand",          lat:22.5645,lng:72.9289,ratio:6.0, sqft:5000},  // E — Gujarat dairy belt
+            {name:"Palghar",        lat:19.6969,lng:72.7686,ratio:6.0, sqft:3200},  // E — most affordable in MMR belt
+            {name:"Patiala",        lat:30.3398,lng:76.3869,ratio:7.0, sqft:6500},  // E — Punjab heritage
+            {name:"Rohtak",         lat:28.8955,lng:76.5892,ratio:7.0, sqft:5500},  // E — Haryana
+            {name:"Hisar",          lat:29.1492,lng:75.7217,ratio:6.5, sqft:5000},  // E — Haryana
+            {name:"Bareilly",       lat:28.3670,lng:79.4304,ratio:7.5, sqft:5000},  // E — UP tier-2
+            {name:"Aligarh",        lat:27.8974,lng:78.0880,ratio:7.0, sqft:4800},  // E — UP
+            {name:"Moradabad",      lat:28.8386,lng:78.7733,ratio:7.0, sqft:5000},  // E — UP brass city
+            {name:"Saharanpur",     lat:29.9640,lng:77.5460,ratio:6.5, sqft:4800},  // E — UP
+            {name:"Gorakhpur",      lat:26.7606,lng:83.3732,ratio:7.0, sqft:5000},  // E — UP
+            {name:"Jhansi",         lat:25.4484,lng:78.5685,ratio:7.0, sqft:5000},  // E — UP historical
+            {name:"Ujjain",         lat:23.1765,lng:75.7885,ratio:7.0, sqft:5000},  // E — MP pilgrimage
+            {name:"Sagar",          lat:23.8388,lng:78.7378,ratio:5.5, sqft:3800},  // E — MP smaller city
+            {name:"Bilaspur",       lat:22.0797,lng:82.1409,ratio:6.5, sqft:4500},  // E — CG
+            {name:"Bhilai",         lat:21.1938,lng:81.3509,ratio:6.0, sqft:4800},  // E — CG industrial
+            {name:"Durgapur",       lat:23.5204,lng:87.3119,ratio:6.0, sqft:4500},  // E — WB industrial
+            {name:"Asansol",        lat:23.6739,lng:86.9524,ratio:5.5, sqft:4200},  // E — WB
+            {name:"Gaya",           lat:24.7914,lng:85.0002,ratio:6.5, sqft:4500},  // E — Bihar pilgrimage
+            {name:"Muzaffarpur",    lat:26.1197,lng:85.3906,ratio:6.5, sqft:4500},  // E — Bihar
+            {name:"Rourkela",       lat:22.2604,lng:84.8536,ratio:6.5, sqft:4500},  // E — Odisha industrial
+            {name:"Tiruppur",       lat:11.1085,lng:77.3411,ratio:7.0, sqft:5500},  // E — TN textile hub
+            {name:"Vellore",        lat:12.9165,lng:79.1325,ratio:7.0, sqft:5500},  // E — TN
+            {name:"Guntur",         lat:16.3067,lng:80.4365,ratio:7.0, sqft:5000},  // E — AP
+            {name:"Rajahmundry",    lat:17.0005,lng:81.8040,ratio:6.5, sqft:5000},  // E — AP
+            {name:"Jalgaon",        lat:21.0077,lng:75.5626,ratio:6.5, sqft:5000},  // E — Maharashtra
+            {name:"Akola",          lat:20.7059,lng:77.0019,ratio:6.0, sqft:4800},  // E — Maharashtra
+            {name:"Amravati",       lat:20.9320,lng:77.7523,ratio:7.0, sqft:5500},  // E — Maharashtra
+            {name:"Nanded",         lat:19.1383,lng:77.3210,ratio:6.5, sqft:5000},  // E — Maharashtra
+        ];
+
+        const cities = Object.freeze(rawCities.sort((a, b) => b.ratio - a.ratio));
+
+        // Pre-compute style + economics once per city — avoids redundant calls in both marker loop and table render
+        const cityMeta = new Map(cities.map(c => [c.name, {
+            style: getMarkerStyle(c.ratio),
+            eco: calculateCityEconomics(c.ratio, c.sqft)
+        }]));
+
+        /* -------------------------------
+           3. VISUAL LOGIC & MATH
+        -------------------------------- */
+        function getMarkerStyle(r){
+            let color, level;
+            if(r <= 5) { color = "#10b981"; level = "Affordable"; }
+            else if(r <= 8) { color = "#f59e0b"; level = "Expensive"; }
+            else if(r <= 12) { color = "#f43f5e"; level = "Very Expensive"; }
+            else { color = "#7e22ce"; level = "Extreme"; }
+
+            const radius = 5 + Math.log(r + 1) * 5; 
+            return { color, radius, level };
+        }
+
+        function calculateCityEconomics(ratio, sqft) {
+            // sqft = actual market rate per sq ft stored in city data (no formula guessing)
+            const totalHouseCost = sqft * 1000; // 1000 sqft standard property
+            const yearlySalary = totalHouseCost / ratio;
+            const salaryLakhs = (yearlySalary / 100000).toFixed(1);
+            return { priceSqft: sqft, totalHouseCost, salaryLakhs };
+        }
+
+        /* -------------------------------
+           4. LAYER ARCHITECTURE
+        -------------------------------- */
+        const cityMarkers = {};
+        const clusterGroup = L.markerClusterGroup({
+            maxClusterRadius: 40,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false
+        });
+
+        cities.forEach(c => {
+            const { style, eco } = cityMeta.get(c.name);
+
+            const marker = L.circleMarker([c.lat, c.lng], {
+                radius: style.radius,
+                color: "white", weight: 1,
+                fillColor: style.color, fillOpacity: 0.85
+            });
+
+            cityMarkers[c.name] = marker;
+
+            const formattedCost = eco.totalHouseCost >= 10000000 
+                ? `₹${(eco.totalHouseCost/10000000).toFixed(2)} Cr` 
+                : `₹${(eco.totalHouseCost/100000).toFixed(1)} Lakhs`;
+
+            const popupContent = `
+                <div class="font-sans text-slate-800 bg-white p-3 rounded-xl shadow-lg border border-slate-200" style="min-width:200px;max-width:250px">
+                    <strong class="text-base">${c.name}</strong><br>
+                    <span class="text-[10px] text-slate-500 uppercase tracking-wide">${style.level}</span>
+                    <hr class="my-2 border-slate-200">
+                    <div class="mb-1 text-xs"><strong>P/I Ratio:</strong> ${c.ratio}x</div>
+                    <div class="text-xs bg-slate-50 p-2 rounded mt-2 border border-slate-100 text-slate-600">
+                        <div class="flex justify-between mb-1"><span>Property (1k sq ft):</span> <strong class="text-slate-800">${formattedCost}</strong></div>
+                        <div class="flex justify-between mb-1"><span>Rate per sq ft:</span> <strong>₹${eco.priceSqft.toLocaleString('en-IN')}</strong></div>
+                        <div class="flex justify-between"><span>Avg. Salary:</span> <strong class="text-slate-800">₹${eco.salaryLakhs} L/yr</strong></div>
+                    </div>
+                </div>
+            `;
+            
+            // Bind popup only (no tooltip) to avoid overlap conflict on hover+click
+            marker.bindPopup(popupContent, { 
+                className: 'custom-popup', 
+                offset: [0, -style.radius - 2],
+                autoPan: true,
+                keepInView: true,
+                maxWidth: 260   // prevents popup overflowing on narrow mobile screens
+            });
+            
+            // Hover tooltip — desktop only (mouseover/mouseout don't fire on touch devices)
+            const isTouchDevice = window.matchMedia('(hover: none)').matches;
+            if (!isTouchDevice) {
+                marker.on('mouseover', function(e) { 
+                    this.setRadius(style.radius + 4); 
+                    this.setStyle({ weight: 3, color: '#1e293b' }); 
+                    this.bindTooltip(`<strong>${c.name}</strong><br><span style="font-size:11px;opacity:0.75">Ratio: ${c.ratio}x — ${style.level}</span>`, {
+                        direction: 'top', 
+                        className: 'hover-label', 
+                        offset: [0, -(style.radius + 4) - 2],
+                        sticky: false
+                    }).openTooltip();
+                });
+                marker.on('mouseout', function() { 
+                    this.setRadius(style.radius); 
+                    this.setStyle({ weight: 1, color: 'white' }); 
+                    this.unbindTooltip();
+                });
+            }
+            marker.on('popupopen', function() {
+                // Reset hover state when popup opens so radius doesn't stay inflated
+                this.setRadius(style.radius); 
+                this.setStyle({ weight: 1, color: 'white' });
+            });
+
+            clusterGroup.addLayer(marker);
+        });
+
+        map.addLayer(clusterGroup);
+
+        /* -------------------------------
+           5. DATA PAGINATION ENGINE
+        -------------------------------- */
+        const tableBody = document.getElementById("tableBody");
+        const prevPageBtn = document.getElementById("prevPage");
+        const nextPageBtn = document.getElementById("nextPage");
+        const pageIndicator = document.getElementById("pageIndicator");
+
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+        let currentFilteredCities = [...cities];
+
+        const focusCity = (cityName) => {
+            const targetMarker = cityMarkers[cityName];
+            if (targetMarker) {
+                // zoomToShowLayer handles unclustering & centering in one smooth step
+                clusterGroup.zoomToShowLayer(targetMarker, () => {
+                    // Small delay lets the cluster finish its animation before opening popup
+                    setTimeout(() => targetMarker.openPopup(), 200);
+                });
+            }
+        };
+
+        function renderPaginatedTable() {
+            tableBody.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
+            const totalPages = Math.ceil(currentFilteredCities.length / rowsPerPage) || 1;
+            
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = currentFilteredCities.slice(start, end);
+
+            if (pageData.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="4" class="py-12 text-center text-slate-400">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-slate-300"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                            <span class="font-medium text-sm">No cities found</span>
+                            <span class="text-xs">Try a different search term</span>
+                        </div>
+                    </td>`;
+                fragment.appendChild(emptyRow);
+            }
+
+            pageData.forEach(c => {
+                const { style, eco } = cityMeta.get(c.name);
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-100 transition-colors border-b border-slate-100 city-row";
+                
+                tr.innerHTML = `
+                    <td class="py-2 md:py-3 px-2 md:px-3">
+                        <div class="flex items-center gap-1.5 md:gap-2">
+                            <div class="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0" style="background-color: ${style.color}"></div>
+                            <span class="font-medium text-slate-700 city-name-cell text-xs md:text-sm">${c.name}</span>
+                            <button class="ml-auto px-1.5 md:px-2 py-1 bg-white border border-slate-300 hover:border-slate-800 hover:bg-slate-800 hover:text-white text-slate-600 rounded text-[9px] md:text-[10px] uppercase font-bold tracking-wider transition-all locate-btn flex items-center gap-1 shadow-sm shrink-0" title="Jump to Map">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                <span class="hidden lg:inline">Map</span>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2 md:py-3 px-2 md:px-3 text-center font-bold text-slate-700 text-xs md:text-sm">${c.ratio}</td>
+                    <td class="py-2 md:py-3 px-2 md:px-3 text-right text-slate-600 text-xs md:text-sm">₹${eco.priceSqft.toLocaleString('en-IN')}</td>
+                    <td class="py-2 md:py-3 px-2 md:px-3 text-right text-slate-600 font-medium text-emerald-700 text-xs md:text-sm">₹${eco.salaryLakhs}L</td>
+                `;
+                
+                const locateBtn = tr.querySelector('.locate-btn');
+                locateBtn.addEventListener('click', () => focusCity(c.name));
+                
+                fragment.appendChild(tr);
+            });
+
+            tableBody.appendChild(fragment);
+
+            pageIndicator.innerText = `Page ${currentPage} of ${totalPages}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        /* -------------------------------
+           6. INTERACTIVITY & EVENTS
+        -------------------------------- */
+        document.getElementById("citySearch").addEventListener("input", function() {
+            const value = this.value.toLowerCase();
+            currentFilteredCities = cities.filter(c => c.name.toLowerCase().includes(value));
+            currentPage = 1; 
+            renderPaginatedTable();
+        });
+
+        prevPageBtn.addEventListener("click", () => {
+            if (currentPage > 1) { 
+                currentPage--; 
+                renderPaginatedTable(); 
+            }
+        });
+
+        nextPageBtn.addEventListener("click", () => {
+            const totalPages = Math.ceil(currentFilteredCities.length / rowsPerPage);
+            if (currentPage < totalPages) { 
+                currentPage++; 
+                renderPaginatedTable(); 
+            }
+        });
+
+        renderPaginatedTable();
+
+    </script>
+</body>
+</html>
