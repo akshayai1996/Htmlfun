@@ -3,437 +3,381 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="google-site-verification" content="fu_gR8ZDEv1fMKPvPLemdLjBJl3C7Ek0wELh2OQZVGs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Primary Meta Tags -->
-    <title>Htmlfun Gallery - Interactive Web Projects by Akshay J. Solanki</title>
-    <meta name="title" content="Htmlfun Gallery - Interactive Web Projects by Akshay J. Solanki">
-    <meta name="description" content="Explore a diverse collection of interactive web-based games and tools created by Akshay J. Solanki, including Ludo, Brick Breaker, and an Engineering Portfolio.">
-    <meta name="keywords" content="Htmlfun, Akshay J. Solanki, web games, interactive tools, piping engineer, automation, Portfolio, Ludo game, web gallery">
+    <title>Full-Stack Automation Tools & Projects Gallery | Akshay J. Solanki</title>
+    <meta name="description" content="Explore a collection of AI-powered HTML automation tools, interactive games, and professional projects by Akshay J. Solanki. Featuring Ludo Pro, EMI Tracker, and more.">
+    <meta name="keywords" content="Akshay J. Solanki, HTML Games, Automation Tools, AI Developer, Ludo Pro, EMI Calculator, Portfolio, Piping Engineering">
+    <meta property="og:title" content="Akshay's Automation Tools & Gallery">
+    <meta property="og:description" content="AI-generated interactive tools and professional projects.">
+    <meta property="og:url" content="https://akshayai1996.github.io/Htmlfun/">
     <link rel="canonical" href="https://akshayai1996.github.io/Htmlfun/">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --bg-dark: #0f172a;
-            --bg-glass: rgba(30, 41, 59, 0.7);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --accent: #10b981;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            background-image:
-                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0, transparent 50%);
-            background-attachment: fixed;
-            overflow-x: hidden;
+            padding: 40px 20px;
         }
 
-        /* Navbar Styling */
-        nav {
-            padding: 1.5rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header { text-align: center; color: white; margin-bottom: 40px; }
+
+        h1 { font-size: 3rem; margin-bottom: 10px; }
+
+        .subtitle { font-size: 1.2rem; opacity: 0.9; margin-bottom: 24px; }
+
+        /* ── GitHub Mini Profile Card ── */
+        .github-profile-card {
+            display: inline-flex;
             align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #818cf8, #34d399);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Search Bar */
-        .search-container {
-            position: relative;
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .search-container i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--bg-glass);
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.28);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 60px;
+            padding: 10px 22px 10px 10px;
+            margin-bottom: 30px;
+            text-decoration: none;
             color: white;
-            transition: all 0.3s ease;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
+        .github-profile-card:hover {
+            background: rgba(0, 0, 0, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
         }
 
-        /* Hero Section */
-        header {
-            max-width: 1200px;
-            margin: 4rem auto 2rem;
-            text-align: center;
-            padding: 0 2rem;
+        .github-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            object-fit: cover;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
+        .github-info { text-align: left; }
+
+        .github-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
         }
 
-        header p {
-            font-size: 1.25rem;
-            color: var(--text-dim);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Tabs/Filters */
-        .filter-tabs {
+        .github-sub {
+            font-size: 0.78rem;
+            opacity: 0.75;
             display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+        }
+
+        .github-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            display: inline-block;
+            box-shadow: 0 0 6px #4ade80;
+            flex-shrink: 0;
+        }
+
+/* ── Stats ── */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number { font-size: 2.5rem; font-weight: bold; }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 15px;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
+            margin-bottom: 40px;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 8px 18px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--bg-glass);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
             color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
         }
 
-        .filter-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
+        .filter-btn.active { background: rgba(255, 255, 255, 0.4); }
 
-        /* Grid */
-        .project-grid {
+        /* ── Gallery ── */
+        .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
         }
 
-        .project-card {
-            background: var(--bg-glass);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 1.5rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-        }
-
-        .project-info h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .project-info p {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .card-footer {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .launch-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--accent);
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: gap 0.2s;
+            color: inherit;
         }
 
-        .launch-btn:hover {
-            gap: 10px;
-        }
+        .card.hidden { display: none; }
+
+        .card-icon { font-size: 3rem; margin-bottom: 15px; }
+        .card-title { font-size: 1.5rem; margin-bottom: 10px; }
+        .card-description { color: #666; margin-bottom: 15px; }
 
         .tag {
-            font-size: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 4px 8px;
-            border-radius: 6px;
-            color: var(--text-dim);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 6px;
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .project-card {
-            animation: fadeIn 0.5s ease backwards;
-        }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            h1 {
-                font-size: 2.25rem;
-            }
-
-            .search-container {
-                display: none;
-            }
-        }
+        footer { text-align: center; color: white; margin-top: 40px; }
+        footer a { color: white; text-decoration: underline; }
     </style>
 </head>
 
 <body>
-    <nav>
-        <div class="logo">
-            <i data-lucide="layout"></i>
-            <span>Htmlfun Gallery</span>
-        </div>
-        <div class="search-container">
-            <i data-lucide="search" size="18"></i>
-            <input type="text" class="search-bar" placeholder="Search projects..." id="projectSearch">
-        </div>
-    </nav>
+<div class="container">
 
-    <header>
-        <h1 id="main-title">Interactive Web Project Showcase</h1>
-        <p>A curated collection of web applications, mini-games, and technical dashboards by Akshay J. Solanki.</p>
-    </header>
+<header>
+    <h1>🚀 Akshay's AI-Powered Automation & Tool Gallery</h1>
+    <p class="subtitle">AI-Generated Interactive Projects & Games</p>
 
-    <div class="filter-tabs">
-        <button class="filter-btn active" data-filter="all">All Projects</button>
-        <button class="filter-btn" data-filter="game">Games</button>
-        <button class="filter-btn" data-filter="tool">Tools</button>
-        <button class="filter-btn" data-filter="portfolio">Portfolio</button>
+    <!-- GitHub Mini Profile Card -->
+    <a href="https://github.com/akshayai1996" target="_blank" class="github-profile-card">
+        <img
+            class="github-avatar"
+            src="https://github.com/akshayai1996.png"
+            alt="akshayai1996 avatar"
+        >
+        <div class="github-info">
+            <div class="github-name" id="ghName">akshayai1996</div>
+            <div class="github-sub">
+                <span class="github-dot"></span>
+                <span id="ghMeta">View on GitHub</span>
+            </div>
+        </div>
+
+    </a>
+
+    <div class="stats-container">
+        <div class="stat-card"><div class="stat-number">17</div>Projects</div>
+        <div class="stat-card"><div class="stat-number">100%</div>AI Created</div>
+        <div class="stat-card"><div class="stat-number">0</div>Dependencies</div>
     </div>
 
-    <main class="project-grid" id="grid">
-        <!-- Project 1: Portfolio -->
-        <div class="project-card" data-category="portfolio">
-            <div class="card-icon"><i data-lucide="user"></i></div>
-            <div class="project-info">
-                <h3>Engineering Portfolio</h3>
-                <p>Interactive professional showcase highlighting Piping Engineering and automation tools.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Profile</span>
-                <a href="Portfolio.html" class="launch-btn">Explore <i data-lucide="external-link" size="16"></i></a>
-            </div>
-        </div>
+    <input class="search-box" id="searchInput" placeholder="🔍 Search projects...">
 
-        <!-- Project 2: Ludo -->
-        <div class="project-card" data-category="game">
-            <div class="card-icon"><i data-lucide="circle-dot"></i></div>
-            <div class="project-info">
-                <h3>Ludo Multiplayer</h3>
-                <p>Classic board game re-imagined for the web with smooth animations and local play.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Classic</span>
-                <a href="LUDO.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
-            </div>
-        </div>
+    <div class="filter-container">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="game">Games</button>
+        <button class="filter-btn" data-filter="tool">Tools</button>
+        <button class="filter-btn" data-filter="visualization">Visualizations</button>
+    </div>
+</header>
 
-        <!-- Project 3: EMI Calculator -->
-        <div class="project-card" data-category="tool">
-            <div class="card-icon"><i data-lucide="calculator"></i></div>
-            <div class="project-info">
-                <h3>EMI Calculator Pro</h3>
-                <p>Clean and intuitive tool for personal finance calculations with visual results.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Finance</span>
-                <a href="emi.html" class="launch-btn">Open Tool <i data-lucide="external-link" size="16"></i></a>
-            </div>
-        </div>
+<div class="gallery" id="gallery">
 
-        <!-- Project 4: Brick Breaker -->
-        <div class="project-card" data-category="game">
-            <div class="card-icon"><i data-lucide="box"></i></div>
-            <div class="project-info">
-                <h3>Brick Breaker</h3>
-                <p>Retro arcade-style game with levels and physics-based mechanics.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Arcade</span>
-                <a href="BrickBreaker.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
-            </div>
-        </div>
+<a href="askvalentine.html" class="card" data-tags="fun">
+    <div class="card-icon">💖</div>
+    <div class="card-title">Ask Valentine</div>
+    <div class="card-description">Interactive Valentine fun page</div>
+    <span class="tag">Fun</span>
+</a>
 
-        <!-- Project 5: Memory Grid -->
-        <div class="project-card" data-category="game">
-            <div class="card-icon"><i data-lucide="grid"></i></div>
-            <div class="project-info">
-                <h3>Memory Grid Game</h3>
-                <p>Challenge your focus and brain power with this pattern matching arcade game.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Puzzle</span>
-                <a href="MEMORYGRIDGAME.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
-            </div>
-        </div>
+<a href="BrickBreaker.html" class="card" data-tags="game">
+    <div class="card-icon">🧱</div>
+    <div class="card-title">Brick Breaker</div>
+    <div class="card-description">Classic arcade brick game</div>
+    <span class="tag">Game</span>
+</a>
 
-        <!-- Project 6: Dino Game -->
-        <div class="project-card" data-category="game">
-            <div class="card-icon"><i data-lucide="zap"></i></div>
-            <div class="project-info">
-                <h3>Infinite Runner</h3>
-                <p>Side-scrolling survival game inspired by the classic dino chrome game.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Runner</span>
-                <a href="dinogame.html" class="launch-btn">Run <i data-lucide="play" size="16"></i></a>
-            </div>
-        </div>
+<a href="dinogame.html" class="card" data-tags="game">
+    <div class="card-icon">🦖</div>
+    <div class="card-title">Dino Run</div>
+    <div class="card-description">Chrome Dino clone with obstacles & leaderboard</div>
+    <span class="tag">Game</span>
+</a>
 
-        <!-- Project 7: Tic Tac Toe -->
-        <div class="project-card" data-category="game">
-            <div class="card-icon"><i data-lucide="x"></i></div>
-            <div class="project-info">
-                <h3>Tic-Tac-Toe</h3>
-                <p>Minimalist version of the classic X and O game with a modern design.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Casual</span>
-                <a href="TIc-Tac-Toe.html" class="launch-btn">Play <i data-lucide="play" size="16"></i></a>
-            </div>
-        </div>
+<a href="emi.html" class="card" data-tags="tool">
+    <div class="card-icon">🏦</div>
+    <div class="card-title">EMI Tracker</div>
+    <div class="card-description">Loan & EMI calculator</div>
+    <span class="tag">Tool</span>
+</a>
 
-        <!-- Project 8: Valentine -->
-        <div class="project-card" data-category="tool">
-            <div class="card-icon"><i data-lucide="heart"></i></div>
-            <div class="project-info">
-                <h3>Interactive Greeting</h3>
-                <p>Playful web card with quirky interactive responses and animations.</p>
-            </div>
-            <div class="card-footer">
-                <span class="tag">Social</span>
-                <a href="askvalentine.html" class="launch-btn">View <i data-lucide="heart" size="16"></i></a>
-            </div>
-        </div>
-    </main>
+<a href="LUDO.html" class="card" data-tags="game">
+    <div class="card-icon">🎲</div>
+    <div class="card-title">LUDO Pro</div>
+    <div class="card-description">Modern LUDO game</div>
+    <span class="tag">Game</span>
+</a>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+<a href="MEMORYGRIDGAME.html" class="card" data-tags="game">
+    <div class="card-icon">🧠</div>
+    <div class="card-title">Memory Grid</div>
+    <div class="card-description">Test your memory with pattern tiles</div>
+    <span class="tag">Game</span>
+</a>
 
-        // Search functionality
-        const searchInput = document.getElementById('projectSearch');
-        const cards = document.querySelectorAll('.project-card');
+<a href="mindmap.html" class="card" data-tags="tool visualization">
+    <div class="card-icon">🗺️</div>
+    <div class="card-title">MindMap Studio</div>
+    <div class="card-description">Visual mind mapping & brainstorming tool</div>
+    <span class="tag">Tool</span>
+</a>
 
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            cards.forEach(card => {
-                const title = card.querySelector('h3').innerText.toLowerCase();
-                const desc = card.querySelector('p').innerText.toLowerCase();
-                if (title.includes(term) || desc.includes(term)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
+<a href="PDFOVERLAY.HTML" class="card" data-tags="tool">
+    <div class="card-icon">📄</div>
+    <div class="card-title">PDF Overlay</div>
+    <div class="card-description">Annotate and overlay content on PDFs</div>
+    <span class="tag">Tool</span>
+</a>
 
-        // Filter functionality
-        const buttons = document.querySelectorAll('.filter-btn');
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const filter = btn.dataset.filter;
-                
-                cards.forEach(card => {
-                    if (filter === 'all' || card.dataset.category === filter) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        });
+<a href="Portfolio.html" class="card" data-tags="tool visualization">
+    <div class="card-icon">📋</div>
+    <div class="card-title">Portfolio</div>
+    <span class="tag">Visualization</span>
+</a>
 
-        // Stagger animations on load
-        cards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.05}s`;
-        });
-    </script>
+<!-- NEW: House Affordability card -->
+<a href="HouseAffordability.html" class="card" data-tags="tool visualization">
+    <div class="card-icon">🏠</div>
+    <div class="card-title">House Affordability</div>
+    <div class="card-description">City-wise house price → salary ratios — interactive map & charts</div>
+    <span class="tag">Visualization</span>
+    <span class="tag">Tool</span>
+</a>
+
+<a href="advanced_solar_system_autofit_mobile_controls.html" class="card" data-tags="visualization">
+    <div class="card-icon">🌌</div>
+    <div class="card-title">Solar System 3D</div>
+    <div class="card-description">Interactive 3D solar system explorer</div>
+    <span class="tag">Visualization</span>
+</a>
+
+<a href="Space-Starship.html" class="card" data-tags="game">
+    <div class="card-icon">🚀</div>
+    <div class="card-title">Space Starship</div>
+    <div class="card-description">Epic space shooter with boss fights & power-ups</div>
+    <span class="tag">Game</span>
+</a>
+
+<a href="SPEEDCALC.HTML" class="card" data-tags="tool">
+    <div class="card-icon">⚡</div>
+    <div class="card-title">Speed Calculator</div>
+    <div class="card-description">Calculate speed, distance & time</div>
+    <span class="tag">Tool</span>
+</a>
+
+<a href="SUDOKUZENPRO.HTML" class="card" data-tags="game">
+    <div class="card-icon">🔢</div>
+    <div class="card-title">Sudoku Zen</div>
+    <div class="card-description">Relaxing Sudoku puzzle game</div>
+    <span class="tag">Game</span>
+</a>
+
+<a href="TIc-Tac-Toe.html" class="card" data-tags="game">
+    <div class="card-icon">❌⭕</div>
+    <div class="card-title">Tic Tac Toe</div>
+    <div class="card-description">Classic two-player Tic Tac Toe game</div>
+    <span class="tag">Game</span>
+</a>
+
+<a href="todolist.html" class="card" data-tags="tool">
+    <div class="card-icon">✅</div>
+    <div class="card-title">Todo List</div>
+    <div class="card-description">Simple and effective task manager</div>
+    <span class="tag">Tool</span>
+</a>
+
+<a href="torrentbillcalculator.html" class="card" data-tags="tool">
+    <div class="card-icon">💰</div>
+    <div class="card-title">Torrent Bill Calculator</div>
+    <div class="card-description">Calculate torrent bandwidth costs</div>
+    <span class="tag">Tool</span>
+</a>
+
+</div>
+
+<footer>
+    🤖 Built with AI |
+    <a href="https://github.com/akshayai1996/Htmlfun" target="_blank">GitHub</a>
+</footer>
+
+</div>
+
+<script>
+  // ── Search & Filter ──
+  const searchInput = document.getElementById('searchInput');
+  const cards = document.querySelectorAll('.card');
+  const buttons = document.querySelectorAll('.filter-btn');
+
+  searchInput.addEventListener('input', e => {
+    const v = e.target.value.toLowerCase();
+    cards.forEach(c => {
+      c.classList.toggle('hidden', !c.textContent.toLowerCase().includes(v));
+    });
+  });
+
+  buttons.forEach(b => {
+    b.onclick = () => {
+      buttons.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const f = b.dataset.filter;
+      cards.forEach(c => {
+        c.classList.toggle('hidden', f !== 'all' && !c.dataset.tags.includes(f));
+      });
+    };
+  });
+
+  // ── Enrich profile card via GitHub public API ──
+  fetch('https://api.github.com/users/akshayai1996')
+    .then(r => r.json())
+    .then(data => {
+      if (data.name) document.getElementById('ghName').textContent = data.name;
+      const repos = data.public_repos ?? null;
+      const followers = data.followers ?? null;
+      if (repos !== null) {
+        document.getElementById('ghMeta').textContent = `${repos} repos`;
+      }
+    })
+    .catch(() => { /* fallback text stays */ });
+</script>
+
 </body>
-
 </html>
