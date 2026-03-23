@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /penpot/
+Disallow: /.agents/
+Disallow: /.git/
+
+Sitemap: https://akshayai1996.github.io/Htmlfun/sitemap.xml
