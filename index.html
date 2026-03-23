@@ -3,483 +3,437 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="google-site-verification" content="fu_gR8ZDEv1fMKPvPLemdLjBJl3C7Ek0wELh2OQZVGs" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full-Stack Automation Tools & Projects Gallery | Akshay J. Solanki</title>
-    <meta name="description" content="Explore a collection of AI-powered HTML automation tools, interactive games, and professional projects by Akshay J. Solanki. Featuring Ludo Pro, EMI Tracker, and more.">
-    <meta name="keywords" content="Akshay J. Solanki, HTML Games, Automation Tools, AI Developer, Ludo Pro, EMI Calculator, Portfolio, Piping Engineering">
-    <meta property="og:title" content="Akshay's Automation Tools & Gallery">
-    <meta property="og:description" content="AI-generated interactive tools and professional projects.">
-    <meta property="og:url" content="https://akshayai1996.github.io/Htmlfun/">
+    <!-- Primary Meta Tags -->
+    <title>Htmlfun Gallery - Interactive Web Projects by Akshay J. Solanki</title>
+    <meta name="title" content="Htmlfun Gallery - Interactive Web Projects by Akshay J. Solanki">
+    <meta name="description" content="Explore a diverse collection of interactive web-based games and tools created by Akshay J. Solanki, including Ludo, Brick Breaker, and an Engineering Portfolio.">
+    <meta name="keywords" content="Htmlfun, Akshay J. Solanki, web games, interactive tools, piping engineer, automation, Portfolio, Ludo game, web gallery">
     <link rel="canonical" href="https://akshayai1996.github.io/Htmlfun/">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --bg-dark: #0f172a;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f172a;
-            color: #f1f5f9;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 0;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0, transparent 50%);
+            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        .hero-banner {
+        /* Navbar Styling */
+        nav {
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            max-width: 400px;
             width: 100%;
-            height: 350px;
-            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)), url('profile-banner.png');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-
-        header { margin-bottom: 40px; }
-
-        h1 { font-size: 3.5rem; margin-bottom: 15px; background: linear-gradient(90deg, #60a5fa, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-
-        .subtitle { font-size: 1.25rem; opacity: 0.9; margin-bottom: 30px; color: #94a3b8; }
-
-        /* ── GitHub Mini Profile Card ── */
-        .github-profile-card {
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 60px;
-            padding: 10px 22px 10px 10px;
-            margin-bottom: 10px;
-            text-decoration: none;
-            color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
         }
 
-        .github-profile-card:hover {
-            background: rgba(51, 65, 85, 0.9);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            border-color: rgba(96, 165, 250, 0.5);
-        }
-
-        .github-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 2px solid #60a5fa;
-            object-fit: cover;
-        }
-
-        .github-info { text-align: left; }
-
-        .github-name {
-            font-size: 1rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: #f1f5f9;
-        }
-
-        .github-sub {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 3px;
-        }
-
-        .github-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            box-shadow: 0 0 8px #22c55e;
-            flex-shrink: 0;
-        }
-
-        /* ── Stats ── */
-        .stats-container {
-            display: flex;
-            gap: 24px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .search-bar {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
             border-radius: 12px;
-            padding: 15px 25px;
-            text-align: center;
-            min-width: 140px;
-        }
-
-        .stat-number { font-size: 1.75rem; font-weight: 800; color: #60a5fa; display: block; }
-        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-
-        .search-box {
-            width: 100%;
-            max-width: 600px;
-            background: rgba(30, 41, 59, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-glass);
             color: white;
-            padding: 18px 25px;
-            border-radius: 50px;
-            font-size: 1rem;
-            margin: 40px auto 25px;
-            display: block;
-            outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
 
-        .search-box:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2); }
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
 
-        .filter-container {
+        /* Hero Section */
+        header {
+            max-width: 1200px;
+            margin: 4rem auto 2rem;
+            text-align: center;
+            padding: 0 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            font-size: 1.25rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Tabs/Filters */
+        .filter-tabs {
             display: flex;
-            gap: 12px;
             justify-content: center;
-            margin-bottom: 50px;
+            gap: 1rem;
+            margin-bottom: 3rem;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            background: rgba(30, 41, 59, 0.6);
+            padding: 8px 18px;
+            border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            padding: 8px 20px;
-            border-radius: 30px;
+            background: var(--bg-glass);
+            color: white;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
             font-weight: 500;
         }
 
-        .filter-btn:hover { background: rgba(51, 65, 85, 1); color: white; }
-        .filter-btn.active { background: #60a5fa; color: white; border-color: #60a5fa; }
-
-        /* ── Gallery ── */
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 30px;
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
-        .card {
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        /* Grid */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .project-card {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            padding: 30px;
+            padding: 1.5rem;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-decoration: none;
-            color: inherit;
             display: flex;
             flex-direction: column;
+            gap: 1.25rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .card:hover {
-            transform: translateY(-10px);
-            background: #334155;
-            border-color: #60a5fa;
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .card.hidden { display: none !important; }
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
 
-        .card-icon { font-size: 3.5rem; margin-bottom: 20px; }
-        .card-title { font-size: 1.5rem; margin-bottom: 12px; font-weight: 700; color: #f8fafc; }
-        .card-description { color: #94a3b8; margin-bottom: 20px; line-height: 1.6; font-size: 0.95rem; flex-grow: 1; }
+        .project-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
 
-        .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
-        .tag {
-            background: rgba(96, 165, 250, 0.1);
-            color: #60a5fa;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+        .project-info p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .launch-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            text-decoration: none;
             font-weight: 600;
-            border: 1px solid rgba(96, 165, 250, 0.2);
+            font-size: 0.9rem;
+            transition: gap 0.2s;
         }
 
-        footer { text-align: center; color: #64748b; margin-top: 80px; padding-bottom: 40px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 40px; }
-        footer a { color: #60a5fa; text-decoration: none; font-weight: 600; }
-        footer a:hover { text-decoration: underline; }
+        .launch-btn:hover {
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--text-dim);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .project-card {
+            animation: fadeIn 0.5s ease backwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 2.25rem;
+            }
+
+            .search-container {
+                display: none;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <nav>
+        <div class="logo">
+            <i data-lucide="layout"></i>
+            <span>Htmlfun Gallery</span>
+        </div>
+        <div class="search-container">
+            <i data-lucide="search" size="18"></i>
+            <input type="text" class="search-bar" placeholder="Search projects..." id="projectSearch">
+        </div>
+    </nav>
 
-<div class="hero-banner">
-    <h1>Akshay J. Solanki</h1>
-    <p class="subtitle">AI-Agentic Automation Engineer & Professional Enthusiast</p>
+    <header>
+        <h1 id="main-title">Interactive Web Project Showcase</h1>
+        <p>A curated collection of web applications, mini-games, and technical dashboards by Akshay J. Solanki.</p>
+    </header>
 
-    <!-- GitHub Mini Profile Card -->
-    <a href="https://github.com/akshayai1996" target="_blank" class="github-profile-card">
-        <img
-            class="github-avatar"
-            src="https://github.com/akshayai1996.png"
-            alt="akshayai1996 avatar"
-        >
-        <div class="github-info">
-            <div class="github-name" id="ghName">akshayai1996</div>
-            <div class="github-sub">
-                <span class="github-dot"></span>
-                <span id="ghMeta">AI Automation Specialist</span>
+    <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">All Projects</button>
+        <button class="filter-btn" data-filter="game">Games</button>
+        <button class="filter-btn" data-filter="tool">Tools</button>
+        <button class="filter-btn" data-filter="portfolio">Portfolio</button>
+    </div>
+
+    <main class="project-grid" id="grid">
+        <!-- Project 1: Portfolio -->
+        <div class="project-card" data-category="portfolio">
+            <div class="card-icon"><i data-lucide="user"></i></div>
+            <div class="project-info">
+                <h3>Engineering Portfolio</h3>
+                <p>Interactive professional showcase highlighting Piping Engineering and automation tools.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Profile</span>
+                <a href="Portfolio.html" class="launch-btn">Explore <i data-lucide="external-link" size="16"></i></a>
             </div>
         </div>
-    </a>
 
-    <div class="stats-container">
-        <div class="stat-card">
-            <span class="stat-number">20+</span>
-            <span class="stat-label">AI Projects</span>
+        <!-- Project 2: Ludo -->
+        <div class="project-card" data-category="game">
+            <div class="card-icon"><i data-lucide="circle-dot"></i></div>
+            <div class="project-info">
+                <h3>Ludo Multiplayer</h3>
+                <p>Classic board game re-imagined for the web with smooth animations and local play.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Classic</span>
+                <a href="LUDO.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="stat-number">Fast</span>
-            <span class="stat-label">Automation</span>
+
+        <!-- Project 3: EMI Calculator -->
+        <div class="project-card" data-category="tool">
+            <div class="card-icon"><i data-lucide="calculator"></i></div>
+            <div class="project-info">
+                <h3>EMI Calculator Pro</h3>
+                <p>Clean and intuitive tool for personal finance calculations with visual results.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Finance</span>
+                <a href="emi.html" class="launch-btn">Open Tool <i data-lucide="external-link" size="16"></i></a>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="stat-number">Pure</span>
-            <span class="stat-label">Frontend</span>
+
+        <!-- Project 4: Brick Breaker -->
+        <div class="project-card" data-category="game">
+            <div class="card-icon"><i data-lucide="box"></i></div>
+            <div class="project-info">
+                <h3>Brick Breaker</h3>
+                <p>Retro arcade-style game with levels and physics-based mechanics.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Arcade</span>
+                <a href="BrickBreaker.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
+            </div>
         </div>
-    </div>
-</div>
 
-<div class="container">
+        <!-- Project 5: Memory Grid -->
+        <div class="project-card" data-category="game">
+            <div class="card-icon"><i data-lucide="grid"></i></div>
+            <div class="project-info">
+                <h3>Memory Grid Game</h3>
+                <p>Challenge your focus and brain power with this pattern matching arcade game.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Puzzle</span>
+                <a href="MEMORYGRIDGAME.html" class="launch-btn">Play Now <i data-lucide="play" size="16"></i></a>
+            </div>
+        </div>
 
-<header>
-    <input class="search-box" id="searchInput" placeholder="🔍 Search through tools, games, and visualizations...">
+        <!-- Project 6: Dino Game -->
+        <div class="project-card" data-category="game">
+            <div class="card-icon"><i data-lucide="zap"></i></div>
+            <div class="project-info">
+                <h3>Infinite Runner</h3>
+                <p>Side-scrolling survival game inspired by the classic dino chrome game.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Runner</span>
+                <a href="dinogame.html" class="launch-btn">Run <i data-lucide="play" size="16"></i></a>
+            </div>
+        </div>
 
-    <div class="filter-container">
-        <button class="filter-btn active" data-filter="all">All Ecosystem</button>
-        <button class="filter-btn" data-filter="game">Arcade Games</button>
-        <button class="filter-btn" data-filter="tool">Productivity Tools</button>
-        <button class="filter-btn" data-filter="visualization">Engineered Data</button>
-    </div>
-</header>
+        <!-- Project 7: Tic Tac Toe -->
+        <div class="project-card" data-category="game">
+            <div class="card-icon"><i data-lucide="x"></i></div>
+            <div class="project-info">
+                <h3>Tic-Tac-Toe</h3>
+                <p>Minimalist version of the classic X and O game with a modern design.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Casual</span>
+                <a href="TIc-Tac-Toe.html" class="launch-btn">Play <i data-lucide="play" size="16"></i></a>
+            </div>
+        </div>
 
-<div class="gallery" id="gallery">
+        <!-- Project 8: Valentine -->
+        <div class="project-card" data-category="tool">
+            <div class="card-icon"><i data-lucide="heart"></i></div>
+            <div class="project-info">
+                <h3>Interactive Greeting</h3>
+                <p>Playful web card with quirky interactive responses and animations.</p>
+            </div>
+            <div class="card-footer">
+                <span class="tag">Social</span>
+                <a href="askvalentine.html" class="launch-btn">View <i data-lucide="heart" size="16"></i></a>
+            </div>
+        </div>
+    </main>
 
-<a href="askvalentine.html" class="card" data-tags="fun">
-    <div class="card-icon">💖</div>
-    <div class="card-title">Ask Valentine</div>
-    <div class="card-description">Interactive, AI-powered Valentine proposal tool with responsive animations.</div>
-    <div class="tag-row">
-        <span class="tag">Fun</span>
-        <span class="tag">Interactive</span>
-    </div>
-</a>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
 
-<a href="BrickBreaker.html" class="card" data-tags="game">
-    <div class="card-icon">🧱</div>
-    <div class="card-title">Brick Breaker Elite</div>
-    <div class="card-description">High-performance arcade brick-breaking engine with smooth collision physics.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Arcade</span>
-    </div>
-</a>
+        // Search functionality
+        const searchInput = document.getElementById('projectSearch');
+        const cards = document.querySelectorAll('.project-card');
 
-<a href="dinogame.html" class="card" data-tags="game">
-    <div class="card-icon">🦖</div>
-    <div class="card-title">Dino Run Pro</div>
-    <div class="card-description">Advanced Chrome Dino clone featuring dynamic difficulties and a global leaderboard.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Leaderboard</span>
-    </div>
-</a>
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const title = card.querySelector('h3').innerText.toLowerCase();
+                const desc = card.querySelector('p').innerText.toLowerCase();
+                if (title.includes(term) || desc.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
 
-<a href="emi.html" class="card" data-tags="tool">
-    <div class="card-icon">🏦</div>
-    <div class="card-title">EMI Tracker & Planner</div>
-    <div class="card-description">Comprehensive financial calculator for loan EMIs, interest tracking, and payoff planning.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Finance</span>
-    </div>
-</a>
+        // Filter functionality
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                
+                cards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category === filter) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
 
-<a href="LUDO.html" class="card" data-tags="game">
-    <div class="card-icon">🎲</div>
-    <div class="card-title">LUDO AI Pro</div>
-    <div class="card-description">Modern LUDO implementation with AI-driven opponents and save-state persistence.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">AI</span>
-    </div>
-</a>
-
-<a href="MEMORYGRIDGAME.html" class="card" data-tags="game">
-    <div class="card-icon">🧠</div>
-    <div class="card-title">Memory Grid Explorer</div>
-    <div class="card-description">Cognitive training tool testing pattern recognition and spatial memory grids.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Brain-Training</span>
-    </div>
-</a>
-
-<a href="mindmap.html" class="card" data-tags="tool visualization">
-    <div class="card-icon">🗺️</div>
-    <div class="card-title">MindMap Studio</div>
-    <div class="card-description">Professional visual brainstorming tool for mapping complex engineering thoughts and concepts.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Visualization</span>
-    </div>
-</a>
-
-<a href="PDFOVERLAY.HTML" class="card" data-tags="tool">
-    <div class="card-icon">📄</div>
-    <div class="card-title">Industrial PDF Overlay</div>
-    <div class="card-description">Utility tool for annotating and layering technical diagrams on PDF documents.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Engineering</span>
-    </div>
-</a>
-
-<a href="Portfolio.html" class="card" data-tags="visualization">
-    <div class="card-icon">📋</div>
-    <div class="card-title">Professional Portfolio</div>
-    <div class="card-description">Detailed showcase of engineering accomplishments, certifications, and technical skills.</div>
-    <div class="tag-row">
-        <span class="tag">Visualization</span>
-        <span class="tag">Personal</span>
-    </div>
-</a>
-
-<a href="HouseAffordability.html" class="card" data-tags="tool visualization">
-    <div class="card-icon">🏠</div>
-    <div class="card-title">Housing Affordability Dashboard</div>
-    <div class="card-description">Real-time data visualization of house price-to-income ratios across 100+ Indian cities.</div>
-    <div class="tag-row">
-        <span class="tag">Visualization</span>
-        <span class="tag">Data-Science</span>
-    </div>
-</a>
-
-<a href="advanced_solar_system_autofit_mobile_controls.html" class="card" data-tags="visualization">
-    <div class="card-icon">🌌</div>
-    <div class="card-title">Solar System 3D</div>
-    <div class="card-description">Immersive 3D astronomical simulator with real-time planetary physics and orbits.</div>
-    <div class="tag-row">
-        <span class="tag">Visualization</span>
-        <span class="tag">3D</span>
-    </div>
-</a>
-
-<a href="Space-Starship.html" class="card" data-tags="game">
-    <div class="card-icon">🚀</div>
-    <div class="card-title">Space Starship Elite</div>
-    <div class="card-description">High-octane space shooter with boss-fight mechanics and power-up progression systems.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Retro</span>
-    </div>
-</a>
-
-<a href="SPEEDCALC.HTML" class="card" data-tags="tool">
-    <div class="card-icon">⚡</div>
-    <div class="card-title">Physics Speed Calc</div>
-    <div class="card-description">Precision utility for calculating motion variables: Speed, Distance, and Time.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Education</span>
-    </div>
-</a>
-
-<a href="SUDOKUZENPRO.HTML" class="card" data-tags="game">
-    <div class="card-icon">🔢</div>
-    <div class="card-title">Sudoku Zen Pro</div>
-    <div class="card-description">Minimalist logic puzzle solver with dynamic difficulty generation.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Logic</span>
-    </div>
-</a>
-
-<a href="TIc-Tac-Toe.html" class="card" data-tags="game">
-    <div class="card-icon">❌⭕</div>
-    <div class="card-title">Ultimate Tic-Tac-Toe</div>
-    <div class="card-description">Responsive implementation of the classic strategy game with minimax-style logic potential.</div>
-    <div class="tag-row">
-        <span class="tag">Game</span>
-        <span class="tag">Strategy</span>
-    </div>
-</a>
-
-<a href="todolist.html" class="card" data-tags="tool">
-    <div class="card-icon">✅</div>
-    <div class="card-title">Advanced Todo Engine</div>
-    <div class="card-description">Productivity booster with task categorization and persistent browser storage.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Productivity</span>
-    </div>
-</a>
-
-<a href="torrentbillcalculator.html" class="card" data-tags="tool">
-    <div class="card-icon">💰</div>
-    <div class="card-title">Bandwidth Cost Tracker</div>
-    <div class="card-description">Analytical tool for estimating data costs and bandwidth usage for large file sets.</div>
-    <div class="tag-row">
-        <span class="tag">Tool</span>
-        <span class="tag">Utility</span>
-    </div>
-</a>
-
-</div>
-
-<footer>
-    🤖 Engineered by अक्षय (Akshay) with AI |
-    <a href="https://github.com/akshayai1996/Htmlfun" target="_blank">View Ecosystem on GitHub</a>
-</footer>
-
-</div>
-
-<script>
-  // ── Search & Filter ──
-  const searchInput = document.getElementById('searchInput');
-  const cards = document.querySelectorAll('.card');
-  const buttons = document.querySelectorAll('.filter-btn');
-
-  searchInput.addEventListener('input', e => {
-    const v = e.target.value.toLowerCase();
-    cards.forEach(c => {
-      c.classList.toggle('hidden', !c.textContent.toLowerCase().includes(v));
-    });
-  });
-
-  buttons.forEach(b => {
-    b.onclick = () => {
-      buttons.forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      const f = b.dataset.filter;
-      cards.forEach(c => {
-        c.classList.toggle('hidden', f !== 'all' && !c.dataset.tags.includes(f));
-      });
-    };
-  });
-
-  // ── Enrich profile card via GitHub public API ──
-  fetch('https://api.github.com/users/akshayai1996')
-    .then(r => r.json())
-    .then(data => {
-      if (data.name) document.getElementById('ghName').textContent = data.name;
-      const repos = data.public_repos ?? null;
-      if (repos !== null) {
-        document.getElementById('ghMeta').textContent = `${repos} repos`;
-      }
-    })
-    .catch(() => { /* fallback text stays */ });
-</script>
-
+        // Stagger animations on load
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.05}s`;
+        });
+    </script>
 </body>
+
 </html>
