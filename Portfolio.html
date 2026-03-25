@@ -9,31 +9,37 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
         :root {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
             font-weight: 400;
 
-            color-scheme: dark;
-            --bg-primary: #0b1121;
-            --bg-secondary: #0f172a;
-            --accent: #3b82f6;
-            --accent-dark: #2563eb;
-            --accent-glow: rgba(59, 130, 246, 0.5);
+            color-scheme: light;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --accent-glow: rgba(16, 185, 129, 0.3);
             --highlight: #f97316;
 
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
+            --text-primary: #000000;
+            --text-secondary: #1a1a1a;
+            --text-muted: #404040;
 
-            --card-bg: rgba(30, 41, 59, 0.4);
-            --card-border: rgba(148, 163, 184, 0.1);
-            --glass-bg: rgba(15, 23, 42, 0.7);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-border: rgba(16, 185, 129, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: 1px solid rgba(16, 185, 129, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.1);
             --nav-height: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --nav-height: 3.5rem;
+            }
         }
 
         html {
@@ -44,12 +50,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            background-color: var(--bg-primary);
-            background-image:
-                radial-gradient(at 0% 0%, hsla(215, 28%, 17%, 1) 0, transparent 50%),
-                radial-gradient(at 100% 0%, hsla(220, 39%, 20%, 1) 0, transparent 50%),
-                radial-gradient(at 100% 100%, hsla(215, 28%, 15%, 1) 0, transparent 50%);
-            background-attachment: fixed;
+            background-color: #ffffff;
             color: var(--text-primary);
             overflow-x: hidden;
         }
@@ -70,10 +71,7 @@
         h1 {
             font-size: 3.5rem;
             font-weight: 800;
-            background: linear-gradient(to right, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #000000;
         }
 
         h2 {
@@ -81,19 +79,6 @@
             font-weight: 700;
             margin-bottom: 2rem;
             color: var(--text-primary);
-            position: relative;
-            display: inline-block;
-        }
-
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: -0.5rem;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: var(--accent);
-            border-radius: 2px;
         }
 
         h3 {
@@ -134,8 +119,8 @@
 
         .glass-panel:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
-            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.2);
         }
 
         .section {
@@ -177,7 +162,7 @@
         .btn-primary {
             background: var(--accent);
             color: white;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
         }
 
         .btn-primary:hover {
@@ -194,7 +179,7 @@
         .btn-outline:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(59, 130, 246, 0.05);
+            background: rgba(16, 185, 129, 0.05);
         }
 
         .animate-in {
@@ -220,18 +205,18 @@
         }
 
         .skill-tag {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-dark);
             padding: 0.5rem 1rem;
             border-radius: 2rem;
             font-size: 0.9rem;
             font-weight: 500;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.2);
             transition: all 0.2s;
         }
 
         .skill-tag:hover {
-            background: rgba(59, 130, 246, 0.2);
+            background: rgba(16, 185, 129, 0.2);
             transform: scale(1.05);
         }
 
@@ -284,7 +269,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--accent);
             border-radius: 8px;
         }
@@ -300,7 +285,7 @@
             align-items: center;
             z-index: 1000;
             transition: all 0.3s ease;
-            background: rgba(11, 17, 33, 0.8);
+            background: rgba(255, 255, 255, 0.8);
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--glass-border);
@@ -333,6 +318,13 @@
             color: var(--accent);
         }
 
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 1rem;
+                font-size: 0.85rem;
+            }
+        }
+
         /* Contact Grid Optimization */
         .contact-grid {
             display: grid;
@@ -363,6 +355,7 @@
 
         .text-wrap {
             word-break: break-all;
+            white-space: normal !important;
         }
 
         /* Force break for long emails */
@@ -448,15 +441,18 @@
         }
 
         /* Grid Background Utility */
+        /* Grid Background Utility Removed */
         .grid-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -2;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                padding: 4rem 0 !important;
+            }
+            .glass-panel {
+                padding: 1.25rem !important;
+            }
         }
 
         .hero-title {
@@ -489,8 +485,8 @@
 
 <body>
 
-    <canvas id="pipingCanvas"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; pointer-events: none;"></canvas>
+    <!-- Piping Background Canvas Removed -->
+
 
     <nav>
         <div class="container" style="justify-content: center;">
@@ -507,7 +503,7 @@
     <!-- HERO SECTION -->
     <section id="hero" class="section flex-center"
         style="min-height: 100vh; padding-top: 0; position: relative; overflow: hidden;">
-        <div class="grid-bg"></div>
+
 
         <div class="container hero-container">
             <div class="hero-text animate-in">
@@ -637,7 +633,7 @@
                                 <div style="font-size: 0.9rem; color: var(--text-muted);">Engineering Division</div>
                             </div>
                             <div
-                                style="background: rgba(59, 130, 246, 0.1); color: var(--accent); padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.9rem; height: fit-content; font-weight: 600; font-family: monospace;">
+                                style="background: rgba(16, 185, 129, 0.1); color: var(--accent); padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.9rem; height: fit-content; font-weight: 600; font-family: monospace;">
                                 Jun 2022 - Present
                             </div>
                         </div>
@@ -753,9 +749,6 @@
 
                 <div class="glass-panel" style="position: relative; overflow: hidden;">
                     <div
-                        style="position: absolute; top: 0; right: 0; width: 20px; height: 20px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); opacity: 0.5;">
-                    </div>
-                    <div
                         style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
                         <div class="icon-box"><i data-lucide="layers"></i></div>
                         <h3 style="margin: 0; font-size: 1.25rem;">Tools / Software</h3>
@@ -768,9 +761,6 @@
                 </div>
 
                 <div class="glass-panel" style="position: relative; overflow: hidden;">
-                    <div
-                        style="position: absolute; top: 0; right: 0; width: 20px; height: 20px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); opacity: 0.5;">
-                    </div>
                     <div
                         style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
                         <div class="icon-box"><i data-lucide="ruler"></i></div>
@@ -785,9 +775,6 @@
                 </div>
 
                 <div class="glass-panel" style="position: relative; overflow: hidden;">
-                    <div
-                        style="position: absolute; top: 0; right: 0; width: 20px; height: 20px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); opacity: 0.5;">
-                    </div>
                     <div
                         style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem;">
                         <div class="icon-box"><i data-lucide="database"></i></div>
@@ -833,12 +820,13 @@
                     </a>
 
                     <a href="https://www.linkedin.com/in/akshay-jatin-solanki/" target="_blank"
-                        rel="noopener noreferrer" class="contact-link-opt">
-                        <div class="icon-box"><i data-lucide="linkedin"></i></div>
-                        <div>
+                        rel="noopener noreferrer" class="contact-link-opt" style="flex: 1; min-width: 200px;">
+                        <div class="icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </div>
+                        <div style="flex: 1;">
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">LinkedIn</div>
-                            <div style="font-weight: 500;">View Profile <i data-lucide="external-link"
-                                    style="width:14px; display:inline;"></i></div>
+                            <div style="font-weight: 500; white-space: nowrap;">View Profile <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></div>
                         </div>
                     </a>
 
@@ -853,90 +841,13 @@
             </div>
 
             <footer style="margin-top: 5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                <p>Â© 2026 Akshay J. Solanki. All rights reserved.</p>
+                <p> © 2026 Akshay J. Solanki. All rights reserved.</p>
             </footer>
         </div>
     </section>
 
-    <!-- PIPING CANVAS SCRIPT -->
     <script>
-        // Start Lucide Icons
         lucide.createIcons();
-
-        // Piping Animation Logic
-        const canvas = document.getElementById('pipingCanvas');
-        const ctx = canvas.getContext('2d');
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
-
-        const gridSize = 100;
-        const pipes = [];
-
-        const createPipe = () => {
-            const startX = Math.floor(Math.random() * (width / gridSize)) * gridSize;
-            const startY = Math.floor(Math.random() * (height / gridSize)) * gridSize;
-            const direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
-            const length = Math.floor(Math.random() * 3 + 2) * gridSize;
-
-            return {
-                x: startX,
-                y: startY,
-                dir: direction,
-                len: length,
-                progress: 0,
-                speed: Math.random() * 1 + 0.5,
-                color: `rgba(59, 130, 246, ${Math.random() * 0.3 + 0.1})`
-            };
-        };
-
-        for (let i = 0; i < 15; i++) pipes.push(createPipe());
-
-        const drawGrid = () => {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x <= width; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
-            for (let y = 0; y <= height; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
-        };
-
-        const animate = () => {
-            ctx.clearRect(0, 0, width, height);
-            drawGrid();
-
-            pipes.forEach(pipe => {
-                ctx.strokeStyle = pipe.color;
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(pipe.x, pipe.y);
-                let currentLen = pipe.len * (pipe.progress / 100);
-
-                if (pipe.dir === 'horizontal') {
-                    ctx.lineTo(pipe.x + currentLen, pipe.y);
-                    if (pipe.progress > 0) { ctx.fillStyle = pipe.color; ctx.beginPath(); ctx.arc(pipe.x, pipe.y, 6, 0, Math.PI * 2); ctx.fill(); }
-                    if (pipe.progress >= 100) { ctx.beginPath(); ctx.arc(pipe.x + pipe.len, pipe.y, 6, 0, Math.PI * 2); ctx.fill(); }
-                } else {
-                    ctx.lineTo(pipe.x, pipe.y + currentLen);
-                    if (pipe.progress > 0) { ctx.fillStyle = pipe.color; ctx.beginPath(); ctx.arc(pipe.x, pipe.y, 6, 0, Math.PI * 2); ctx.fill(); }
-                    if (pipe.progress >= 100) { ctx.beginPath(); ctx.arc(pipe.x, pipe.y + pipe.len, 6, 0, Math.PI * 2); ctx.fill(); }
-                }
-                ctx.stroke();
-
-                if (pipe.progress < 100) pipe.progress += pipe.speed;
-                else if (Math.random() < 0.01) Object.assign(pipe, createPipe());
-            });
-            requestAnimationFrame(animate);
-        };
-
-        animate();
-
-        window.addEventListener('resize', () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        });
     </script>
     <script>
         // Scroll Spy Configuration
@@ -975,8 +886,9 @@
         <!-- Toggle Button -->
         <button id="chat-toggle" onclick="toggleChat()" class="btn-primary" title="Toggle Chat Enquiry Form"
             aria-label="Toggle Enquiry Chat"
-            style="width: 3.5rem; height: 3.5rem; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); cursor: pointer; border: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            <i data-lucide="message-square" style="width: 24px; height: 24px;"></i>
+            style="width: 3.5rem; height: 3.5rem; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); cursor: pointer; border: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            <span id="toggle-icon-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></span>
+            <span id="toggle-icon-close" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
         </button>
 
         <!-- Chat Box -->
@@ -998,15 +910,15 @@
                 style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
                 <div>
                     <input type="text" id="chat-name" placeholder="Your Name" required
-                        style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; transition: border 0.3s; font-family: inherit;">
+                        style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; transition: border 0.3s; font-family: inherit;">
                 </div>
                 <div>
                     <input type="email" id="chat-email" placeholder="Your Email" required
-                        style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; transition: border 0.3s; font-family: inherit;">
+                        style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; transition: border 0.3s; font-family: inherit;">
                 </div>
                 <div>
                     <textarea id="chat-message" rows="3" placeholder="How can I help you?" required
-                        style="width: 100%; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; resize: none; font-family: inherit; transition: border 0.3s;"></textarea>
+                        style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--card-border); border-radius: 0.5rem; color: var(--text-primary); box-sizing: border-box; outline: none; resize: none; font-family: inherit; transition: border 0.3s;"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">
                     Send Message <i data-lucide="send" style="width: 16px;"></i>
@@ -1021,7 +933,8 @@
     <script>
         function toggleChat() {
             const chatBox = document.getElementById('chat-box');
-            const toggleBtn = document.getElementById('chat-toggle');
+            const openIcon = document.getElementById('toggle-icon-open');
+            const closeIcon = document.getElementById('toggle-icon-close');
             const isOpen = chatBox.style.display === 'flex';
 
             if (isOpen) {
@@ -1030,18 +943,17 @@
                 chatBox.style.transform = 'scale(0.9)';
                 setTimeout(() => {
                     chatBox.style.display = 'none';
-                    toggleBtn.innerHTML = '<i data-lucide="message-square" style="width: 24px;"></i>';
-                    if (window.lucide) lucide.createIcons();
+                    openIcon.style.display = 'block';
+                    closeIcon.style.display = 'none';
                 }, 300);
             } else {
                 // Open
                 chatBox.style.display = 'flex';
-                // Small delay to allow display:flex to apply before transition
                 requestAnimationFrame(() => {
                     chatBox.style.opacity = '1';
                     chatBox.style.transform = 'scale(1)';
-                    toggleBtn.innerHTML = '<i data-lucide="x" style="width: 24px;"></i>';
-                    if (window.lucide) lucide.createIcons();
+                    openIcon.style.display = 'none';
+                    closeIcon.style.display = 'block';
                 });
             }
         }
