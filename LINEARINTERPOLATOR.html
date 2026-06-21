@@ -1,0 +1,1506 @@
+<!--
+===============================================================================
+LINEAR INTERPOLATION + CUSTOM EQUATION CALCULATOR
+===============================================================================
+Author      : ChatGPT
+Version     : 3.0
+Date        : 2026-06-19
+Description :
+    Professional calculator with:
+    ✔ Forward Interpolation  (Find Y from X)
+    ✔ Reverse Interpolation  (Find X from Y)
+    ✔ Custom equation evaluation y = f(x)
+    ✔ Solve x for a target y over a user-defined range
+    ✔ Range table generation for x/y pairs
+    ✔ Real-time calculation
+    ✔ Error handling
+    ✔ Responsive design
+    ✔ Engineering style UI
+
+Formula:
+    Forward:
+        y = y1 + ((x - x1)(y2 - y1)) / (x2 - x1)
+
+    Reverse:
+        x = x1 + ((y - y1)(x2 - x1)) / (y2 - y1)
+
+    Custom equation:
+        y = f(x)
+
+===============================================================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Interpolation Calculator</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 40px;
+        font-family: Arial, sans-serif;
+        background: #eef2f7;
+        color: #111;
+    }
+    .container {
+        max-width: 1100px;
+        margin: auto;
+        background: white;
+        padding: 35px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    }
+    h1 {
+        text-align: center;
+        color: #174a7c;
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+    .subtitle {
+        text-align: center;
+        color: #556;
+        margin-top: 0;
+        margin-bottom: 30px;
+        line-height: 1.5;
+    }
+    .section-title {
+        margin-top: 35px;
+        margin-bottom: 18px;
+        font-size: 20px;
+        color: #174a7c;
+        border-bottom: 2px solid #dfe8f1;
+        padding-bottom: 8px;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+    label {
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    input, textarea {
+        padding: 13px;
+        border: 1px solid #cfd8e3;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: 0.2s;
+        width: 100%;
+        font-family: inherit;
+    }
+    textarea {
+        min-height: 54px;
+        resize: vertical;
+    }
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: #174a7c;
+        box-shadow: 0 0 5px rgba(23,74,124,0.4);
+    }
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+    }
+    .card {
+        margin-top: 22px;
+        padding: 22px;
+        background: #f9fbfe;
+        border: 1px solid #dfe8f1;
+        border-radius: 14px;
+    }
+    .result {
+        margin-top: 30px;
+        padding: 25px;
+        background: #f4faff;
+        border-left: 7px solid #174a7c;
+        border-radius: 12px;
+    }
+    .result h2 {
+        margin-top: 0;
+        color: #174a7c;
+    }
+    .result-value {
+        font-size: 26px;
+        font-weight: bold;
+        color: #111;
+        margin-top: 10px;
+        word-break: break-word;
+    }
+    .formula {
+        margin-top: 30px;
+        background: #fafafa;
+        padding: 22px;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        font-family: Consolas, monospace;
+        overflow: auto;
+        line-height: 1.8;
+    }
+    .error {
+        color: #d00000;
+        font-weight: bold;
+        margin-top: 12px;
+    }
+    .info {
+        margin-top: 15px;
+        color: #555;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+    .hint {
+        margin-top: 8px;
+        color: #667;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        margin-top: 12px;
+        border-radius: 10px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+        table-layout: fixed;
+    }
+    th, td {
+        border: 1px solid #dce5ef;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    th {
+        background: #edf4fb;
+        color: #174a7c;
+    }
+    .small-note {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #667;
+    }
+    .chain-box {
+        margin-top: 18px;
+        padding: 16px;
+        background: #fff8ea;
+        border: 1px solid #f0dca6;
+        border-radius: 10px;
+    }
+    .chain-box h3 {
+        margin: 0 0 10px 0;
+        font-size: 15px;
+        color: #8a6300;
+    }
+    .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 10px;
+    }
+    .btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        background: #174a7c;
+        color: white;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn:hover { background: #123a63; }
+    .btn:disabled { background: #b9c4d0; cursor: not-allowed; }
+    .btn.secondary { background: #8a6300; }
+    .btn.secondary:hover { background: #6e4f00; }
+    .btn.danger { background: #b03030; }
+    .btn.danger:hover { background: #8c2424; }
+    .mini-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 6px;
+        background: #174a7c;
+        color: white;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .mini-btn:hover { background: #123a63; }
+    .small-input {
+        width: 90px !important;
+        display: inline-block;
+        padding: 8px !important;
+    }
+    .inline-field {
+        display: inline-flex;
+        flex-direction: column;
+        font-size: 12px;
+        color: #556;
+        gap: 4px;
+    }
+    .history-card {
+        margin-top: 22px;
+        padding: 22px;
+        background: #f6f9fc;
+        border: 1px solid #dfe8f1;
+        border-radius: 14px;
+    }
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: flex-end;
+        margin-bottom: 10px;
+    }
+    details.adv {
+        margin-top: 14px;
+        border: 1px solid #e3e8ef;
+        border-radius: 10px;
+        background: #fafcfe;
+        overflow: hidden;
+    }
+    details.adv summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: bold;
+        color: #174a7c;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        user-select: none;
+    }
+    details.adv summary::-webkit-details-marker { display: none; }
+    details.adv summary::before {
+        content: "▶";
+        font-size: 10px;
+        transition: transform 0.15s;
+        color: #8a9bb0;
+    }
+    details.adv[open] summary::before { transform: rotate(90deg); }
+    details.adv[open] summary { border-bottom: 1px solid #e3e8ef; }
+    details.adv .adv-body { padding: 14px 16px 16px 16px; }
+    @media(max-width:600px) {
+        body { padding: 15px; }
+        .container { padding: 22px; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Linear Interpolation Calculator</h1>
+    <p class="subtitle">
+        Top section: point-to-point interpolation. Bottom section: custom equations like <strong>y = 3x² + 2x - 4</strong>.
+    </p>
+
+    <div class="section-title">Known Points</div>
+    <div class="grid">
+        <div class="field">
+            <label>X1</label>
+            <input type="number" id="x1" step="any">
+        </div>
+        <div class="field">
+            <label>Y1</label>
+            <input type="number" id="y1" step="any">
+        </div>
+        <div class="field">
+            <label>X2</label>
+            <input type="number" id="x2" step="any">
+        </div>
+        <div class="field">
+            <label>Y2</label>
+            <input type="number" id="y2" step="any">
+        </div>
+    </div>
+
+    <div class="section-title">Target Input</div>
+    <div class="card" style="margin-top: 0;">
+        <div class="field" style="margin-bottom: 16px;">
+            <label>Solve for</label>
+            <div class="btn-row" style="margin-top: 6px;">
+                <label style="font-weight: normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="linMode" id="linModeForward" value="forward" checked onchange="onLinModeChange()" style="width:auto;">
+                    Find Y from X
+                </label>
+                <label style="font-weight: normal; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="linMode" id="linModeReverse" value="reverse" onchange="onLinModeChange()" style="width:auto;">
+                    Find X from Y
+                </label>
+            </div>
+        </div>
+        <div class="field">
+            <label id="targetLabel">Target X</label>
+            <input type="number" id="targetValue" step="any" placeholder="Enter the value to solve from">
+        </div>
+    </div>
+
+    <div class="result">
+        <h2>Linear Interpolation Result</h2>
+        <div id="output" class="result-value">Enter values to calculate...</div>
+        <div id="mode" class="info"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <div class="section-title">Custom Equation Mode</div>
+    <div class="card">
+        <div class="grid">
+            <div class="field" style="grid-column: 1 / -1;">
+                <label>Equation in x</label>
+                <textarea id="equation" placeholder="Examples: y=3x^2+2x-4   |   x^3-5x+2   |   sin(x)+2"></textarea>
+                <div class="hint">Type <strong>y=</strong> or just the expression, using <strong>x</strong> as the variable. Use <strong>log(x)</strong> for base 10 and <strong>ln(x)</strong> for natural log.</div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 16px;">
+            <div class="field">
+                <label>Evaluate y at x</label>
+                <input type="number" id="eqX" step="any" placeholder="Enter x">
+            </div>
+            <div class="field">
+                <label>Find x for y</label>
+                <input type="number" id="eqTargetY" step="any" value="0" placeholder="Enter target y">
+            </div>
+            <div class="field">
+                <label>Range start</label>
+                <input type="number" id="rangeStart" step="any" placeholder="e.g. 0">
+            </div>
+            <div class="field">
+                <label>Range end</label>
+                <input type="number" id="rangeEnd" step="any" placeholder="e.g. 10">
+            </div>
+            <div class="field">
+                <label>Number of Intervals</label>
+                <input type="number" id="intervals" step="any" value="10" min="1">
+            </div>
+        </div>
+
+        
+<div class="card" style="margin-top: 18px;">
+    <h2>Root Solver Information</h2>
+    <div class="small-note" style="margin-top:0;">
+        The custom-equation root solver uses Regula Falsi (linear interpolation) with a fixed practical accuracy of 10^-15.
+        The iteration limit is fixed at 100.
+    </div>
+    <div class="small-note">
+        This keeps the interface simple and avoids settings that do not improve results in JavaScript floating-point arithmetic.
+    </div>
+</div>
+
+
+        <div class="result" style="margin-top: 20px;">
+            <h2>Custom Equation Result</h2>
+            <div id="eqOutput" class="result-value">Enter an equation to calculate...</div>
+            <div id="eqMode" class="info"></div>
+            <div id="eqError" class="error"></div>
+            <div id="eqTableWrap" class="info"></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:25px;">
+        <h2>How to Use This Calculator (First-Time Users)</h2>
+        <ol style="line-height:1.8;">
+            <li><b>Enter your equation</b> in the form of <code>3^x+3^-x-5</code>, <code>x^3-5x+2</code>, <code>sin(x)</code>, <code>log(x)</code>, or similar. <code>log</code> means base 10, and <code>ln</code> means natural log.</li>
+            <li><b>To calculate Y from X</b>, enter a value in <b>Evaluate y at x</b>. The calculator will immediately show the Y value.</li>
+            <li><b>To solve X for a known Y</b>, leave the X field blank and enter the target value in <b>Find x for y</b>.</li>
+            <li>For reverse solving, give a sensible <b>Range start</b> and <b>Range end</b> that actually contain the answer.</li>
+            <li><b>Number of Intervals</b> controls how finely the range is scanned before root solving begins.</li>
+            <li><b>Tolerance</b> controls accuracy. Smaller tolerance means a stricter answer, but the solver may need more work.</li>
+            <li>The solver first scans for a sign change, then uses linear interpolation / Regula Falsi to narrow the answer.</li>
+            <li>If there are multiple roots in the selected range, all detected roots will be shown.</li>
+            <li>The table below the result shows the sampled x and y values for the chosen range.</li>
+            <li>If the answer is not found, widen the range or increase the number of intervals.</li>
+        </ol>
+    </div>
+
+    <div class="formula">
+        <strong>Forward Interpolation:</strong><br>
+        y = y1 + ((x - x1)(y2 - y1)) / (x2 - x1)
+
+        <br><br>
+
+        <strong>Reverse Interpolation:</strong><br>
+        x = x1 + ((y - y1)(x2 - x1)) / (y2 - y1)
+
+        <br><br>
+
+        <strong>Custom Equation Example:</strong><br>
+        y = 3x^2 + 2x - 4
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input:not([type="radio"])');
+    const textareas = document.querySelectorAll("textarea");
+    let calculateTimer = null;
+
+    inputs.forEach(input => input.addEventListener("input", scheduleCalculateAll));
+    textareas.forEach(input => input.addEventListener("input", scheduleCalculateAll));
+
+    function scheduleCalculateAll() {
+        window.clearTimeout(calculateTimer);
+        calculateTimer = window.setTimeout(calculateAll, 180);
+    }
+
+    function calculateAll() {
+        calculateInterpolation();
+        calculateCustomEquation();
+    }
+
+    function getNumber(id) {
+        const v = parseFloat(document.getElementById(id).value);
+        return Number.isFinite(v) ? v : NaN;
+    }
+
+    // ---------------------------------------------------------
+    // LINEAR INTERPOLATION
+    // ---------------------------------------------------------
+    function setLinChainEnabled(enabled) {}
+
+    function getLinMode() {
+        return document.getElementById("linModeReverse").checked ? "reverse" : "forward";
+    }
+    function onLinModeChange() {
+        const reverse = getLinMode() === "reverse";
+        document.getElementById("targetLabel").textContent = reverse ? "Target Y" : "Target X";
+        document.getElementById("targetValue").placeholder = reverse
+            ? "Enter the Y value to find X for"
+            : "Enter the X value to find Y for";
+        document.getElementById("targetValue").value = "";
+        calculateAll();
+    }
+
+    function calculateInterpolation() {
+        const x1 = getNumber("x1");
+        const y1 = getNumber("y1");
+        const x2 = getNumber("x2");
+        const y2 = getNumber("y2");
+        const target = getNumber("targetValue");
+        const reverse = getLinMode() === "reverse";
+
+        const output = document.getElementById("output");
+        const mode = document.getElementById("mode");
+        const error = document.getElementById("error");
+
+        error.innerHTML = "";
+        mode.innerHTML = "";
+
+        if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+            output.innerHTML = "Enter all known point values.";
+            return;
+        }
+
+        if (isNaN(target)) {
+            output.innerHTML = reverse ? "Enter Target Y." : "Enter Target X.";
+            return;
+        }
+
+        if (!reverse) {
+            if (x2 === x1) {
+                output.innerHTML = "-";
+                error.innerHTML = "ERROR: X1 and X2 cannot be equal.";
+                return;
+            }
+
+            const y = y1 + (((target - x1) * (y2 - y1)) / (x2 - x1));
+            output.innerHTML = "Y = " + formatNumber(y);
+            mode.innerHTML = "Mode: Forward Interpolation (Finding Y from X)";
+            return;
+        }
+
+        if (y2 === y1) {
+            output.innerHTML = "-";
+            error.innerHTML = "ERROR: Y1 and Y2 cannot be equal.";
+            return;
+        }
+
+        const x = x1 + (((target - y1) * (x2 - x1)) / (y2 - y1));
+        output.innerHTML = "X = " + formatNumber(x);
+        mode.innerHTML = "Mode: Reverse Interpolation (Finding X from Y)";
+    }
+
+    // ---------------------------------------------------------
+    // CUSTOM EQUATION
+    // ---------------------------------------------------------
+    function setEqChainEnabled(enabled) {}
+
+    function calculateCustomEquation() {
+        const equationRaw = document.getElementById("equation").value.trim();
+        const eqX = getNumber("eqX");
+        const eqTargetY = getNumber("eqTargetY");
+        let rangeStart = getNumber("rangeStart");
+        let rangeEnd = getNumber("rangeEnd");
+        let intervals = getNumber("intervals");
+
+        const eqOutput = document.getElementById("eqOutput");
+        const eqMode = document.getElementById("eqMode");
+        const eqError = document.getElementById("eqError");
+        const eqTableWrap = document.getElementById("eqTableWrap");
+
+        eqError.innerHTML = "";
+        eqMode.innerHTML = "";
+        eqTableWrap.innerHTML = "";
+
+        if (!equationRaw) {
+            eqOutput.innerHTML = "Enter an equation to calculate...";
+            return;
+        }
+
+        let expression = sanitizeExpression(equationRaw);
+        if (!expression) {
+            eqOutput.innerHTML = "-";
+            eqError.innerHTML = "ERROR: Please enter a valid equation.";
+            return;
+        }
+
+        let fn;
+        try {
+            fn = buildFunction(expression);
+        } catch (err) {
+            eqOutput.innerHTML = "-";
+            eqError.innerHTML = "ERROR: Could not read the equation.";
+            return;
+        }
+
+        const trigEquation = isTrigEquation(expression);
+        const polynomialCoeffs = extractPolynomialCoefficients(expression, 0);
+        const polynomialDetected = Array.isArray(polynomialCoeffs);
+        const degree = polynomialDetected ? polynomialDegree(polynomialCoeffs) : null;
+        const rootBound = polynomialDetected ? cauchyRootBound(polynomialCoeffs) : null;
+
+        // Prefer evaluating Y from X whenever X is supplied.
+        if (!isNaN(eqX)) {
+            try {
+                const y = fn(eqX);
+                if (!Number.isFinite(y)) throw new Error("Bad result");
+                eqOutput.innerHTML = "Y = " + formatNumber(y);
+                eqMode.innerHTML = "Mode: Custom equation evaluation (finding Y from X)";
+            } catch (err) {
+                eqOutput.innerHTML = "-";
+                eqError.innerHTML = "ERROR: Equation could not be evaluated at that X value.";
+            }
+        }
+
+        // Find x for a target y using Sturm isolation for polynomials and adaptive scanning otherwise.
+        else if (!isNaN(eqTargetY)) {
+            const userRangeMissing = isNaN(rangeStart) || isNaN(rangeEnd);
+            const targetCoeffs = polynomialDetected ? extractPolynomialCoefficients(expression, eqTargetY) : null;
+            const targetRootBound = targetCoeffs ? cauchyRootBound(targetCoeffs) : rootBound;
+            if (polynomialDetected && userRangeMissing && Number.isFinite(targetRootBound)) {
+                rangeStart = -targetRootBound;
+                rangeEnd = targetRootBound;
+            }
+
+            if (isNaN(rangeStart) || isNaN(rangeEnd) || rangeStart === rangeEnd) {
+                eqOutput.innerHTML = "-";
+                eqError.innerHTML = "ERROR: Please provide a valid Range start and Range end.";
+                return;
+            }
+            if (isNaN(intervals) || intervals <= 0) intervals = 80;
+
+            const tolerance = 1e-15;
+            const maxIter = 100;
+            const illinois = true;
+            let results = [];
+            let analysis = null;
+
+            if (polynomialDetected) {
+                const totalRootCount = countRootsInInterval(targetCoeffs, -targetRootBound, targetRootBound);
+                const rangeRootCount = countRootsInInterval(targetCoeffs, rangeStart, rangeEnd);
+                const isolated = isolateRoots(targetCoeffs, rangeStart, rangeEnd);
+                results = isolated.map(interval => refineIsolatedRoot(fn, eqTargetY, interval.a, interval.b, tolerance, maxIter, illinois))
+                    .filter(r => isAcceptableRoot(fn, eqTargetY, r));
+                results = uniqueRootResults(results);
+
+                analysis = {
+                    polynomialDetected: true,
+                    degree,
+                    rootBound: targetRootBound,
+                    totalRootCount,
+                    rangeRootCount,
+                    rootsFound: results.length,
+                    missingRoots: Math.max(0, rangeRootCount - results.length),
+                    outsideSelectedRange: totalRootCount > rangeRootCount,
+                    usedAutoRange: userRangeMissing
+                };
+            } else {
+                results = adaptiveSolveForX(fn, eqTargetY, rangeStart, rangeEnd, intervals, tolerance, maxIter, illinois);
+                analysis = {
+                    polynomialDetected: false,
+                    degree: null,
+                    rootBound: null,
+                    totalRootCount: null,
+                    rangeRootCount: null,
+                    rootsFound: results.length,
+                    missingRoots: null,
+                    outsideSelectedRange: false,
+                    usedAutoRange: false
+                };
+            }
+
+            const roots = results.map(r => r.root);
+
+            if (roots.length) {
+                eqOutput.innerHTML = "X ≈ " + roots.map(v => displayEquationValue(v, trigEquation)).join(", ");
+                eqMode.innerHTML = polynomialDetected
+                    ? "Mode: Polynomial root solve (Sturm isolation + Regula Falsi refinement)"
+                    : "Mode: Adaptive root scan + Regula Falsi refinement";
+            } else {
+                eqOutput.innerHTML = "No sign change found in range — no bracket to narrow.";
+                eqMode.innerHTML = polynomialDetected
+                    ? "Mode: Sturm root count completed over the selected range"
+                    : "Mode: Adaptive scan completed over the selected range";
+            }
+
+            let convergenceHtml = "";
+            results.forEach((r, idx) => { convergenceHtml += buildConvergenceTableHtml(r, idx); });
+
+            eqTableWrap.innerHTML = buildRootAnalysisHtml(analysis, rangeStart, rangeEnd) + convergenceHtml + buildTableHtml(fn, rangeStart, rangeEnd, intervals);
+        }
+
+        // 3) Show range table if the user provides range only
+        else if (!isNaN(rangeStart) && !isNaN(rangeEnd) && !isNaN(intervals) && intervals > 0) {
+            eqOutput.innerHTML = "Range table generated below.";
+            eqMode.innerHTML = "Mode: Custom equation range table";
+            eqTableWrap.innerHTML = buildTableHtml(fn, rangeStart, rangeEnd, intervals);
+        }
+
+        else {
+            eqOutput.innerHTML = "Enter x, or target y with a range.";
+            eqMode.innerHTML = "Mode: Waiting for input";
+        }
+    }
+
+    function sanitizeExpression(input) {
+        let expr = input.replace(/^\s*y\s*=/i, "").trim();
+        expr = expr.replace(/^\s*f\s*\(\s*x\s*\)\s*=/i, "").trim();
+        expr = expr.replace(/\s+/g, "");
+        expr = expr.replace(/×/g, "*").replace(/÷/g, "/");
+        expr = expr.replace(/\^/g, "**");
+
+        // allow simple "3x", "2pi", and "2(x+1)" style input
+        expr = expr.replace(/(\d)(x)/gi, "$1*$2");
+        expr = expr.replace(/(\d)(pi|pie)(?![a-z0-9_])/gi, "$1*$2");
+        expr = expr.replace(/(x|pi|pie|e)(\d)/gi, "$1*$2");
+        expr = expr.replace(/(\d)\(/g, "$1*(");
+        expr = expr.replace(/(x|pi|pie|e)\(/gi, "$1*(");
+        expr = expr.replace(/\)(\d|x|pi|pie|e)/gi, ")*$1");
+        expr = expr.replace(/(\d)(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|ln|floor|ceil|round|min|max)/gi, "$1*$2");
+        expr = expr.replace(/x(sin|cos|tan|asin|acos|atan|sqrt|abs|log|exp|ln|floor|ceil|round|min|max)/gi, "x*$1");
+
+        // Basic safety: reject characters that should not appear in a math expression.
+        if (/[;{}[\]'"`\\]/.test(expr)) return "";
+
+        return expr;
+    }
+
+
+    function getTrigMode() {
+        return "radians";
+    }
+
+    function toRadians(v) {
+        return v * Math.PI / 180;
+    }
+
+    function toDegrees(v) {
+        return v * 180 / Math.PI;
+    }
+
+    function formatAngleValue(value) {
+        if (!Number.isFinite(value)) return "-";
+        return formatNumber(value);
+    }
+
+    function angleDisplayText(value) {
+        if (!Number.isFinite(value)) return "-";
+        const deg = toDegrees(value);
+        return `${formatAngleValue(value)} rad (${formatNumber(deg)}°)`;
+    }
+
+    function isTrigEquation(expression) {
+        return /(^|[^a-z])(sin|cos|tan|asin|acos|atan)\s*\(/i.test(expression);
+    }
+
+    function displayEquationValue(value, trigEquation) {
+        if (!Number.isFinite(value)) return "-";
+        return trigEquation ? angleDisplayText(value) : formatNumber(value);
+    }
+
+    function buildFunction(expression) {
+        const body = `
+            const sin = Math.sin, cos = Math.cos, tan = Math.tan;
+            const asin = Math.asin, acos = Math.acos, atan = Math.atan;
+            const sqrt = Math.sqrt, abs = Math.abs, exp = Math.exp;
+            const log = x => Math.log(x) / Math.LN10;
+            const floor = Math.floor, ceil = Math.ceil, round = Math.round;
+            const min = Math.min, max = Math.max, pow = Math.pow;
+            const PI = Math.PI, Pi = Math.PI, pi = Math.PI;
+            const PIE = Math.PI, Pie = Math.PI, pie = Math.PI;
+            const E = Math.E, e = Math.E;
+            const ln = Math.log;
+            return (${expression});
+        `;
+        return new Function("x", body);
+    }
+
+    function isPolynomial(expression) {
+        return Array.isArray(extractPolynomialCoefficients(expression, 0));
+    }
+
+    function extractPolynomialCoefficients(expression, targetY) {
+        try {
+            const parser = createPolynomialParser(expression);
+            const coeffs = parser.parse();
+            if (!coeffs) return null;
+            coeffs[0] = (coeffs[0] || 0) - (Number.isFinite(targetY) ? targetY : 0);
+            return trimPoly(coeffs);
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function createPolynomialParser(expression) {
+        const tokens = tokenizePolynomialExpression(expression);
+        let pos = 0;
+
+        function peek() { return tokens[pos]; }
+        function take(value) {
+            if (peek() && peek().value === value) {
+                pos++;
+                return true;
+            }
+            return false;
+        }
+        function expect(value) {
+            if (!take(value)) throw new Error("Expected " + value);
+        }
+
+        function parseExpression() {
+            let left = parseTerm();
+            while (peek() && (peek().value === "+" || peek().value === "-")) {
+                const op = peek().value;
+                pos++;
+                const right = parseTerm();
+                left = op === "+" ? polyAdd(left, right) : polySub(left, right);
+            }
+            return left;
+        }
+
+        function parseTerm() {
+            let left = parsePower();
+            while (peek() && (peek().value === "*" || peek().value === "/")) {
+                const op = peek().value;
+                pos++;
+                const right = parsePower();
+                left = op === "*" ? polyMul(left, right) : polyDivByConstant(left, right);
+            }
+            return left;
+        }
+
+        function parsePower() {
+            let left = parseUnary();
+            if (peek() && peek().value === "**") {
+                pos++;
+                const right = parseUnary();
+                if (polynomialDegree(right) !== 0) throw new Error("Variable exponent");
+                const exponent = right[0];
+                if (!Number.isInteger(exponent) || exponent < 0 || exponent > 20) throw new Error("Bad exponent");
+                left = polyPow(left, exponent);
+            }
+            return left;
+        }
+
+        function parseUnary() {
+            if (take("+")) return parseUnary();
+            if (take("-")) return polyScale(parseUnary(), -1);
+            return parsePrimary();
+        }
+
+        function parsePrimary() {
+            const t = peek();
+            if (!t) throw new Error("Unexpected end");
+            if (t.type === "number") {
+                pos++;
+                return [t.value];
+            }
+            if (t.type === "name") {
+                pos++;
+                if (t.value === "x") return [0, 1];
+                if (t.value === "pi" || t.value === "pie") return [Math.PI];
+                if (t.value === "e") return [Math.E];
+                throw new Error("Function or unsupported name");
+            }
+            if (take("(")) {
+                const inner = parseExpression();
+                expect(")");
+                return inner;
+            }
+            throw new Error("Unexpected token");
+        }
+
+        return {
+            parse() {
+                const coeffs = parseExpression();
+                if (pos !== tokens.length) throw new Error("Unexpected token");
+                return trimPoly(coeffs);
+            }
+        };
+    }
+
+    function tokenizePolynomialExpression(expression) {
+        const tokens = [];
+        let i = 0;
+        while (i < expression.length) {
+            const c = expression[i];
+            if (c === "*" && expression[i + 1] === "*") {
+                tokens.push({ type: "op", value: "**" });
+                i += 2;
+            } else if ("+-*/()".includes(c)) {
+                tokens.push({ type: "op", value: c });
+                i++;
+            } else if (/[0-9.]/.test(c)) {
+                const m = expression.slice(i).match(/^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i);
+                if (!m) throw new Error("Bad number");
+                tokens.push({ type: "number", value: Number(m[0]) });
+                i += m[0].length;
+            } else if (/[a-z]/i.test(c)) {
+                const m = expression.slice(i).match(/^[a-z]+/i);
+                tokens.push({ type: "name", value: m[0].toLowerCase() });
+                i += m[0].length;
+            } else {
+                throw new Error("Bad character");
+            }
+        }
+        return tokens;
+    }
+
+    function trimPoly(poly) {
+        const out = poly.slice();
+        while (out.length > 1 && Math.abs(out[out.length - 1]) < 1e-12) out.pop();
+        return out.map(v => Math.abs(v) < 1e-14 ? 0 : v);
+    }
+
+    function polynomialDegree(poly) {
+        return trimPoly(poly).length - 1;
+    }
+
+    function polyAdd(a, b) {
+        const n = Math.max(a.length, b.length);
+        const out = Array(n).fill(0);
+        for (let i = 0; i < n; i++) out[i] = (a[i] || 0) + (b[i] || 0);
+        return trimPoly(out);
+    }
+
+    function polySub(a, b) {
+        const n = Math.max(a.length, b.length);
+        const out = Array(n).fill(0);
+        for (let i = 0; i < n; i++) out[i] = (a[i] || 0) - (b[i] || 0);
+        return trimPoly(out);
+    }
+
+    function polyScale(a, scalar) {
+        return trimPoly(a.map(v => v * scalar));
+    }
+
+    function polyMul(a, b) {
+        const out = Array(a.length + b.length - 1).fill(0);
+        for (let i = 0; i < a.length; i++) {
+            for (let j = 0; j < b.length; j++) out[i + j] += a[i] * b[j];
+        }
+        return trimPoly(out);
+    }
+
+    function polyDivByConstant(a, b) {
+        if (polynomialDegree(b) !== 0 || Math.abs(b[0]) < 1e-14) throw new Error("Polynomial division by nonconstant");
+        return trimPoly(a.map(v => v / b[0]));
+    }
+
+    function polyPow(a, exponent) {
+        let out = [1];
+        for (let i = 0; i < exponent; i++) out = polyMul(out, a);
+        return trimPoly(out);
+    }
+
+    function polyDerivative(poly) {
+        if (poly.length <= 1) return [0];
+        const out = [];
+        for (let i = 1; i < poly.length; i++) out.push(poly[i] * i);
+        return trimPoly(out);
+    }
+
+    function polyDivide(dividend, divisor) {
+        let rem = trimPoly(dividend);
+        const div = trimPoly(divisor);
+        const divDeg = polynomialDegree(div);
+        const divLead = div[divDeg];
+        if (divDeg < 0 || Math.abs(divLead) < 1e-14) return { quotient: [0], remainder: rem };
+        const quotient = Array(Math.max(1, polynomialDegree(rem) - divDeg + 1)).fill(0);
+        while (polynomialDegree(rem) >= divDeg && !(rem.length === 1 && rem[0] === 0)) {
+            const remDeg = polynomialDegree(rem);
+            const factor = rem[remDeg] / divLead;
+            const shift = remDeg - divDeg;
+            quotient[shift] = factor;
+            const subtractor = Array(shift).fill(0).concat(div.map(v => v * factor));
+            rem = polySub(rem, subtractor);
+        }
+        return { quotient: trimPoly(quotient), remainder: trimPoly(rem) };
+    }
+
+    function buildSturmSequence(coeffs) {
+        const sequence = [trimPoly(coeffs), polyDerivative(coeffs)];
+        while (sequence.length < 64) {
+            const a = sequence[sequence.length - 2];
+            const b = sequence[sequence.length - 1];
+            if (polynomialDegree(b) <= 0 && Math.abs(b[0]) < 1e-14) break;
+            const rem = polyDivide(a, b).remainder;
+            if (rem.length === 1 && Math.abs(rem[0]) < 1e-12) break;
+            sequence.push(polyScale(rem, -1));
+            if (polynomialDegree(sequence[sequence.length - 1]) === 0) break;
+        }
+        return sequence;
+    }
+
+    function polyEval(poly, x) {
+        let y = 0;
+        for (let i = poly.length - 1; i >= 0; i--) y = y * x + poly[i];
+        return Number.isFinite(y) ? y : NaN;
+    }
+
+    function countSignVariations(values) {
+        let variations = 0;
+        let prev = 0;
+        values.forEach(v => {
+            if (!Number.isFinite(v) || Math.abs(v) < 1e-12) return;
+            const sign = v > 0 ? 1 : -1;
+            if (prev && sign !== prev) variations++;
+            prev = sign;
+        });
+        return variations;
+    }
+
+    function sturmVariationsAt(sequence, x) {
+        return countSignVariations(sequence.map(poly => polyEval(poly, x)));
+    }
+
+    function countRootsInInterval(coeffs, a, b) {
+        if (!Array.isArray(coeffs) || !Number.isFinite(a) || !Number.isFinite(b) || a === b) return 0;
+        const left = Math.min(a, b);
+        const right = Math.max(a, b);
+        const sequence = buildSturmSequence(coeffs);
+        return Math.max(0, sturmVariationsAt(sequence, left) - sturmVariationsAt(sequence, right));
+    }
+
+    function isolateRoots(coeffs, a, b) {
+        const sequence = buildSturmSequence(coeffs);
+        const intervals = [];
+        const maxDepth = 80;
+        const minWidth = 1e-12;
+
+        function rootCount(left, right) {
+            return Math.max(0, sturmVariationsAt(sequence, left) - sturmVariationsAt(sequence, right));
+        }
+
+        function recurse(left, right, depth) {
+            if (!Number.isFinite(left) || !Number.isFinite(right) || left === right || depth > maxDepth) return;
+            const count = rootCount(left, right);
+            if (count === 0) return;
+            if (count === 1 || Math.abs(right - left) <= minWidth) {
+                intervals.push({ a: left, b: right, count });
+                return;
+            }
+            const mid = (left + right) / 2;
+            if (mid === left || mid === right) {
+                intervals.push({ a: left, b: right, count });
+                return;
+            }
+            recurse(left, mid, depth + 1);
+            recurse(mid, right, depth + 1);
+        }
+
+        recurse(Math.min(a, b), Math.max(a, b), 0);
+        return intervals;
+    }
+
+    function cauchyRootBound(coeffs) {
+        const poly = trimPoly(coeffs);
+        const n = polynomialDegree(poly);
+        if (n <= 0) return 1;
+        const leading = Math.abs(poly[n]);
+        if (leading < 1e-14) return 1;
+        let maxRatio = 0;
+        for (let i = 0; i < n; i++) maxRatio = Math.max(maxRatio, Math.abs(poly[i] / poly[n]));
+        return 1 + maxRatio;
+    }
+
+    function buildRootAnalysisHtml(analysis, rangeStart, rangeEnd) {
+        const complete = analysis.missingRoots === 0 || analysis.missingRoots === null;
+        let html = `
+            <div class="chain-box">
+                <h3>ROOT ANALYSIS</h3>
+                <div class="info" style="margin-top:0;">Polynomial Detected : ${analysis.polynomialDetected ? "YES" : "NO"}
+Degree              : ${analysis.degree === null ? "-" : analysis.degree}
+Root Bound          : ${analysis.rootBound === null ? "-" : "[" + formatNumber(-analysis.rootBound) + "," + formatNumber(analysis.rootBound) + "]"}
+Real Roots In Range : ${analysis.rangeRootCount === null ? "Not available for non-polynomial scan" : analysis.rangeRootCount}
+Roots Found         : ${analysis.rootsFound}
+Missing Roots       : ${analysis.missingRoots === null ? "Unknown" : analysis.missingRoots}
+Status              : ${complete ? "COMPLETE ✓" : "INCOMPLETE ⚠"}</div>`;
+        if (analysis.polynomialDetected && analysis.outsideSelectedRange) {
+            html += `<div class="error">Some roots may exist outside selected range.<br>Suggested Range: [${formatNumber(-analysis.rootBound)}, ${formatNumber(analysis.rootBound)}]</div>`;
+        }
+        if (analysis.polynomialDetected) {
+            html += `<div class="small-note">${complete ? "All roots found in the selected range." : analysis.missingRoots + " roots missing. Expand range or inspect repeated/tangent roots."}</div>`;
+        }
+        html += "</div>";
+        return html;
+    }
+
+
+    // ---------------------------------------------------------
+    // ROOT SOLVER — Regula Falsi (False Position)
+    //
+    // Step 1: scan the range in `step`-sized increments and look for a
+    //         sign change in (f(x) - targetY) — this is the "normal table
+    //         method" bracket-finding pass.
+    // Step 2: inside each bracket found, repeatedly draw the straight line
+    //         between the two bracket points and find where it crosses
+    //         zero (classic linear interpolation) — then replace whichever
+    //         side of the bracket matches that new point's sign, keeping
+    //         the other side fixed, narrowing the bracket each round.
+    // Step 3: stop once |residue| is below tolerance (or max iterations
+    //         is hit) — every narrowing round is recorded so it can be
+    //         shown as a convergence table instead of being thrown away.
+    // ---------------------------------------------------------
+
+    function refineIsolatedRoot(fn, targetY, left, right, tolerance, maxIter, illinois) {
+        const fLeft = safeValue(fn, left) - targetY;
+        const fRight = safeValue(fn, right) - targetY;
+        if (Number.isFinite(fLeft) && Math.abs(fLeft) < tolerance) return { root: left, steps: [] };
+        if (Number.isFinite(fRight) && Math.abs(fRight) < tolerance) return { root: right, steps: [] };
+        if (Number.isFinite(fLeft) && Number.isFinite(fRight) && fLeft * fRight <= 0) {
+            return regulaFalsi(fn, targetY, left, right, tolerance, maxIter, illinois);
+        }
+
+        // Rare safety path for isolated roots that touch rather than cross the axis.
+        let bestX = left;
+        let bestAbs = Math.abs(fLeft);
+        const samples = 48;
+        for (let i = 1; i <= samples; i++) {
+            const x = left + ((right - left) * i) / samples;
+            const fx = safeValue(fn, x) - targetY;
+            if (Number.isFinite(fx) && Math.abs(fx) < bestAbs) {
+                bestAbs = Math.abs(fx);
+                bestX = x;
+            }
+        }
+        let step = Math.abs(right - left) / 4;
+        for (let i = 0; i < maxIter && step > tolerance; i++) {
+            const candidates = [bestX - step, bestX, bestX + step].filter(x => x >= left && x <= right);
+            candidates.forEach(x => {
+                const fx = safeValue(fn, x) - targetY;
+                if (Number.isFinite(fx) && Math.abs(fx) < bestAbs) {
+                    bestAbs = Math.abs(fx);
+                    bestX = x;
+                }
+            });
+            step /= 2;
+        }
+        return { root: bestX, steps: [], notConverged: bestAbs > 1e-8 };
+    }
+
+    function adaptiveSolveForX(fn, targetY, start, end, intervals, tolerance, maxIter, illinois) {
+        const left = Math.min(start, end);
+        const right = Math.max(start, end);
+        const requestedIntervals = Math.max(1, Math.min(200, Math.ceil(intervals || 80)));
+        const baseSegments = Math.max(40, Math.min(600, requestedIntervals * 6));
+        const brackets = [];
+        const maxDepth = 10;
+        const maxEvaluations = 12000;
+        const maxBrackets = 500;
+        let evaluations = 0;
+
+        function f(x) {
+            if (evaluations >= maxEvaluations) return NaN;
+            evaluations++;
+            return safeValue(fn, x) - targetY;
+        }
+
+        function scanSegment(a, b, depth) {
+            if (evaluations >= maxEvaluations || brackets.length >= maxBrackets) return;
+            const fa = f(a);
+            const fb = f(b);
+            const mid = (a + b) / 2;
+            const fm = f(mid);
+
+            if (Number.isFinite(fa) && Math.abs(fa) < tolerance && brackets.length < maxBrackets) brackets.push({ a, b: a });
+            if (Number.isFinite(fb) && Math.abs(fb) < tolerance && brackets.length < maxBrackets) brackets.push({ a: b, b });
+
+            if (Number.isFinite(fa) && Number.isFinite(fb) && fa * fb < 0) {
+                if (brackets.length < maxBrackets) brackets.push({ a, b });
+                return;
+            }
+
+            const suspicious = (
+                !Number.isFinite(fa) || !Number.isFinite(fb) || !Number.isFinite(fm) ||
+                (Number.isFinite(fa) && Number.isFinite(fm) && fa * fm < 0) ||
+                (Number.isFinite(fm) && Number.isFinite(fb) && fm * fb < 0) ||
+                (Number.isFinite(fa) && Number.isFinite(fb) && Number.isFinite(fm) && Math.abs(fm) < Math.max(1e-6, Math.min(Math.abs(fa), Math.abs(fb)) * 0.15))
+            );
+
+            if (suspicious && depth < maxDepth && Math.abs(b - a) > 1e-12) {
+                scanSegment(a, mid, depth + 1);
+                scanSegment(mid, b, depth + 1);
+            }
+        }
+
+        for (let i = 0; i < baseSegments; i++) {
+            const a = left + ((right - left) * i) / baseSegments;
+            const b = left + ((right - left) * (i + 1)) / baseSegments;
+            scanSegment(a, b, 0);
+        }
+
+        const results = brackets.map(br => {
+            if (br.a === br.b) return { root: br.a, steps: [] };
+            return regulaFalsi(fn, targetY, br.a, br.b, tolerance, maxIter, illinois);
+        }).filter(r => isAcceptableRoot(fn, targetY, r));
+
+        return uniqueRootResults(results);
+    }
+
+    function isAcceptableRoot(fn, targetY, result) {
+        if (!result || !Number.isFinite(result.root)) return false;
+        const residue = Math.abs(safeValue(fn, result.root) - targetY);
+        return Number.isFinite(residue) && residue <= 1e-7;
+    }
+
+    function uniqueRootResults(results) {
+        const unique = [];
+        results.forEach(r => {
+            const dupe = unique.find(u => Math.abs(u.root - r.root) < 1e-8);
+            if (!dupe) {
+                unique.push(r);
+            } else if ((r.steps || []).length > (dupe.steps || []).length) {
+                dupe.steps = r.steps || [];
+                dupe.root = r.root;
+                dupe.notConverged = r.notConverged;
+            }
+        });
+        return unique.sort((a, b) => a.root - b.root);
+    }
+
+    function solveForX(fn, targetY, start, end, step, tolerance, maxIter, illinois) {
+        const direction = start <= end ? 1 : -1;
+        const absStep = Math.abs(step) * direction;
+        const maxScanSteps = Math.min(5000, Math.ceil(Math.abs((end - start) / step)) + 2);
+
+        const results = []; // { root, steps }
+
+        let prevX = start;
+        let prevF = safeValue(fn, prevX) - targetY;
+
+        for (let i = 1; i <= maxScanSteps; i++) {
+            const x = start + i * absStep;
+            const beyond = direction > 0 ? x > end : x < end;
+            const currentX = beyond ? end : x;
+            const currentF = safeValue(fn, currentX) - targetY;
+
+            if (Number.isFinite(prevF) && Number.isFinite(currentF)) {
+                if (prevF === 0) results.push({ root: prevX, steps: [] });
+                if (currentF === 0) results.push({ root: currentX, steps: [] });
+
+                if (prevF * currentF < 0) {
+                    const solved = regulaFalsi(fn, targetY, prevX, currentX, tolerance, maxIter, illinois);
+                    if (Number.isFinite(solved.root)) results.push(solved);
+                }
+            }
+
+            if (beyond) break;
+            prevX = currentX;
+            prevF = currentF;
+        }
+
+        // De-duplicate roots that are essentially the same value while
+        // keeping whichever copy has the fuller convergence table.
+        const unique = [];
+        results.forEach(r => {
+            const dupe = unique.find(u => Math.abs(u.root - r.root) < 1e-8);
+            if (!dupe) {
+                unique.push(r);
+            } else if (r.steps.length > dupe.steps.length) {
+                dupe.steps = r.steps;
+                dupe.root = r.root;
+            }
+        });
+
+        return unique.sort((a, b) => a.root - b.root);
+    }
+
+    function regulaFalsi(fn, targetY, left, right, tolerance, maxIter, illinois) {
+        tolerance = 1e-15;
+        maxIter = 100;
+
+        let fLeft = safeValue(fn, left) - targetY;
+        let fRight = safeValue(fn, right) - targetY;
+        const steps = [];
+
+        if (!Number.isFinite(fLeft) || !Number.isFinite(fRight)) return { root: NaN, steps };
+        if (Math.abs(fLeft) < tolerance) return { root: left, steps };
+        if (Math.abs(fRight) < tolerance) return { root: right, steps };
+        if (fLeft * fRight > 0) return { root: NaN, steps };
+
+        let leftStall = 0, rightStall = 0;
+        let xNew = left, fNew = fLeft;
+
+        for (let i = 1; i <= maxIter; i++) {
+            // Where the straight line through (left, fLeft) and
+            // (right, fRight) crosses zero — the manual interpolation step.
+            xNew = left - (fLeft * (right - left)) / (fRight - fLeft);
+            fNew = safeValue(fn, xNew) - targetY;
+
+            steps.push({
+                iter: i,
+                xLeft: left, yLeft: fLeft + targetY,
+                xRight: right, yRight: fRight + targetY,
+                xNew, yNew: fNew + targetY,
+                residue: Math.abs(fNew)
+            });
+
+            if (!Number.isFinite(fNew)) return { root: NaN, steps };
+            if (Math.abs(fNew) < tolerance) return { root: xNew, steps };
+
+            if (fLeft * fNew < 0) {
+                // Root sits between left and xNew -> tighten the right side.
+                right = xNew; fRight = fNew;
+                rightStall = 0; leftStall++;
+                if (illinois && leftStall >= 2) { fLeft /= 2; leftStall = 0; }
+            } else {
+                // Root sits between xNew and right -> tighten the left side.
+                left = xNew; fLeft = fNew;
+                leftStall = 0; rightStall++;
+                if (illinois && rightStall >= 2) { fRight /= 2; rightStall = 0; }
+            }
+        }
+
+        return { root: xNew, steps, notConverged: true };
+    }
+
+    function buildConvergenceTableHtml(result, index) {
+        if (!result.steps.length) {
+            return `<div class="small-note">Root #${index + 1}: x ≈ ${formatNumber(result.root)} (found exactly on the table scan — no narrowing needed).</div>`;
+        }
+
+        let html = `
+            <div class="small-note" style="margin-top: 14px; font-weight:bold; color:#174a7c;">
+                Root #${index + 1}: x ≈ ${formatNumber(result.root)}
+                ${result.notConverged ? " (did not reach tolerance within the iteration limit — increase Max Iterations)" : " — converged ✅"}
+            </div>
+            <div class="table-scroll"><table>
+                <thead>
+                    <tr>
+                        <th>Iter</th>
+                        <th>X (left)</th>
+                        <th>Y (left)</th>
+                        <th>X (right)</th>
+                        <th>Y (right)</th>
+                        <th>X (interpolated)</th>
+                        <th>Y (residue)</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        result.steps.forEach(s => {
+            html += `
+                <tr>
+                    <td>${s.iter}</td>
+                    <td>${formatNumber(s.xLeft)}</td>
+                    <td>${formatNumber(s.yLeft)}</td>
+                    <td>${formatNumber(s.xRight)}</td>
+                    <td>${formatNumber(s.yRight)}</td>
+                    <td>${formatNumber(s.xNew)}</td>
+                    <td>${formatNumber(s.yNew)}</td>
+                </tr>
+            `;
+        });
+
+        html += "</tbody></table></div>";
+        return html;
+    }
+
+    function safeValue(fn, x) {
+        try {
+            const y = fn(x);
+            return Number.isFinite(y) ? y : NaN;
+        } catch (err) {
+            return NaN;
+        }
+    }
+
+    function pushUnique(arr, value) {
+        const rounded = Number(value.toFixed(10));
+        if (!arr.some(v => Math.abs(v - rounded) < 1e-8)) arr.push(rounded);
+    }
+
+    function buildTableHtml(fn, start, end, intervals) {
+        const direction = start <= end ? 1 : -1;
+        const absStep = Math.abs((end - start) / intervals) * direction;
+        const maxRows = 200;
+        const rows = [];
+
+        let x = start;
+        let count = 0;
+
+        while (count < maxRows) {
+            rows.push({ x, y: safeValue(fn, x) });
+            if (x === end) break;
+
+            const nextX = x + absStep;
+            if ((direction > 0 && nextX > end) || (direction < 0 && nextX < end)) {
+                x = end;
+            } else {
+                x = nextX;
+            }
+            count++;
+        }
+
+        const head = `
+            <div class="table-scroll"><table>
+                <thead>
+                    <tr>
+                        <th>X</th>
+                        <th>Y</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        const body = rows.map(r => `
+            <tr>
+                <td>${formatNumber(r.x)}</td>
+                <td>${Number.isFinite(r.y) ? formatNumber(r.y) : "-"}</td>
+            </tr>
+        `).join("");
+
+        const tail = `
+                </tbody>
+            </table></div>
+            <div class="small-note">Showing up to 200 rows for the selected range.</div>
+        `;
+
+        return head + body + tail;
+    }
+
+    function formatNumber(value) {
+        if (!Number.isFinite(value)) return "-";
+        return parseFloat(value.toPrecision(16)).toString();
+    }
+
+    let historyData = [];
+    let historyCounter = 0;
+
+    function logHistory(source, x, y, note) {
+        historyCounter++;
+        historyData.push({ id: historyCounter, source, x, y, note: note || "" });
+        renderHistory();
+    }
+
+    function clearHistory() {
+        historyData = [];
+        historyCounter = 0;
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const wrap = document.getElementById("historyTableWrap");
+        const minY = getNumber("histYMin");
+        const maxY = getNumber("histYMax");
+
+        if (historyData.length === 0) {
+            wrap.innerHTML = '<div class="small-note">No iterations logged yet. Calculate a result above, then click "🔁 Use Result as Next Input" (or Auto-Loop) to start building a chained table here.</div>';
+            return;
+        }
+
+        let rows = historyData;
+        if (!isNaN(minY)) rows = rows.filter(r => Number.isFinite(r.y) && r.y >= minY);
+        if (!isNaN(maxY)) rows = rows.filter(r => Number.isFinite(r.y) && r.y <= maxY);
+
+        if (rows.length === 0) {
+            wrap.innerHTML = '<div class="small-note">No logged rows fall inside the current Y filter range.</div>';
+            return;
+        }
+
+        let html = `
+            <div class="table-scroll"><table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Source</th>
+                        <th>X</th>
+                        <th>Y</th>
+                        <th>Note</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        rows.forEach(r => {
+            html += `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${r.source}</td>
+                    <td>${Number.isFinite(r.x) ? formatNumber(r.x) : "-"}</td>
+                    <td>${Number.isFinite(r.y) ? formatNumber(r.y) : "-"}</td>
+                    <td>${r.note}</td>
+                    <td><button class="mini-btn" onclick="reuseHistoryRow(${r.id})">↩ Reuse</button></td>
+                </tr>
+            `;
+        });
+
+        html += "</tbody></table></div>";
+        html += `<div class="small-note">Showing ${rows.length} of ${historyData.length} logged iterations.</div>`;
+        wrap.innerHTML = html;
+    }
+
+    // Re-feeds a logged row back into the relevant section's inputs and
+    // recalculates — lets you jump back to any earlier iteration, not just
+    // the most recent one.
+    function reuseHistoryRow(id) {
+        const row = historyData.find(r => r.id === id);
+        if (!row) return;
+
+        if (row.source.startsWith("Linear")) {
+            // Loads this point in as the new X2/Y2 bracket point so you can
+            // pick up the chain from any earlier logged iteration.
+            document.getElementById("x2").value = row.x;
+            document.getElementById("y2").value = row.y;
+            document.getElementById("targetValue").value = "";
+            calculateAll();
+        } else if (row.source.startsWith("Equation")) {
+            // Re-loads the X value used/found at that iteration so you can
+            // branch from any earlier point in the chain, not just the latest.
+            document.getElementById("eqX").value = row.x;
+            document.getElementById("eqTargetY").value = "";
+            calculateAll();
+        }
+    }
+
+    calculateAll();
+</script>
+</body>
+</html>
